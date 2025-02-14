@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { CalendarIcon } from "lucide-react";
@@ -22,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/components/AuthProvider";
 
 interface ExerciseFormData {
   date: Date;
@@ -46,9 +47,11 @@ const exerciseCategories = [
   "ΠΟΔΙΑ",
 ] as const;
 
+type ExerciseCategory = typeof exerciseCategories[number];
+
 export function ExerciseEntryForm() {
   const [date, setDate] = useState<Date>(new Date());
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | "">("");
   const { session } = useAuth();
   const { register, handleSubmit } = useForm<ExerciseFormData>();
 
@@ -81,7 +84,7 @@ export function ExerciseEntryForm() {
         {
           workout_date: format(date, 'yyyy-MM-dd'),
           exercise_id: parseInt(data.exercise),
-          category: selectedCategory as any,
+          category: selectedCategory,
           set_number: 1,
           weight_kg: data.kg1,
           reps: data.rep1,
@@ -90,7 +93,7 @@ export function ExerciseEntryForm() {
         {
           workout_date: format(date, 'yyyy-MM-dd'),
           exercise_id: parseInt(data.exercise),
-          category: selectedCategory as any,
+          category: selectedCategory,
           set_number: 2,
           weight_kg: data.kg2,
           reps: data.rep2,
@@ -99,7 +102,7 @@ export function ExerciseEntryForm() {
         {
           workout_date: format(date, 'yyyy-MM-dd'),
           exercise_id: parseInt(data.exercise),
-          category: selectedCategory as any,
+          category: selectedCategory,
           set_number: 3,
           weight_kg: data.kg3,
           reps: data.rep3,
@@ -143,7 +146,7 @@ export function ExerciseEntryForm() {
 
         <div className="space-y-2">
           <Label>Exercise Category</Label>
-          <Select onValueChange={setSelectedCategory}>
+          <Select onValueChange={(value) => setSelectedCategory(value as ExerciseCategory)}>
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
