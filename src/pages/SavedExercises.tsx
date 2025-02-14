@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -52,7 +51,7 @@ const ITEMS_PER_PAGE = 10;
 export default function SavedExercises() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -109,7 +108,7 @@ export default function SavedExercises() {
         getExerciseName(log).toLowerCase().includes(searchTerm.toLowerCase()) ||
         log.category.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesCategory = categoryFilter === "" || log.category === categoryFilter;
+      const matchesCategory = categoryFilter === "all" || log.category === categoryFilter;
 
       const logDate = new Date(log.workout_date);
       const now = new Date();
@@ -194,7 +193,7 @@ export default function SavedExercises() {
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               <SelectItem value="ΣΤΗΘΟΣ">Chest</SelectItem>
               <SelectItem value="ΠΛΑΤΗ">Back</SelectItem>
               <SelectItem value="ΔΙΚΕΦΑΛΑ">Biceps</SelectItem>
