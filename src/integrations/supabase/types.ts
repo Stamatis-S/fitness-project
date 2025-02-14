@@ -9,7 +9,71 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      exercises: {
+        Row: {
+          category: Database["public"]["Enums"]["exercise_category"]
+          created_at: string
+          id: number
+          name: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["exercise_category"]
+          created_at?: string
+          id?: number
+          name: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["exercise_category"]
+          created_at?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      workout_logs: {
+        Row: {
+          category: Database["public"]["Enums"]["exercise_category"]
+          created_at: string
+          custom_exercise: string | null
+          exercise_id: number | null
+          id: number
+          reps: number
+          set_number: number
+          weight_kg: number
+          workout_date: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["exercise_category"]
+          created_at?: string
+          custom_exercise?: string | null
+          exercise_id?: number | null
+          id?: number
+          reps: number
+          set_number: number
+          weight_kg: number
+          workout_date?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["exercise_category"]
+          created_at?: string
+          custom_exercise?: string | null
+          exercise_id?: number | null
+          id?: number
+          reps?: number
+          set_number?: number
+          weight_kg?: number
+          workout_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_logs_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +82,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      exercise_category:
+        | "ΣΤΗΘΟΣ"
+        | "ΠΛΑΤΗ"
+        | "ΔΙΚΕΦΑΛΑ"
+        | "ΤΡΙΚΕΦΑΛΑ"
+        | "ΩΜΟΙ"
+        | "ΠΟΔΙΑ"
     }
     CompositeTypes: {
       [_ in never]: never
