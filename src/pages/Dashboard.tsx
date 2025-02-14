@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,7 +20,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   Legend,
   ResponsiveContainer,
   PieChart,
@@ -25,6 +30,7 @@ import {
   Bar,
 } from "recharts";
 import { format } from "date-fns";
+import { WorkoutInsights } from "@/components/dashboard/WorkoutInsights";
 
 const COLORS = [
   "#8884d8",
@@ -39,7 +45,7 @@ const COLORS = [
   "#f95d6a",
 ];
 
-interface WorkoutLog {
+export interface WorkoutLog {
   id: number;
   workout_date: string;
   category: string;
@@ -54,9 +60,26 @@ interface WorkoutLog {
   reps: number;
 }
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-background border rounded p-2 shadow">
+        <p className="text-sm font-semibold">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} className="text-sm" style={{ color: entry.color }}>
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
+  const [compareMode, setCompareMode] = useState(false);
 
   const { data: workoutLogs } = useQuery({
     queryKey: ['workout_logs'],
@@ -212,23 +235,24 @@ export default function Dashboard() {
   }, [workoutLogs]);
 
   return (
-    <div className="min-h-screen p-8 bg-gradient-to-b from-gray-50 to-gray-100">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center mb-6">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h1 className="text-3xl font-bold">My Dashboard</h1>
           <Button variant="outline" onClick={() => navigate("/")}>
             Back to Home
           </Button>
         </div>
 
+        {workoutLogs && <WorkoutInsights logs={workoutLogs} />}
+
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="progress">Progress Tracking</TabsTrigger>
             <TabsTrigger value="statistics">Exercise Statistics</TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="p-6">
@@ -274,55 +298,77 @@ export default function Dashboard() {
             </div>
           </TabsContent>
 
-          {/* Progress Tracking Tab */}
           <TabsContent value="progress" className="space-y-6">
             <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Progress Over Time</h2>
-              <div className="mb-4">
-                <ScrollArea className="h-[150px] w-full border rounded-md p-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {exerciseNames.map(name => (
-                      <div key={name} className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={selectedExercises.includes(name)}
-                          onCheckedChange={(checked) => {
-                            setSelectedExercises(prev =>
-                              checked
-                                ? [...prev, name]
-                                : prev.filter(e => e !== name)
-                            );
-                          }}
-                        />
-                        <label className="text-sm">{name}</label>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                <h2 className="text-xl font-semibold">Progress Over Time</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => setCompareMode(!compareMode)}
+                  className="shrink-0"
+                >
+                  {compareMode ? "Exit Compare Mode" : "Compare Exercises"}
+                </Button>
               </div>
-              <div className="h-[400px]">
+              
+              <ScrollArea className="h-[150px] w-full border rounded-md p-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {exerciseNames.map(name => (
+                    <TooltipProvider key={name}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={selectedExercises.includes(name)}
+                              onCheckedChange={(checked) => {
+                                if (compareMode && selectedExercises.length >= 2 && checked) {
+                                  toast.error("Can only compare two exercises at a time");
+                                  return;
+                                }
+                                setSelectedExercises(prev =>
+                                  checked
+                                    ? [...prev, name]
+                                    : prev.filter(e => e !== name)
+                                );
+                              }}
+                            />
+                            <label className="text-sm truncate">{name}</label>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ))}
+                </div>
+              </ScrollArea>
+              
+              <div className="h-[400px] mt-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={progressData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
-                    <Tooltip />
+                    <RechartsTooltip content={<CustomTooltip />} />
                     <Legend />
-                    {selectedExercises.map((exercise, index) => (
-                      <Line
-                        key={exercise}
-                        type="monotone"
-                        dataKey={exercise}
-                        stroke={COLORS[index % COLORS.length]}
-                        dot={{ r: 4 }}
-                      />
-                    ))}
+                    {selectedExercises
+                      .slice(0, compareMode ? 2 : undefined)
+                      .map((exercise, index) => (
+                        <Line
+                          key={exercise}
+                          type="monotone"
+                          dataKey={exercise}
+                          stroke={COLORS[index % COLORS.length]}
+                          dot={{ r: 4 }}
+                        />
+                      ))}
                   </LineChart>
                 </ResponsiveContainer>
               </div>
             </Card>
           </TabsContent>
 
-          {/* Exercise Statistics Tab */}
           <TabsContent value="statistics" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-6">
