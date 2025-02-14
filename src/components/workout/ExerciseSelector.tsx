@@ -60,7 +60,18 @@ export function ExerciseSelector({
       ) : (
         <div className="space-y-2">
           <Label>Exercise</Label>
-          <Select {...register("exercise")}>
+          <Select 
+            defaultValue=""
+            onValueChange={(value) => {
+              const event = {
+                target: {
+                  name: "exercise",
+                  value: value
+                }
+              };
+              register("exercise").onChange(event);
+            }}
+          >
             <SelectTrigger>
               <SelectValue placeholder={isLoading ? "Loading..." : "Select exercise"} />
             </SelectTrigger>
