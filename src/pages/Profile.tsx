@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ProfileData {
   username: string | null;
@@ -15,6 +18,7 @@ interface ProfileData {
 
 export default function Profile() {
   const { session } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
   useEffect(() => {
@@ -53,9 +57,19 @@ export default function Profile() {
   return (
     <div className="min-h-screen p-8 bg-gradient-to-b from-background to-muted">
       <div className="max-w-3xl mx-auto space-y-8">
-        <h1 className="text-4xl font-bold tracking-tight">Profile</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-bold tracking-tight">Profile</h1>
+          <Button
+            variant="ghost"
+            className="flex items-center gap-2 hover:bg-accent"
+            onClick={() => navigate("/")}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to Home
+          </Button>
+        </div>
         
-        <Card className="p-6 space-y-6">
+        <Card className="p-6 space-y-6 border bg-card text-card-foreground shadow-sm">
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold">Account Information</h2>
             <p className="text-muted-foreground">
@@ -75,7 +89,10 @@ export default function Profile() {
                   Score: {Math.round(profile.fitness_score)}
                 </span>
               </div>
-              <Progress value={getProgressValue(profile.fitness_score)} className="h-2" />
+              <Progress 
+                value={getProgressValue(profile.fitness_score)} 
+                className="h-2"
+              />
             </div>
             <p className="text-sm text-muted-foreground">
               Last updated: {new Date(profile.last_score_update).toLocaleDateString()}
