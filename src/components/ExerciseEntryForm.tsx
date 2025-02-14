@@ -20,7 +20,7 @@ export function ExerciseEntryForm() {
   const [useCustomExercise, setUseCustomExercise] = useState(false);
   const [customExercise, setCustomExercise] = useState("");
   const { session } = useAuth();
-  const { register, handleSubmit } = useForm<ExerciseFormData>();
+  const { register, handleSubmit, watch } = useForm<ExerciseFormData>();
 
   const { data: exercises, isLoading } = useQuery({
     queryKey: ['exercises', selectedCategory],
@@ -62,7 +62,7 @@ export function ExerciseEntryForm() {
       // Helper function to create a workout log entry
       const createWorkoutLog = (setNumber: number, kg?: number, reps?: number) => ({
         workout_date: format(date, 'yyyy-MM-dd'),
-        exercise_id: useCustomExercise ? null : parseInt(data.exercise),
+        exercise_id: useCustomExercise ? null : Number(data.exercise),
         custom_exercise: useCustomExercise ? customExercise : null,
         category: selectedCategory,
         set_number: setNumber,
@@ -83,6 +83,8 @@ export function ExerciseEntryForm() {
         toast.error("Please fill in at least one set with weight or reps");
         return;
       }
+
+      console.log('Saving workout logs:', workoutLogs); // Debug log
 
       const { error } = await supabase
         .from('workout_logs')
