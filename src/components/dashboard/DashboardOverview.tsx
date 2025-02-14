@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import {
   PieChart,
@@ -27,6 +26,12 @@ interface DashboardOverviewProps {
   workoutLogs: WorkoutLog[];
 }
 
+type CategoryData = {
+  name: string;
+  value: number;
+  percentage?: number;
+};
+
 export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   const exerciseStats = {
     mostUsed: null as { name: string; count: number } | null,
@@ -41,7 +46,7 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
       acc.push({ name: log.category, value: 1 });
     }
     return acc;
-  }, [] as { name: string; value: number }[]);
+  }, [] as CategoryData[]);
 
   // Calculate exercise stats
   const exerciseCounts = new Map<string, number>();
