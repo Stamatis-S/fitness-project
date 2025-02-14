@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import {
@@ -213,163 +214,178 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen p-8 bg-gradient-to-b from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">My Dashboard</h1>
           <Button variant="outline" onClick={() => navigate("/")}>
             Back to Home
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Key Metrics */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Key Metrics</h2>
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm text-gray-500">Most Used Exercise</p>
-                <p className="text-2xl font-bold">{exerciseStats.mostUsed?.name}</p>
-                <p className="text-sm text-gray-500">{exerciseStats.mostUsed?.count} sets</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Most Weight Lifted</p>
-                <p className="text-2xl font-bold">{exerciseStats.mostWeight?.name}</p>
-                <p className="text-sm text-gray-500">{exerciseStats.mostWeight?.weight} kg</p>
-              </div>
-            </div>
-          </Card>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="progress">Progress Tracking</TabsTrigger>
+            <TabsTrigger value="statistics">Exercise Statistics</TabsTrigger>
+          </TabsList>
 
-          {/* Category Distribution */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Category Distribution</h2>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categoryDistribution}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label={({ name, percentage }) => `${name} (${percentage}%)`}
-                  >
-                    {categoryDistribution.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-
-          {/* Progress Chart */}
-          <Card className="p-6 col-span-1 md:col-span-2">
-            <h2 className="text-xl font-semibold mb-4">Progress Over Time</h2>
-            <div className="mb-4">
-              <ScrollArea className="h-[100px] w-full border rounded-md p-4">
-                <div className="space-y-2">
-                  {exerciseNames.map(name => (
-                    <div key={name} className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={selectedExercises.includes(name)}
-                        onCheckedChange={(checked) => {
-                          setSelectedExercises(prev =>
-                            checked
-                              ? [...prev, name]
-                              : prev.filter(e => e !== name)
-                          );
-                        }}
-                      />
-                      <label className="text-sm">{name}</label>
-                    </div>
-                  ))}
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Key Metrics</h2>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Most Used Exercise</p>
+                    <p className="text-2xl font-bold">{exerciseStats.mostUsed?.name}</p>
+                    <p className="text-sm text-gray-500">{exerciseStats.mostUsed?.count} sets</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Most Weight Lifted</p>
+                    <p className="text-2xl font-bold">{exerciseStats.mostWeight?.name}</p>
+                    <p className="text-sm text-gray-500">{exerciseStats.mostWeight?.weight} kg</p>
+                  </div>
                 </div>
-              </ScrollArea>
-            </div>
-            <div className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={progressData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  {selectedExercises.map((exercise, index) => (
-                    <Line
-                      key={exercise}
-                      type="monotone"
-                      dataKey={exercise}
-                      stroke={COLORS[index % COLORS.length]}
-                      dot={{ r: 4 }}
-                    />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
+              </Card>
 
-          {/* Average Weights */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Average Weight per Exercise</h2>
-            <div className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={averageWeights}
-                  layout="vertical"
-                  margin={{ left: 100 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis type="category" dataKey="name" />
-                  <Tooltip />
-                  <Bar dataKey="weight" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Category Distribution</h2>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryDistribution}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        label={({ name, percentage }) => `${name} (${percentage}%)`}
+                      >
+                        {categoryDistribution.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
             </div>
-          </Card>
+          </TabsContent>
 
-          {/* Max Weights */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Max Weights per Exercise</h2>
-            <div className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={maxWeights}
-                  layout="vertical"
-                  margin={{ left: 100 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis type="category" dataKey="name" />
-                  <Tooltip />
-                  <Bar dataKey="weight" fill="#82ca9d" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
+          {/* Progress Tracking Tab */}
+          <TabsContent value="progress" className="space-y-6">
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Progress Over Time</h2>
+              <div className="mb-4">
+                <ScrollArea className="h-[150px] w-full border rounded-md p-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {exerciseNames.map(name => (
+                      <div key={name} className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={selectedExercises.includes(name)}
+                          onCheckedChange={(checked) => {
+                            setSelectedExercises(prev =>
+                              checked
+                                ? [...prev, name]
+                                : prev.filter(e => e !== name)
+                            );
+                          }}
+                        />
+                        <label className="text-sm">{name}</label>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+              <div className="h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={progressData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    {selectedExercises.map((exercise, index) => (
+                      <Line
+                        key={exercise}
+                        type="monotone"
+                        dataKey={exercise}
+                        stroke={COLORS[index % COLORS.length]}
+                        dot={{ r: 4 }}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </TabsContent>
 
-          {/* Exercise Count */}
-          <Card className="p-6 col-span-1 md:col-span-2">
-            <h2 className="text-xl font-semibold mb-4">Exercise Count</h2>
-            <div className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={exerciseCounts}
-                  layout="vertical"
-                  margin={{ left: 100 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis type="category" dataKey="name" />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#ffc658" />
-                </BarChart>
-              </ResponsiveContainer>
+          {/* Exercise Statistics Tab */}
+          <TabsContent value="statistics" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <Card className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">Average Weight per Exercise</h2>
+                  <div className="h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={averageWeights}
+                        layout="vertical"
+                        margin={{ left: 100 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" />
+                        <YAxis type="category" dataKey="name" width={100} />
+                        <Tooltip />
+                        <Bar dataKey="weight" fill="#8884d8" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+
+                <Card className="p-6">
+                  <h2 className="text-xl font-semibold mb-4">Max Weights per Exercise</h2>
+                  <div className="h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={maxWeights}
+                        layout="vertical"
+                        margin={{ left: 100 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" />
+                        <YAxis type="category" dataKey="name" width={100} />
+                        <Tooltip />
+                        <Bar dataKey="weight" fill="#82ca9d" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              </div>
+
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Exercise Count</h2>
+                <div className="h-[850px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={exerciseCounts}
+                      layout="vertical"
+                      margin={{ left: 100 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis type="category" dataKey="name" width={100} />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#ffc658" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
             </div>
-          </Card>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
