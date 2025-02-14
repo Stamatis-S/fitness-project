@@ -19,15 +19,15 @@ interface WorkoutLog {
   id: number;
   workout_date: string;
   category: string;
-  exercise_id: number;
+  exercise_id: number | null;
+  custom_exercise: string | null;
+  exercises?: {
+    id: number;
+    name: string;
+  } | null;
   set_number: number;
-  weight_kg: number;
-  reps: number;
-}
-
-interface Exercise {
-  id: number;
-  name: string;
+  weight_kg: number | null;
+  reps: number | null;
 }
 
 export default function SavedExercises() {
@@ -51,7 +51,7 @@ export default function SavedExercises() {
         toast.error("Failed to load workout logs");
         throw error;
       }
-      return logs || [];
+      return logs as WorkoutLog[] || [];
     },
   });
 
@@ -69,6 +69,13 @@ export default function SavedExercises() {
       toast.error("Failed to delete exercise");
       console.error("Error deleting exercise:", error);
     }
+  };
+
+  const getExerciseName = (log: WorkoutLog) => {
+    if (log.custom_exercise) {
+      return log.custom_exercise;
+    }
+    return log.exercises?.name || 'Unknown Exercise';
   };
 
   return (
@@ -95,14 +102,14 @@ export default function SavedExercises() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {workoutLogs?.map((log: any) => (
+              {workoutLogs?.map((log: WorkoutLog) => (
                 <TableRow key={log.id}>
                   <TableCell>{format(new Date(log.workout_date), 'PP')}</TableCell>
                   <TableCell>{log.category}</TableCell>
-                  <TableCell>{log.custom_exercise || log.exercises?.name}</TableCell>
+                  <TableCell>{getExerciseName(log)}</TableCell>
                   <TableCell>{log.set_number}</TableCell>
-                  <TableCell>{log.weight_kg}</TableCell>
-                  <TableCell>{log.reps}</TableCell>
+                  <TableCell>{log.weight_kg || '-'}</TableCell>
+                  <TableCell>{log.reps || '-'}</TableCell>
                   <TableCell>
                     <Button
                       variant="ghost"
