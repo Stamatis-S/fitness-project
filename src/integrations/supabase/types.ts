@@ -58,10 +58,10 @@ export type Database = {
           custom_exercise: string | null
           exercise_id: number | null
           id: number
-          reps: number
+          reps: number | null
           set_number: number
           user_id: string | null
-          weight_kg: number
+          weight_kg: number | null
           workout_date: string
         }
         Insert: {
@@ -70,10 +70,10 @@ export type Database = {
           custom_exercise?: string | null
           exercise_id?: number | null
           id?: number
-          reps: number
+          reps?: number | null
           set_number: number
           user_id?: string | null
-          weight_kg: number
+          weight_kg?: number | null
           workout_date?: string
         }
         Update: {
@@ -82,10 +82,10 @@ export type Database = {
           custom_exercise?: string | null
           exercise_id?: number | null
           id?: number
-          reps?: number
+          reps?: number | null
           set_number?: number
           user_id?: string | null
-          weight_kg?: number
+          weight_kg?: number | null
           workout_date?: string
         }
         Relationships: [
