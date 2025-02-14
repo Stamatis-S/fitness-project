@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,14 @@ import {
 } from "@/components/ui/select";
 import { ExerciseFormData } from "./types";
 import { type ExerciseCategory } from "@/components/workout/CategorySelector";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Exercise {
+  id: number;
+  name: string;
+  category: ExerciseCategory;
+}
 
 interface ExerciseSelectorProps {
   category: ExerciseCategory;
@@ -28,11 +37,34 @@ export function ExerciseSelector({
 }: ExerciseSelectorProps) {
   const [useCustomExercise, setUseCustomExercise] = useState(value === "custom");
 
+  const { data: exercises, isLoading } = useQuery({
+    queryKey: ['exercises', category],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('exercises')
+        .select('*')
+        .eq('category', category);
+      
+      if (error) throw error;
+      return data as Exercise[];
+    }
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
         <Label>Exercise Type</Label>
-        <Select onValueChange={(value) => setUseCustomExercise(value === "custom")}>
+        <Select 
+          value={useCustomExercise ? "custom" : "predefined"}
+          onValueChange={(value) => {
+            setUseCustomExercise(value === "custom");
+            if (value === "custom") {
+              onValueChange("custom");
+            } else {
+              onValueChange("");
+            }
+          }}
+        >
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
@@ -57,7 +89,7 @@ export function ExerciseSelector({
           <Label>Exercise</Label>
           <Select value={value} onValueChange={onValueChange}>
             <SelectTrigger>
-              <SelectValue placeholder="Select exercise" />
+              <SelectValue placeholder={isLoading ? "Loading..." : "Select exercise"} />
             </SelectTrigger>
             <SelectContent>
               {exercises?.map((exercise) => (
