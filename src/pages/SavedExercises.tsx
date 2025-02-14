@@ -1,25 +1,10 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Trash2, Search, Download, ChevronDown } from "lucide-react";
+import { Download, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -31,38 +16,14 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-} from "recharts";
-import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface WorkoutLog {
-  id: number;
-  workout_date: string;
-  category: string;
-  exercise_id: number | null;
-  custom_exercise: string | null;
-  exercises?: {
-    id: number;
-    name: string;
-  } | null;
-  set_number: number;
-  weight_kg: number | null;
-  reps: number | null;
-}
+import { WorkoutCharts } from "@/components/saved-exercises/WorkoutCharts";
+import { WorkoutFilters } from "@/components/saved-exercises/WorkoutFilters";
+import { WorkoutTable } from "@/components/saved-exercises/WorkoutTable";
+import type { WorkoutLog } from "@/components/saved-exercises/types";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -112,20 +73,14 @@ export default function SavedExercises() {
     }
   };
 
-  const getExerciseName = (log: WorkoutLog) => {
-    if (log.custom_exercise) {
-      return log.custom_exercise;
-    }
-    return log.exercises?.name || 'Unknown Exercise';
-  };
-
   const filterLogs = (logs: WorkoutLog[] | undefined) => {
     if (!logs) return [];
 
     return logs.filter(log => {
       const matchesSearch = searchTerm === "" || 
-        getExerciseName(log).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.category.toLowerCase().includes(searchTerm.toLowerCase());
+        (log.custom_exercise?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.exercises?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.category.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesCategory = categoryFilter === "all" || log.category === categoryFilter;
 
@@ -157,7 +112,7 @@ export default function SavedExercises() {
       ...filteredLogs.map(log => [
         format(new Date(log.workout_date), 'PP'),
         log.category,
-        getExerciseName(log),
+        log.custom_exercise || log.exercises?.name || 'Unknown Exercise',
         log.set_number,
         log.weight_kg || "",
         log.reps || ""
@@ -174,48 +129,12 @@ export default function SavedExercises() {
     document.body.removeChild(link);
   };
 
-  const prepareChartData = (logs: WorkoutLog[]) => {
-    const weightProgressData: { date: string; weight: number }[] = [];
-    const categoryDistribution: { category: string; count: number }[] = [];
-    const categoryMap = new Map<string, number>();
-
-    // Group logs by date and get max weight for each date
-    const dateMap = new Map<string, number>();
-    logs.forEach(log => {
-      const date = format(new Date(log.workout_date), 'PP');
-      if (log.weight_kg) {
-        const currentMax = dateMap.get(date) || 0;
-        dateMap.set(date, Math.max(currentMax, log.weight_kg));
-      }
-
-      // Count exercises by category
-      const count = categoryMap.get(log.category) || 0;
-      categoryMap.set(log.category, count + 1);
-    });
-
-    // Convert maps to arrays for charts
-    dateMap.forEach((weight, date) => {
-      weightProgressData.push({ date, weight });
-    });
-
-    categoryMap.forEach((count, category) => {
-      categoryDistribution.push({ category, count });
-    });
-
-    return {
-      weightProgress: weightProgressData.slice(-10), // Last 10 entries
-      categoryDistribution: categoryDistribution,
-    };
-  };
-
   const filteredLogs = filterLogs(workoutLogs);
   const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
   const paginatedLogs = filteredLogs.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
-  const chartData = prepareChartData(filteredLogs);
 
   return (
     <div className="min-h-screen p-8 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -248,127 +167,21 @@ export default function SavedExercises() {
           </div>
           
           <CollapsibleContent className="mt-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Weight Progress Over Time</CardTitle>
-                </CardHeader>
-                <CardContent className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData.weightProgress}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} />
-                      <YAxis label={{ value: 'Weight (KG)', angle: -90, position: 'insideLeft' }} />
-                      <Tooltip />
-                      <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="weight" 
-                        stroke="#2563eb" 
-                        name="Max Weight"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Exercise Distribution by Category</CardTitle>
-                </CardHeader>
-                <CardContent className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData.categoryDistribution}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="category" angle={-45} textAnchor="end" height={60} />
-                      <YAxis label={{ value: 'Number of Sets', angle: -90, position: 'insideLeft' }} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar 
-                        dataKey="count" 
-                        fill="#2563eb" 
-                        name="Number of Sets"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
+            <WorkoutCharts logs={filteredLogs} />
           </CollapsibleContent>
         </Collapsible>
 
-        <div className="flex flex-col md:flex-row gap-4 bg-background p-4 rounded-lg shadow">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search exercises..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="ΣΤΗΘΟΣ">Chest</SelectItem>
-              <SelectItem value="ΠΛΑΤΗ">Back</SelectItem>
-              <SelectItem value="ΔΙΚΕΦΑΛΑ">Biceps</SelectItem>
-              <SelectItem value="ΤΡΙΚΕΦΑΛΑ">Triceps</SelectItem>
-              <SelectItem value="ΩΜΟΙ">Shoulders</SelectItem>
-              <SelectItem value="ΠΟΔΙΑ">Legs</SelectItem>
-              <SelectItem value="ΚΟΡΜΟΣ">Core</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={dateFilter} onValueChange={setDateFilter}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filter by date" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Time</SelectItem>
-              <SelectItem value="30days">Last 30 Days</SelectItem>
-              <SelectItem value="90days">Last 90 Days</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <WorkoutFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          categoryFilter={categoryFilter}
+          onCategoryChange={setCategoryFilter}
+          dateFilter={dateFilter}
+          onDateChange={setDateFilter}
+        />
 
         <div className="bg-background rounded-lg shadow overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Exercise</TableHead>
-                <TableHead>Set</TableHead>
-                <TableHead>Weight (KG)</TableHead>
-                <TableHead>Reps</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedLogs.map((log: WorkoutLog) => (
-                <TableRow key={log.id}>
-                  <TableCell>{format(new Date(log.workout_date), 'PP')}</TableCell>
-                  <TableCell>{log.category}</TableCell>
-                  <TableCell>{getExerciseName(log)}</TableCell>
-                  <TableCell>{log.set_number}</TableCell>
-                  <TableCell>{log.weight_kg || '-'}</TableCell>
-                  <TableCell>{log.reps || '-'}</TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(log.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <WorkoutTable logs={paginatedLogs} onDelete={handleDelete} />
           
           {totalPages > 1 && (
             <div className="p-4 border-t">
