@@ -86,17 +86,27 @@ export default function SavedExercises() {
 
       const logDate = new Date(log.workout_date);
       const now = new Date();
-      const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30));
-      const ninetyDaysAgo = new Date(now.setDate(now.getDate() - 90));
+      let daysToSubtract = 0;
 
-      let matchesDate = true;
-      if (dateFilter === "30days") {
-        matchesDate = logDate >= thirtyDaysAgo;
-      } else if (dateFilter === "90days") {
-        matchesDate = logDate >= ninetyDaysAgo;
+      switch (dateFilter) {
+        case "15days":
+          daysToSubtract = 15;
+          break;
+        case "30days":
+          daysToSubtract = 30;
+          break;
+        case "45days":
+          daysToSubtract = 45;
+          break;
+        case "90days":
+          daysToSubtract = 90;
+          break;
+        default:
+          return matchesSearch && matchesCategory;
       }
 
-      return matchesSearch && matchesCategory && matchesDate;
+      const filterDate = new Date(now.setDate(now.getDate() - daysToSubtract));
+      return matchesSearch && matchesCategory && logDate >= filterDate;
     });
   };
 
@@ -106,17 +116,13 @@ export default function SavedExercises() {
       return;
     }
 
-    const headers = ["Date", "Category", "Exercise", "Set", "Weight (KG)", "Reps"];
     const csvContent = [
-      headers.join(","),
-      ...filteredLogs.map(log => [
-        format(new Date(log.workout_date), 'PP'),
-        log.category,
-        log.custom_exercise || log.exercises?.name || 'Unknown Exercise',
-        log.set_number,
-        log.weight_kg || "",
-        log.reps || ""
-      ].join(","))
+      "Date,Category,Exercise,Set,Weight (KG),Reps",
+      ...filteredLogs.map(log => {
+        const date = format(new Date(log.workout_date), 'MMM dd, yyyy');
+        const exercise = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
+        return `${date},${log.category},${exercise},${log.set_number},${log.weight_kg || ''},${log.reps || ''}`;
+      })
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

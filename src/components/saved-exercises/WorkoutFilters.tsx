@@ -58,7 +58,9 @@ export function WorkoutFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Time</SelectItem>
+          <SelectItem value="15days">Last 15 Days</SelectItem>
           <SelectItem value="30days">Last 30 Days</SelectItem>
+          <SelectItem value="45days">Last 45 Days</SelectItem>
           <SelectItem value="90days">Last 90 Days</SelectItem>
         </SelectContent>
       </Select>
