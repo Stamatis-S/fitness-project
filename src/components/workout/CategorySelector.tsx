@@ -15,6 +15,7 @@ const exerciseCategories = [
   "ΤΡΙΚΕΦΑΛΑ",
   "ΩΜΟΙ",
   "ΠΟΔΙΑ",
+  "ΚΟΡΜΟΣ",
 ] as const;
 
 export type ExerciseCategory = typeof exerciseCategories[number];
