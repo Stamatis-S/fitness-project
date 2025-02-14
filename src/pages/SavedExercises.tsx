@@ -180,16 +180,24 @@ export default function SavedExercises() {
   );
 
   return (
-    <div className="min-h-screen p-8 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex justify-between items-center">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h1 className="text-3xl font-bold">Saved Exercises</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={exportToCSV}>
+          <div className="flex gap-2 w-full md:w-auto">
+            <Button 
+              variant="outline" 
+              onClick={exportToCSV}
+              className="flex-1 md:flex-none"
+            >
               <Download className="h-4 w-4 mr-2" />
               Export CSV
             </Button>
-            <Button variant="outline" onClick={() => navigate("/")}>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/")}
+              className="flex-1 md:flex-none"
+            >
               Back to Home
             </Button>
           </div>
@@ -227,13 +235,13 @@ export default function SavedExercises() {
           <WorkoutTable logs={paginatedLogs} onDelete={handleDelete} />
           
           {totalPages > 1 && (
-            <div className="p-4 border-t">
+            <div className="p-4 border-t overflow-x-auto">
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      className={`${currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"} min-w-[100px] justify-center`}
                     />
                   </PaginationItem>
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -241,6 +249,7 @@ export default function SavedExercises() {
                       <PaginationLink
                         onClick={() => setCurrentPage(page)}
                         isActive={currentPage === page}
+                        className="min-w-[40px] justify-center"
                       >
                         {page}
                       </PaginationLink>
@@ -249,7 +258,7 @@ export default function SavedExercises() {
                   <PaginationItem>
                     <PaginationNext
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      className={`${currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"} min-w-[100px] justify-center`}
                     />
                   </PaginationItem>
                 </PaginationContent>
