@@ -9,6 +9,7 @@ import { WorkoutInsights } from "@/components/dashboard/WorkoutInsights";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { ProgressTracking } from "@/components/dashboard/ProgressTracking";
 import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface WorkoutLog {
   id: number;
@@ -27,6 +28,7 @@ export interface WorkoutLog {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const { data: workoutLogs } = useQuery({
     queryKey: ['workout_logs'],
@@ -51,7 +53,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-gray-50 to-gray-100">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h1 className="text-3xl font-bold">My Dashboard</h1>
@@ -63,23 +65,25 @@ export default function Dashboard() {
         {workoutLogs && <WorkoutInsights logs={workoutLogs} />}
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
+          <TabsList className={`grid w-full ${isMobile ? 'grid-cols-1 gap-2' : 'grid-cols-3'}`}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="progress">Progress Tracking</TabsTrigger>
             <TabsTrigger value="statistics">Exercise Statistics</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview">
-            {workoutLogs && <DashboardOverview workoutLogs={workoutLogs} />}
-          </TabsContent>
+          <div className="mt-6 relative z-10 bg-background">
+            <TabsContent value="overview" className="mt-0">
+              {workoutLogs && <DashboardOverview workoutLogs={workoutLogs} />}
+            </TabsContent>
 
-          <TabsContent value="progress">
-            {workoutLogs && <ProgressTracking workoutLogs={workoutLogs} />}
-          </TabsContent>
+            <TabsContent value="progress" className="mt-0">
+              {workoutLogs && <ProgressTracking workoutLogs={workoutLogs} />}
+            </TabsContent>
 
-          <TabsContent value="statistics">
-            {workoutLogs && <DashboardStatistics workoutLogs={workoutLogs} />}
-          </TabsContent>
+            <TabsContent value="statistics" className="mt-0">
+              {workoutLogs && <DashboardStatistics workoutLogs={workoutLogs} />}
+            </TabsContent>
+          </div>
         </Tabs>
       </div>
     </div>

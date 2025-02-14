@@ -80,19 +80,19 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background relative z-10">
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Key Metrics</h2>
         <div className="space-y-4">
           <div>
-            <p className="text-sm text-gray-500">Most Used Exercise</p>
+            <p className="text-sm text-muted-foreground">Most Used Exercise</p>
             <p className="text-2xl font-bold">{exerciseStats.mostUsed?.name}</p>
-            <p className="text-sm text-gray-500">{exerciseStats.mostUsed?.count} sets</p>
+            <p className="text-sm text-muted-foreground">{exerciseStats.mostUsed?.count} sets</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Most Weight Lifted</p>
+            <p className="text-sm text-muted-foreground">Most Weight Lifted</p>
             <p className="text-2xl font-bold">{exerciseStats.mostWeight?.name}</p>
-            <p className="text-sm text-gray-500">{exerciseStats.mostWeight?.weight} kg</p>
+            <p className="text-sm text-muted-foreground">{exerciseStats.mostWeight?.weight} kg</p>
           </div>
         </div>
       </Card>
