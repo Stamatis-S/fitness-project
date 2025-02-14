@@ -51,56 +51,36 @@ export function ExerciseEntryForm() {
     }
 
     try {
-      // Create an array to store valid workout logs
+      // Create an array to store workout logs
       const workoutLogs = [];
 
-      // Helper function to validate set data
-      const isValidSet = (kg: number | undefined, reps: number | undefined) => {
-        return kg !== undefined && kg > 0 && reps !== undefined && reps > 0;
+      // Helper function to check if a set has any data
+      const hasSetData = (kg: number | undefined, reps: number | undefined) => {
+        return (kg !== undefined && kg > 0) || (reps !== undefined && reps > 0);
       };
 
-      // Add sets that have both weight and reps
-      if (isValidSet(data.kg1, data.rep1)) {
-        workoutLogs.push({
-          workout_date: format(date, 'yyyy-MM-dd'),
-          exercise_id: useCustomExercise ? null : parseInt(data.exercise),
-          custom_exercise: useCustomExercise ? customExercise : null,
-          category: selectedCategory,
-          set_number: 1,
-          weight_kg: data.kg1,
-          reps: data.rep1,
-          user_id: session.user.id,
-        });
-      }
+      // Helper function to create a workout log entry
+      const createWorkoutLog = (setNumber: number, kg?: number, reps?: number) => ({
+        workout_date: format(date, 'yyyy-MM-dd'),
+        exercise_id: useCustomExercise ? null : parseInt(data.exercise),
+        custom_exercise: useCustomExercise ? customExercise : null,
+        category: selectedCategory,
+        set_number: setNumber,
+        weight_kg: kg && kg > 0 ? kg : null,
+        reps: reps && reps > 0 ? reps : null,
+        user_id: session.user.id,
+      });
 
-      if (isValidSet(data.kg2, data.rep2)) {
-        workoutLogs.push({
-          workout_date: format(date, 'yyyy-MM-dd'),
-          exercise_id: useCustomExercise ? null : parseInt(data.exercise),
-          custom_exercise: useCustomExercise ? customExercise : null,
-          category: selectedCategory,
-          set_number: 2,
-          weight_kg: data.kg2,
-          reps: data.rep2,
-          user_id: session.user.id,
-        });
-      }
+      // Always add all three sets, but with null values if not filled
+      workoutLogs.push(createWorkoutLog(1, data.kg1, data.rep1));
+      workoutLogs.push(createWorkoutLog(2, data.kg2, data.rep2));
+      workoutLogs.push(createWorkoutLog(3, data.kg3, data.rep3));
 
-      if (isValidSet(data.kg3, data.rep3)) {
-        workoutLogs.push({
-          workout_date: format(date, 'yyyy-MM-dd'),
-          exercise_id: useCustomExercise ? null : parseInt(data.exercise),
-          custom_exercise: useCustomExercise ? customExercise : null,
-          category: selectedCategory,
-          set_number: 3,
-          weight_kg: data.kg3,
-          reps: data.rep3,
-          user_id: session.user.id,
-        });
-      }
-
-      if (workoutLogs.length === 0) {
-        toast.error("Please fill in at least one set with weight and reps");
+      // Check if at least one set has data
+      if (!hasSetData(data.kg1, data.rep1) && 
+          !hasSetData(data.kg2, data.rep2) && 
+          !hasSetData(data.kg3, data.rep3)) {
+        toast.error("Please fill in at least one set with weight or reps");
         return;
       }
 
