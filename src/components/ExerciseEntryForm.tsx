@@ -27,7 +27,6 @@ import { useAuth } from "@/components/AuthProvider";
 
 interface ExerciseFormData {
   date: Date;
-  category: string;
   exercise: string;
   kg1: number;
   kg2: number;
@@ -79,8 +78,13 @@ export function ExerciseEntryForm() {
       return;
     }
 
+    if (!selectedCategory) {
+      toast.error("Please select an exercise category");
+      return;
+    }
+
     try {
-      const { error } = await supabase.from('workout_logs').insert([
+      const workoutLogs = [
         {
           workout_date: format(date, 'yyyy-MM-dd'),
           exercise_id: parseInt(data.exercise),
@@ -108,7 +112,11 @@ export function ExerciseEntryForm() {
           reps: data.rep3,
           user_id: session.user.id,
         },
-      ]);
+      ] as const;
+
+      const { error } = await supabase
+        .from('workout_logs')
+        .insert(workoutLogs);
 
       if (error) throw error;
       toast.success("Workout logged successfully!");
