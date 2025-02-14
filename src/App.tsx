@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import SavedExercises from "./pages/SavedExercises";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Index />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/saved-exercises"
+      element={
+        <ProtectedRoute>
+          <SavedExercises />
         </ProtectedRoute>
       }
     />
