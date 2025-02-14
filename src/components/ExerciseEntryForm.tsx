@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { CalendarIcon } from "lucide-react";
@@ -23,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ExerciseFormData {
   date: Date;
@@ -49,7 +49,7 @@ const exerciseCategories = [
 export function ExerciseEntryForm() {
   const [date, setDate] = useState<Date>(new Date());
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  
+  const { session } = useAuth();
   const { register, handleSubmit } = useForm<ExerciseFormData>();
 
   // Fetch exercises from Supabase
@@ -71,7 +71,11 @@ export function ExerciseEntryForm() {
   });
 
   const onSubmit = async (data: ExerciseFormData) => {
-    // Here we'll implement saving the workout data
+    if (!session?.user) {
+      toast.error("Please log in to save workouts");
+      return;
+    }
+
     try {
       const { error } = await supabase.from('workout_logs').insert([
         {
@@ -81,6 +85,7 @@ export function ExerciseEntryForm() {
           set_number: 1,
           weight_kg: data.kg1,
           reps: data.rep1,
+          user_id: session.user.id,
         },
         {
           workout_date: format(date, 'yyyy-MM-dd'),
@@ -89,6 +94,7 @@ export function ExerciseEntryForm() {
           set_number: 2,
           weight_kg: data.kg2,
           reps: data.rep2,
+          user_id: session.user.id,
         },
         {
           workout_date: format(date, 'yyyy-MM-dd'),
@@ -97,6 +103,7 @@ export function ExerciseEntryForm() {
           set_number: 3,
           weight_kg: data.kg3,
           reps: data.rep3,
+          user_id: session.user.id,
         },
       ]);
 

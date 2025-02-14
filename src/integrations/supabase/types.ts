@@ -30,6 +30,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
       workout_logs: {
         Row: {
           category: Database["public"]["Enums"]["exercise_category"]
@@ -39,6 +60,7 @@ export type Database = {
           id: number
           reps: number
           set_number: number
+          user_id: string | null
           weight_kg: number
           workout_date: string
         }
@@ -50,6 +72,7 @@ export type Database = {
           id?: number
           reps: number
           set_number: number
+          user_id?: string | null
           weight_kg: number
           workout_date?: string
         }
@@ -61,6 +84,7 @@ export type Database = {
           id?: number
           reps?: number
           set_number?: number
+          user_id?: string | null
           weight_kg?: number
           workout_date?: string
         }
@@ -70,6 +94,13 @@ export type Database = {
             columns: ["exercise_id"]
             isOneToOne: false
             referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
