@@ -19,10 +19,13 @@ const Index = () => {
         </div>
 
         <Tabs defaultValue="add" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="add">Add Exercise</TabsTrigger>
             <TabsTrigger value="view" onClick={() => navigate("/saved-exercises")}>
               View Saved Exercises
+            </TabsTrigger>
+            <TabsTrigger value="dashboard" onClick={() => navigate("/dashboard")}>
+              My Dashboard
             </TabsTrigger>
           </TabsList>
           <TabsContent value="add">

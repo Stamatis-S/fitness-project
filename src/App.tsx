@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import SavedExercises from "./pages/SavedExercises";
+import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <SavedExercises />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/dashboard"
+      element={
+        <ProtectedRoute>
+          <Dashboard />
         </ProtectedRoute>
       }
     />
