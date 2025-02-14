@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,36 +8,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UseFormRegister } from "react-hook-form";
 import { ExerciseFormData } from "./types";
-
-interface Exercise {
-  id: number;
-  name: string;
-}
+import { type ExerciseCategory } from "@/components/workout/CategorySelector";
 
 interface ExerciseSelectorProps {
-  exercises?: Exercise[];
-  isLoading: boolean;
-  register: UseFormRegister<ExerciseFormData>;
+  category: ExerciseCategory;
+  value: string;
+  onValueChange: (value: string) => void;
+  customExercise?: string;
   onCustomExerciseChange: (value: string) => void;
-  useCustomExercise: boolean;
-  onUseCustomExerciseChange: (value: boolean) => void;
 }
 
 export function ExerciseSelector({ 
-  exercises, 
-  isLoading, 
-  register,
+  category,
+  value,
+  onValueChange,
+  customExercise,
   onCustomExerciseChange,
-  useCustomExercise,
-  onUseCustomExerciseChange,
 }: ExerciseSelectorProps) {
+  const [useCustomExercise, setUseCustomExercise] = useState(value === "custom");
+
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
         <Label>Exercise Type</Label>
-        <Select onValueChange={(value) => onUseCustomExerciseChange(value === "custom")}>
+        <Select onValueChange={(value) => setUseCustomExercise(value === "custom")}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
@@ -53,27 +48,16 @@ export function ExerciseSelector({
           <Label>Custom Exercise Name</Label>
           <Input
             placeholder="Enter exercise name"
-            {...register("customExercise")}
+            value={customExercise}
             onChange={(e) => onCustomExerciseChange(e.target.value)}
           />
         </div>
       ) : (
         <div className="space-y-2">
           <Label>Exercise</Label>
-          <Select 
-            defaultValue=""
-            onValueChange={(value) => {
-              const event = {
-                target: {
-                  name: "exercise",
-                  value: value
-                }
-              };
-              register("exercise").onChange(event);
-            }}
-          >
+          <Select value={value} onValueChange={onValueChange}>
             <SelectTrigger>
-              <SelectValue placeholder={isLoading ? "Loading..." : "Select exercise"} />
+              <SelectValue placeholder="Select exercise" />
             </SelectTrigger>
             <SelectContent>
               {exercises?.map((exercise) => (
