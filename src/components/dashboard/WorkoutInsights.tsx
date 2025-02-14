@@ -94,7 +94,7 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
             <AlertCircle className="h-8 w-8 text-yellow-500" />
             <div>
               <h3 className="font-semibold">Workout Suggestion</h3>
-              <p>You haven't trained {insights.missingCategories[0].toLowerCase()} in a while!</p>
+              <p>You haven't trained {insights.missingCategories[0]} in a while!</p>
             </div>
           </div>
         </Card>
