@@ -99,7 +99,7 @@ export default function SavedExercises() {
                 <TableRow key={log.id}>
                   <TableCell>{format(new Date(log.workout_date), 'PP')}</TableCell>
                   <TableCell>{log.category}</TableCell>
-                  <TableCell>{log.exercises?.name}</TableCell>
+                  <TableCell>{log.custom_exercise || log.exercises?.name}</TableCell>
                   <TableCell>{log.set_number}</TableCell>
                   <TableCell>{log.weight_kg}</TableCell>
                   <TableCell>{log.reps}</TableCell>

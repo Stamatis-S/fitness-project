@@ -2,6 +2,7 @@
 export interface ExerciseFormData {
   date: Date;
   exercise: string;
+  customExercise?: string;
   kg1: number;
   kg2: number;
   kg3: number;

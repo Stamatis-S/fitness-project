@@ -17,6 +17,8 @@ import { ExerciseFormData } from "./workout/types";
 export function ExerciseEntryForm() {
   const [date, setDate] = useState<Date>(new Date());
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | "">("");
+  const [useCustomExercise, setUseCustomExercise] = useState(false);
+  const [customExercise, setCustomExercise] = useState("");
   const { session } = useAuth();
   const { register, handleSubmit } = useForm<ExerciseFormData>();
 
@@ -52,7 +54,8 @@ export function ExerciseEntryForm() {
       const workoutLogs = [
         {
           workout_date: format(date, 'yyyy-MM-dd'),
-          exercise_id: parseInt(data.exercise),
+          exercise_id: useCustomExercise ? null : parseInt(data.exercise),
+          custom_exercise: useCustomExercise ? customExercise : null,
           category: selectedCategory,
           set_number: 1,
           weight_kg: data.kg1,
@@ -61,7 +64,8 @@ export function ExerciseEntryForm() {
         },
         {
           workout_date: format(date, 'yyyy-MM-dd'),
-          exercise_id: parseInt(data.exercise),
+          exercise_id: useCustomExercise ? null : parseInt(data.exercise),
+          custom_exercise: useCustomExercise ? customExercise : null,
           category: selectedCategory,
           set_number: 2,
           weight_kg: data.kg2,
@@ -70,7 +74,8 @@ export function ExerciseEntryForm() {
         },
         {
           workout_date: format(date, 'yyyy-MM-dd'),
-          exercise_id: parseInt(data.exercise),
+          exercise_id: useCustomExercise ? null : parseInt(data.exercise),
+          custom_exercise: useCustomExercise ? customExercise : null,
           category: selectedCategory,
           set_number: 3,
           weight_kg: data.kg3,
@@ -100,6 +105,9 @@ export function ExerciseEntryForm() {
           exercises={exercises}
           isLoading={isLoading}
           register={register}
+          onCustomExerciseChange={setCustomExercise}
+          useCustomExercise={useCustomExercise}
+          onUseCustomExerciseChange={setUseCustomExercise}
         />
 
         <div className="grid grid-cols-2 gap-4">
