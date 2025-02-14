@@ -120,6 +120,7 @@ export type Database = {
         | "ΤΡΙΚΕΦΑΛΑ"
         | "ΩΜΟΙ"
         | "ΠΟΔΙΑ"
+        | "ΚΟΡΜΟΣ"
     }
     CompositeTypes: {
       [_ in never]: never
