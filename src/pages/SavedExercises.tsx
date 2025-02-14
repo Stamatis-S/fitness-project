@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Trash2, Search, Download } from "lucide-react";
+import { Trash2, Search, Download, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -30,6 +30,24 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface WorkoutLog {
   id: number;
@@ -54,6 +72,7 @@ export default function SavedExercises() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showInsights, setShowInsights] = useState(true);
 
   const { data: workoutLogs, refetch } = useQuery({
     queryKey: ['workout_logs'],
@@ -155,12 +174,48 @@ export default function SavedExercises() {
     document.body.removeChild(link);
   };
 
+  const prepareChartData = (logs: WorkoutLog[]) => {
+    const weightProgressData: { date: string; weight: number }[] = [];
+    const categoryDistribution: { category: string; count: number }[] = [];
+    const categoryMap = new Map<string, number>();
+
+    // Group logs by date and get max weight for each date
+    const dateMap = new Map<string, number>();
+    logs.forEach(log => {
+      const date = format(new Date(log.workout_date), 'PP');
+      if (log.weight_kg) {
+        const currentMax = dateMap.get(date) || 0;
+        dateMap.set(date, Math.max(currentMax, log.weight_kg));
+      }
+
+      // Count exercises by category
+      const count = categoryMap.get(log.category) || 0;
+      categoryMap.set(log.category, count + 1);
+    });
+
+    // Convert maps to arrays for charts
+    dateMap.forEach((weight, date) => {
+      weightProgressData.push({ date, weight });
+    });
+
+    categoryMap.forEach((count, category) => {
+      categoryDistribution.push({ category, count });
+    });
+
+    return {
+      weightProgress: weightProgressData.slice(-10), // Last 10 entries
+      categoryDistribution: categoryDistribution,
+    };
+  };
+
   const filteredLogs = filterLogs(workoutLogs);
   const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
   const paginatedLogs = filteredLogs.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  const chartData = prepareChartData(filteredLogs);
 
   return (
     <div className="min-h-screen p-8 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -177,6 +232,70 @@ export default function SavedExercises() {
             </Button>
           </div>
         </div>
+
+        <Collapsible
+          open={showInsights}
+          onOpenChange={setShowInsights}
+          className="bg-background rounded-lg shadow p-4"
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Workout Insights</h2>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <ChevronDown className={`h-4 w-4 transform ${showInsights ? 'rotate-180' : ''} transition-transform`} />
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          
+          <CollapsibleContent className="mt-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Weight Progress Over Time</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData.weightProgress}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} />
+                      <YAxis label={{ value: 'Weight (KG)', angle: -90, position: 'insideLeft' }} />
+                      <Tooltip />
+                      <Legend />
+                      <Line 
+                        type="monotone" 
+                        dataKey="weight" 
+                        stroke="#2563eb" 
+                        name="Max Weight"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Exercise Distribution by Category</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData.categoryDistribution}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="category" angle={-45} textAnchor="end" height={60} />
+                      <YAxis label={{ value: 'Number of Sets', angle: -90, position: 'insideLeft' }} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar 
+                        dataKey="count" 
+                        fill="#2563eb" 
+                        name="Number of Sets"
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
 
         <div className="flex flex-col md:flex-row gap-4 bg-background p-4 rounded-lg shadow">
           <div className="relative flex-1">
