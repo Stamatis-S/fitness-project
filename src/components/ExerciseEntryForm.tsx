@@ -51,8 +51,17 @@ export function ExerciseEntryForm() {
     }
 
     try {
-      const workoutLogs = [
-        {
+      // Create an array to store valid workout logs
+      const workoutLogs = [];
+
+      // Helper function to validate set data
+      const isValidSet = (kg: number | undefined, reps: number | undefined) => {
+        return kg !== undefined && kg > 0 && reps !== undefined && reps > 0;
+      };
+
+      // Add sets that have both weight and reps
+      if (isValidSet(data.kg1, data.rep1)) {
+        workoutLogs.push({
           workout_date: format(date, 'yyyy-MM-dd'),
           exercise_id: useCustomExercise ? null : parseInt(data.exercise),
           custom_exercise: useCustomExercise ? customExercise : null,
@@ -61,8 +70,11 @@ export function ExerciseEntryForm() {
           weight_kg: data.kg1,
           reps: data.rep1,
           user_id: session.user.id,
-        },
-        {
+        });
+      }
+
+      if (isValidSet(data.kg2, data.rep2)) {
+        workoutLogs.push({
           workout_date: format(date, 'yyyy-MM-dd'),
           exercise_id: useCustomExercise ? null : parseInt(data.exercise),
           custom_exercise: useCustomExercise ? customExercise : null,
@@ -71,8 +83,11 @@ export function ExerciseEntryForm() {
           weight_kg: data.kg2,
           reps: data.rep2,
           user_id: session.user.id,
-        },
-        {
+        });
+      }
+
+      if (isValidSet(data.kg3, data.rep3)) {
+        workoutLogs.push({
           workout_date: format(date, 'yyyy-MM-dd'),
           exercise_id: useCustomExercise ? null : parseInt(data.exercise),
           custom_exercise: useCustomExercise ? customExercise : null,
@@ -81,8 +96,13 @@ export function ExerciseEntryForm() {
           weight_kg: data.kg3,
           reps: data.rep3,
           user_id: session.user.id,
-        }
-      ];
+        });
+      }
+
+      if (workoutLogs.length === 0) {
+        toast.error("Please fill in at least one set with weight and reps");
+        return;
+      }
 
       const { error } = await supabase
         .from('workout_logs')
