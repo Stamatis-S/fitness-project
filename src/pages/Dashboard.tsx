@@ -64,27 +64,31 @@ export default function Dashboard() {
 
         {workoutLogs && <WorkoutInsights logs={workoutLogs} />}
 
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className={`grid w-full ${isMobile ? 'grid-cols-1 gap-2' : 'grid-cols-3'}`}>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="progress">Progress Tracking</TabsTrigger>
-            <TabsTrigger value="statistics">Exercise Statistics</TabsTrigger>
-          </TabsList>
+        <div className="relative">
+          <Tabs defaultValue="overview" className="w-full">
+            <div className={`${isMobile ? 'sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-2' : ''}`}>
+              <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3 gap-1' : 'grid-cols-3'}`}>
+                <TabsTrigger value="overview" className={isMobile ? 'text-sm py-1.5' : ''}>Overview</TabsTrigger>
+                <TabsTrigger value="progress" className={isMobile ? 'text-sm py-1.5' : ''}>Progress</TabsTrigger>
+                <TabsTrigger value="statistics" className={isMobile ? 'text-sm py-1.5' : ''}>Statistics</TabsTrigger>
+              </TabsList>
+            </div>
 
-          <div className="mt-6 relative z-10 bg-background">
-            <TabsContent value="overview" className="mt-0">
-              {workoutLogs && <DashboardOverview workoutLogs={workoutLogs} />}
-            </TabsContent>
+            <div className="mt-6">
+              <TabsContent value="overview" className="m-0">
+                {workoutLogs && <DashboardOverview workoutLogs={workoutLogs} />}
+              </TabsContent>
 
-            <TabsContent value="progress" className="mt-0">
-              {workoutLogs && <ProgressTracking workoutLogs={workoutLogs} />}
-            </TabsContent>
+              <TabsContent value="progress" className="m-0">
+                {workoutLogs && <ProgressTracking workoutLogs={workoutLogs} />}
+              </TabsContent>
 
-            <TabsContent value="statistics" className="mt-0">
-              {workoutLogs && <DashboardStatistics workoutLogs={workoutLogs} />}
-            </TabsContent>
-          </div>
-        </Tabs>
+              <TabsContent value="statistics" className="m-0">
+                {workoutLogs && <DashboardStatistics workoutLogs={workoutLogs} />}
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

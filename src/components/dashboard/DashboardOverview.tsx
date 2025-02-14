@@ -80,7 +80,7 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-background relative z-10">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Key Metrics</h2>
         <div className="space-y-4">
