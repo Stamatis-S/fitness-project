@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -110,29 +109,67 @@ export default function SavedExercises() {
     });
   };
 
+  const sanitizeCSVField = (field: string | number | null): string => {
+    if (field === null || field === undefined) return '';
+    
+    const stringField = String(field);
+    if (/[",\n\r]/.test(stringField)) {
+      return `"${stringField.replace(/"/g, '""')}"`;
+    }
+    return stringField;
+  };
+
   const exportToCSV = () => {
     if (!filteredLogs.length) {
       toast.error("No data to export");
       return;
     }
 
-    const csvContent = [
-      "Date,Category,Exercise,Set,Weight (KG),Reps",
-      ...filteredLogs.map(log => {
-        const date = format(new Date(log.workout_date), 'MMM dd, yyyy');
-        const exercise = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
-        return `${date},${log.category},${exercise},${log.set_number},${log.weight_kg || ''},${log.reps || ''}`;
-      })
-    ].join("\n");
+    try {
+      const csvRows = [
+        "Date,Category,Exercise,Set,Weight (KG),Reps"
+      ];
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `workout-logs-${format(new Date(), 'yyyy-MM-dd')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      filteredLogs.forEach(log => {
+        const date = format(new Date(log.workout_date), 'yyyy-MM-dd');
+        const exercise = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
+        
+        const row = [
+          sanitizeCSVField(date),
+          sanitizeCSVField(log.category),
+          sanitizeCSVField(exercise),
+          sanitizeCSVField(log.set_number),
+          sanitizeCSVField(log.weight_kg),
+          sanitizeCSVField(log.reps)
+        ].join(',');
+        
+        csvRows.push(row);
+      });
+
+      const BOM = '\uFEFF';
+      const csvContent = BOM + csvRows.join('\n');
+
+      const blob = new Blob([csvContent], { 
+        type: 'text/csv;charset=utf-8'
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const filename = `workout_logs_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("CSV file exported successfully");
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      toast.error("Failed to export CSV file");
+    }
   };
 
   const filteredLogs = filterLogs(workoutLogs);
