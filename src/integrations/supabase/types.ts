@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      exercise_difficulty: {
+        Row: {
+          created_at: string
+          difficulty_factor: number
+          exercise_name: string
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          difficulty_factor?: number
+          exercise_name: string
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          difficulty_factor?: number
+          exercise_name?: string
+          id?: number
+        }
+        Relationships: []
+      }
       exercises: {
         Row: {
           category: Database["public"]["Enums"]["exercise_category"]
@@ -33,19 +54,28 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          fitness_level: string | null
+          fitness_score: number | null
           id: string
+          last_score_update: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
           created_at?: string
+          fitness_level?: string | null
+          fitness_score?: number | null
           id: string
+          last_score_update?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
           created_at?: string
+          fitness_level?: string | null
+          fitness_score?: number | null
           id?: string
+          last_score_update?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -110,7 +140,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_fitness_score: {
+        Args: {
+          user_id_param: string
+        }
+        Returns: number
+      }
     }
     Enums: {
       exercise_category:
