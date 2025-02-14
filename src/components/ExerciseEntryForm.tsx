@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Popover,
   PopoverContent,
@@ -33,22 +36,15 @@ interface ExerciseFormData {
   rep3: number;
 }
 
+// Define the exercise categories from our database enum
 const exerciseCategories = [
-  { id: "K1", name: "ΣΤΗΘΟΣ" },
-  { id: "K2", name: "ΠΛΑΤΗ" },
-  { id: "K3", name: "ΔΙΚΕΦΑΛΑ" },
-  { id: "K4", name: "ΤΡΙΚΕΦΑΛΑ" },
-  { id: "K5", name: "ΩΜΟΙ" },
-  { id: "K6", name: "ΠΟΔΙΑ" },
-];
-
-const exercises = [
-  { id: 1, name: "DEADLIFT", categoryId: "K6" },
-  { id: 2, name: "LEG CURL", categoryId: "K6" },
-  { id: 3, name: "LEG EXTENSION", categoryId: "K6" },
-  { id: 4, name: "PEC FLY", categoryId: "K1" },
-  // ... add more exercises from your data
-];
+  "ΣΤΗΘΟΣ",
+  "ΠΛΑΤΗ",
+  "ΔΙΚΕΦΑΛΑ",
+  "ΤΡΙΚΕΦΑΛΑ",
+  "ΩΜΟΙ",
+  "ΠΟΔΙΑ",
+] as const;
 
 export function ExerciseEntryForm() {
   const [date, setDate] = useState<Date>(new Date());
@@ -56,13 +52,60 @@ export function ExerciseEntryForm() {
   
   const { register, handleSubmit } = useForm<ExerciseFormData>();
 
-  const filteredExercises = exercises.filter(
-    (exercise) => exercise.categoryId === selectedCategory
-  );
+  // Fetch exercises from Supabase
+  const { data: exercises, isLoading } = useQuery({
+    queryKey: ['exercises', selectedCategory],
+    queryFn: async () => {
+      if (!selectedCategory) return [];
+      const { data, error } = await supabase
+        .from('exercises')
+        .select('*')
+        .eq('category', selectedCategory);
 
-  const onSubmit = (data: ExerciseFormData) => {
-    console.log(data);
-    // Here you would integrate with your backend to save the data
+      if (error) {
+        toast.error("Failed to load exercises");
+        throw error;
+      }
+      return data || [];
+    },
+  });
+
+  const onSubmit = async (data: ExerciseFormData) => {
+    // Here we'll implement saving the workout data
+    try {
+      const { error } = await supabase.from('workout_logs').insert([
+        {
+          workout_date: format(date, 'yyyy-MM-dd'),
+          exercise_id: parseInt(data.exercise),
+          category: selectedCategory as any,
+          set_number: 1,
+          weight_kg: data.kg1,
+          reps: data.rep1,
+        },
+        {
+          workout_date: format(date, 'yyyy-MM-dd'),
+          exercise_id: parseInt(data.exercise),
+          category: selectedCategory as any,
+          set_number: 2,
+          weight_kg: data.kg2,
+          reps: data.rep2,
+        },
+        {
+          workout_date: format(date, 'yyyy-MM-dd'),
+          exercise_id: parseInt(data.exercise),
+          category: selectedCategory as any,
+          set_number: 3,
+          weight_kg: data.kg3,
+          reps: data.rep3,
+        },
+      ]);
+
+      if (error) throw error;
+      toast.success("Workout logged successfully!");
+    } catch (error) {
+      toast.error("Failed to save workout");
+      console.error("Error saving workout:", error);
+    }
   };
 
   return (
@@ -99,8 +142,8 @@ export function ExerciseEntryForm() {
             </SelectTrigger>
             <SelectContent>
               {exerciseCategories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
+                <SelectItem key={category} value={category}>
+                  {category}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -109,12 +152,12 @@ export function ExerciseEntryForm() {
 
         <div className="space-y-2">
           <Label>Exercise</Label>
-          <Select>
+          <Select {...register("exercise")}>
             <SelectTrigger>
-              <SelectValue placeholder="Select exercise" />
+              <SelectValue placeholder={isLoading ? "Loading..." : "Select exercise"} />
             </SelectTrigger>
             <SelectContent>
-              {filteredExercises.map((exercise) => (
+              {exercises?.map((exercise) => (
                 <SelectItem key={exercise.id} value={exercise.id.toString()}>
                   {exercise.name}
                 </SelectItem>
