@@ -41,6 +41,26 @@ export function ExerciseEntryForm() {
       return;
     }
 
+    // Additional validation
+    if (!data.exercise) {
+      toast.error("Please select an exercise");
+      return;
+    }
+
+    if (data.exercise === "custom" && !data.customExercise) {
+      toast.error("Please enter a custom exercise name");
+      return;
+    }
+
+    const hasInvalidSets = data.sets.some(set => 
+      !set.weight || !set.reps || set.weight < 0 || set.reps < 0
+    );
+
+    if (hasInvalidSets) {
+      toast.error("Please enter valid weight and reps for all sets");
+      return;
+    }
+
     try {
       const isCustomExercise = data.exercise === "custom";
       

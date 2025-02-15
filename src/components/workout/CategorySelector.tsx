@@ -27,7 +27,11 @@ export function CategorySelector({ onCategoryChange }: CategorySelectorProps) {
         {exerciseCategories.map((category) => (
           <Button
             key={category}
-            onClick={() => onCategoryChange(category)}
+            onClick={(e) => {
+              e.preventDefault(); // Prevent form submission
+              onCategoryChange(category);
+            }}
+            type="button" // Explicitly set type to button
             variant="outline"
             className="h-12 text-base hover:bg-primary hover:text-primary-foreground transition-colors"
           >
