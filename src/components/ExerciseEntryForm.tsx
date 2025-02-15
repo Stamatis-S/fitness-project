@@ -96,6 +96,10 @@ export function ExerciseEntryForm() {
     }
   };
 
+  const handleMuscleSelect = (category: ExerciseCategory) => {
+    setSelectedCategory(category);
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="p-4 md:p-6">
@@ -182,7 +186,10 @@ export function ExerciseEntryForm() {
       </Card>
 
       <Card className="p-4 md:p-6 lg:sticky lg:top-8">
-        <MuscleView selectedCategory={selectedCategory} />
+        <MuscleView 
+          selectedCategory={selectedCategory} 
+          onMuscleSelect={handleMuscleSelect}
+        />
       </Card>
     </div>
   );

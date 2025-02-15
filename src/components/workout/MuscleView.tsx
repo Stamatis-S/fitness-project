@@ -1,107 +1,173 @@
 
+import { useEffect, useRef, useState } from "react";
 import { EXERCISE_CATEGORIES, type ExerciseCategory } from "@/lib/constants";
 import { motion } from "framer-motion";
+import * as THREE from "three";
 import { cn } from "@/lib/utils";
 
 interface MuscleViewProps {
   selectedCategory: ExerciseCategory | null;
+  onMuscleSelect?: (category: ExerciseCategory) => void;
 }
 
-export function MuscleView({ selectedCategory }: MuscleViewProps) {
-  return (
-    <div className="relative w-full h-full min-h-[400px] md:min-h-[600px] flex items-center justify-center">
-      <svg
-        viewBox="0 0 400 600"
-        className="w-full h-full max-w-[300px] md:max-w-[400px]"
-        style={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' }}
-      >
-        {/* Front view muscles */}
+export function MuscleView({ selectedCategory, onMuscleSelect }: MuscleViewProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const muscleGroupsRef = useRef<{ [key: string]: THREE.Mesh }>({}); 
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Initialize Three.js scene
+    const scene = new THREE.Scene();
+    sceneRef.current = scene;
+    scene.background = new THREE.Color(0xf5f5f5);
+
+    // Set up camera
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      containerRef.current.clientWidth / containerRef.current.clientHeight,
+      0.1,
+      1000
+    );
+    cameraRef.current = camera;
+    camera.position.z = 5;
+
+    // Set up renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    rendererRef.current = renderer;
+    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+    containerRef.current.appendChild(renderer.domElement);
+
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(0, 1, 1);
+    scene.add(directionalLight);
+
+    // Create muscle groups
+    const createMuscleGroup = (name: ExerciseCategory, geometry: THREE.BufferGeometry, position: THREE.Vector3) => {
+      const material = new THREE.MeshPhongMaterial({
+        color: 0xcccccc,
+        transparent: true,
+        opacity: 0.8,
+      });
+
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.copy(position);
+      mesh.userData.category = name;
+      scene.add(mesh);
+      muscleGroupsRef.current[name] = mesh;
+
+      // Add click event handling
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+
+      renderer.domElement.addEventListener('click', (event) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObject(mesh);
+
+        if (intersects.length > 0 && onMuscleSelect) {
+          onMuscleSelect(name);
+        }
+      });
+    };
+
+    // Create simplified but more anatomically correct muscle geometries
+    const chestGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+    createMuscleGroup("ΣΤΗΘΟΣ", chestGeometry, new THREE.Vector3(0, 1, 0));
+
+    const backGeometry = new THREE.BoxGeometry(1, 1.5, 0.2);
+    createMuscleGroup("ΠΛΑΤΗ", backGeometry, new THREE.Vector3(0, 0, -0.5));
+
+    const bicepsGeometry = new THREE.CylinderGeometry(0.2, 0.15, 1);
+    createMuscleGroup("ΔΙΚΕΦΑΛΑ", bicepsGeometry, new THREE.Vector3(1, 0.5, 0));
+
+    const shouldersGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+    createMuscleGroup("ΩΜΟΙ", shouldersGeometry, new THREE.Vector3(0.8, 1.2, 0));
+
+    const legsGeometry = new THREE.CylinderGeometry(0.3, 0.2, 2);
+    createMuscleGroup("ΠΟΔΙΑ", legsGeometry, new THREE.Vector3(0, -1.5, 0));
+
+    const coreGeometry = new THREE.CylinderGeometry(0.4, 0.3, 1);
+    createMuscleGroup("ΚΟΡΜΟΣ", coreGeometry, new THREE.Vector3(0, -0.2, 0));
+
+    // Animation loop
+    const animate = () => {
+      requestAnimationFrame(animate);
+      
+      if (sceneRef.current && cameraRef.current && rendererRef.current) {
+        // Gentle rotation
+        sceneRef.current.rotation.y += 0.001;
         
-        {/* Chest (ΣΤΗΘΟΣ) */}
-        <path
-          d="M160,140 C180,130 220,130 240,140 C250,145 250,165 240,175 C220,185 180,185 160,175 C150,165 150,145 160,140"
-          className={cn(
-            "transition-colors duration-300",
-            selectedCategory === "ΣΤΗΘΟΣ" 
-              ? "fill-red-500 stroke-red-600" 
-              : "fill-gray-200 stroke-gray-300 dark:fill-gray-700 dark:stroke-gray-600"
-          )}
-          strokeWidth="2"
-        />
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
+      }
+    };
 
-        {/* Shoulders (ΩΜΟΙ) */}
-        <path
-          d="M140,130 C130,125 120,135 115,145 C110,155 115,165 125,170 M260,130 C270,125 280,135 285,145 C290,155 285,165 275,170"
-          className={cn(
-            "transition-colors duration-300",
-            selectedCategory === "ΩΜΟΙ"
-              ? "stroke-green-500 stroke-[3]"
-              : "stroke-gray-300 dark:stroke-gray-600"
-          )}
-          fill="none"
-          strokeWidth="2"
-        />
+    animate();
+    setIsLoading(false);
 
-        {/* Arms (ΔΙΚΕΦΑΛΑ) */}
-        <path
-          d="M110,180 C100,200 95,230 100,250 M290,180 C300,200 305,230 300,250"
-          className={cn(
-            "transition-colors duration-300",
-            selectedCategory === "ΔΙΚΕΦΑΛΑ"
-              ? "stroke-purple-500 stroke-[3]"
-              : "stroke-gray-300 dark:stroke-gray-600"
-          )}
-          fill="none"
-          strokeWidth="2"
-        />
+    // Handle window resize
+    const handleResize = () => {
+      if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
 
-        {/* Back (ΠΛΑΤΗ) */}
-        <path
-          d="M160,200 C180,190 220,190 240,200 C250,220 250,260 240,280 C220,290 180,290 160,280 C150,260 150,220 160,200"
-          className={cn(
-            "transition-colors duration-300",
-            selectedCategory === "ΠΛΑΤΗ"
-              ? "fill-blue-500 stroke-blue-600"
-              : "fill-gray-200 stroke-gray-300 dark:fill-gray-700 dark:stroke-gray-600"
-          )}
-          strokeWidth="2"
-        />
+      const width = containerRef.current.clientWidth;
+      const height = containerRef.current.clientHeight;
 
-        {/* Legs (ΠΟΔΙΑ) */}
-        <path
-          d="M160,300 C180,290 220,290 240,300 L250,400 C240,410 160,410 150,400 Z"
-          className={cn(
-            "transition-colors duration-300",
-            selectedCategory === "ΠΟΔΙΑ"
-              ? "fill-yellow-500 stroke-yellow-600"
-              : "fill-gray-200 stroke-gray-300 dark:fill-gray-700 dark:stroke-gray-600"
-          )}
-          strokeWidth="2"
-        />
+      cameraRef.current.aspect = width / height;
+      cameraRef.current.updateProjectionMatrix();
+      rendererRef.current.setSize(width, height);
+    };
 
-        {/* Core (ΚΟΡΜΟΣ) */}
-        <path
-          d="M180,220 C200,215 220,220 230,230 C220,260 180,260 170,230 Z"
-          className={cn(
-            "transition-colors duration-300",
-            selectedCategory === "ΚΟΡΜΟΣ"
-              ? "fill-pink-500 stroke-pink-600"
-              : "fill-gray-200 stroke-gray-300 dark:fill-gray-700 dark:stroke-gray-600"
-          )}
-          strokeWidth="2"
-        />
+    window.addEventListener('resize', handleResize);
 
-        {/* Body outline */}
-        <path
-          d="M150,100 C200,90 250,100 280,130 C290,150 290,170 285,190
-             C280,220 275,250 280,280 C285,320 290,360 280,400
-             C270,420 230,430 200,430 C170,430 130,420 120,400
-             C110,360 115,320 120,280 C125,250 120,220 115,190
-             C110,170 110,150 120,130 C150,100 150,100 150,100"
-          className="fill-none stroke-gray-400 dark:stroke-gray-500"
-          strokeWidth="1"
-        />
-      </svg>
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (rendererRef.current && containerRef.current) {
+        containerRef.current.removeChild(rendererRef.current.domElement);
+        rendererRef.current.dispose();
+      }
+    };
+  }, [onMuscleSelect]);
+
+  // Update muscle colors when category is selected
+  useEffect(() => {
+    if (!selectedCategory || !muscleGroupsRef.current) return;
+
+    Object.entries(muscleGroupsRef.current).forEach(([category, mesh]) => {
+      const material = mesh.material as THREE.MeshPhongMaterial;
+      
+      if (category === selectedCategory) {
+        const categoryColor = new THREE.Color(EXERCISE_CATEGORIES[category as ExerciseCategory].color);
+        material.color = categoryColor;
+        material.opacity = 1;
+      } else {
+        material.color = new THREE.Color(0xcccccc);
+        material.opacity = 0.3;
+      }
+    });
+  }, [selectedCategory]);
+
+  return (
+    <div className="relative w-full h-full min-h-[400px] md:min-h-[600px]">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="text-lg font-medium">Loading 3D model...</div>
+        </div>
+      )}
+      <div 
+        ref={containerRef} 
+        className="w-full h-full"
+      />
       {selectedCategory && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
