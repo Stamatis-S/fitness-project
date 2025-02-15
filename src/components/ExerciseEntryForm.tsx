@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,7 +6,6 @@ import { ExerciseSelector } from "@/components/workout/ExerciseSelector";
 import { SetInput } from "@/components/workout/SetInput";
 import { DateSelector } from "@/components/workout/DateSelector";
 import { CategorySelector } from "@/components/workout/CategorySelector";
-import { MuscleView } from "@/components/workout/MuscleView";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { PlusCircle } from "lucide-react";
@@ -43,7 +43,6 @@ export function ExerciseEntryForm() {
       return;
     }
 
-    // Additional validation
     if (!data.exercise) {
       toast.error("Please select an exercise");
       return;
@@ -96,101 +95,88 @@ export function ExerciseEntryForm() {
     }
   };
 
-  const handleMuscleSelect = (category: ExerciseCategory) => {
-    setSelectedCategory(category);
-  };
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card className="p-4 md:p-6">
-        <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <DateSelector 
-                date={methods.watch("date")} 
-                onDateChange={(date) => methods.setValue("date", date)} 
-              />
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <CategorySelector 
-                onCategoryChange={setSelectedCategory}
-                selectedCategory={selectedCategory}
-              />
-            </motion.div>
-            
-            <AnimatePresence>
-              {selectedCategory && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                >
-                  <ScrollArea className="h-[300px] rounded-md border p-4">
-                    <ExerciseSelector 
-                      category={selectedCategory}
-                      value={methods.watch("exercise")}
-                      onValueChange={(value) => methods.setValue("exercise", value)}
-                      customExercise={methods.watch("customExercise")}
-                      onCustomExerciseChange={(value) => methods.setValue("customExercise", value)}
-                    />
-                  </ScrollArea>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="space-y-4">
-              <AnimatePresence>
-                {fields.map((field, index) => (
-                  <SetInput
-                    key={field.id}
-                    index={index}
-                    onRemove={remove}
-                  />
-                ))}
-              </AnimatePresence>
-              
+    <Card className="max-w-2xl mx-auto p-4 md:p-6">
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <DateSelector 
+              date={methods.watch("date")} 
+              onDateChange={(date) => methods.setValue("date", date)} 
+            />
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <CategorySelector 
+              onCategoryChange={setSelectedCategory}
+              selectedCategory={selectedCategory}
+            />
+          </motion.div>
+          
+          <AnimatePresence>
+            {selectedCategory && (
               <motion.div
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
               >
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full h-12"
-                  onClick={() => append({ weight: 0, reps: 0 })}
-                >
-                  <PlusCircle className="h-5 w-5 mr-2" />
-                  Add Set
-                </Button>
+                <ScrollArea className="h-[300px] rounded-md border p-4">
+                  <ExerciseSelector 
+                    category={selectedCategory}
+                    value={methods.watch("exercise")}
+                    onValueChange={(value) => methods.setValue("exercise", value)}
+                    customExercise={methods.watch("customExercise")}
+                    onCustomExerciseChange={(value) => methods.setValue("customExercise", value)}
+                  />
+                </ScrollArea>
               </motion.div>
-            </div>
+            )}
+          </AnimatePresence>
 
+          <div className="space-y-4">
+            <AnimatePresence>
+              {fields.map((field, index) => (
+                <SetInput
+                  key={field.id}
+                  index={index}
+                  onRemove={remove}
+                />
+              ))}
+            </AnimatePresence>
+            
             <motion.div
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
             >
-              <Button type="submit" className="w-full h-12 text-lg">
-                Log Exercise
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-12"
+                onClick={() => append({ weight: 0, reps: 0 })}
+              >
+                <PlusCircle className="h-5 w-5 mr-2" />
+                Add Set
               </Button>
             </motion.div>
-          </form>
-        </FormProvider>
-      </Card>
+          </div>
 
-      <Card className="p-4 md:p-6 lg:sticky lg:top-8">
-        <MuscleView 
-          selectedCategory={selectedCategory} 
-          onMuscleSelect={handleMuscleSelect}
-        />
-      </Card>
-    </div>
+          <motion.div
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <Button type="submit" className="w-full h-12 text-lg">
+              Log Exercise
+            </Button>
+          </motion.div>
+        </form>
+      </FormProvider>
+    </Card>
   );
 }
