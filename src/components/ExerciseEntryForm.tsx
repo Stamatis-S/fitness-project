@@ -5,8 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { ExerciseSelector } from "@/components/workout/ExerciseSelector";
 import { SetInput } from "@/components/workout/SetInput";
 import { DateSelector } from "@/components/workout/DateSelector";
-import { CategorySelector, type ExerciseCategory } from "@/components/workout/CategorySelector";
+import { CategorySelector } from "@/components/workout/CategorySelector";
+import { MuscleMap } from "@/components/workout/MuscleMap";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { PlusCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -14,6 +16,7 @@ import { ExerciseFormData } from "@/components/workout/types";
 import { useAuth } from "@/components/AuthProvider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnimatePresence, motion } from "framer-motion";
+import type { ExerciseCategory } from "@/lib/constants";
 
 export function ExerciseEntryForm() {
   const { session } = useAuth();
@@ -109,16 +112,24 @@ export function ExerciseEntryForm() {
             />
           </motion.div>
           
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <CategorySelector 
-              onCategoryChange={(category) => setSelectedCategory(category)}
-              selectedCategory={selectedCategory}
-            />
-          </motion.div>
+          <Tabs defaultValue="categories">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="categories">Categories</TabsTrigger>
+              <TabsTrigger value="muscle-map">Muscle Map</TabsTrigger>
+            </TabsList>
+            <TabsContent value="categories">
+              <CategorySelector 
+                onCategoryChange={setSelectedCategory}
+                selectedCategory={selectedCategory}
+              />
+            </TabsContent>
+            <TabsContent value="muscle-map">
+              <MuscleMap
+                onMuscleSelect={setSelectedCategory}
+                selectedCategory={selectedCategory}
+              />
+            </TabsContent>
+          </Tabs>
           
           <AnimatePresence>
             {selectedCategory && (

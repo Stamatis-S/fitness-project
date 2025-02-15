@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import {
   PieChart,
@@ -9,19 +8,7 @@ import {
   Legend
 } from "recharts";
 import type { WorkoutLog } from "@/pages/Dashboard";
-
-const COLORS = [
-  "#8884d8",
-  "#82ca9d",
-  "#ffc658",
-  "#ff7c43",
-  "#f95d6a",
-  "#665191",
-  "#2f4b7c",
-  "#a05195",
-  "#d45087",
-  "#f95d6a",
-];
+import { EXERCISE_CATEGORIES } from "@/lib/constants";
 
 interface DashboardOverviewProps {
   workoutLogs: WorkoutLog[];
@@ -49,7 +36,6 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
     return acc;
   }, [] as CategoryData[]);
 
-  // Calculate exercise stats
   const exerciseCounts = new Map<string, number>();
   const exerciseMaxWeights = new Map<string, number>();
 
@@ -112,8 +98,11 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
                 outerRadius={80}
                 label={({ name, percentage }) => `${name} (${percentage}%)`}
               >
-                {categoryDistribution.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                {categoryDistribution.map((entry) => (
+                  <Cell 
+                    key={entry.name} 
+                    fill={EXERCISE_CATEGORIES[entry.name as keyof typeof EXERCISE_CATEGORIES].color}
+                  />
                 ))}
               </Pie>
               <Tooltip />
