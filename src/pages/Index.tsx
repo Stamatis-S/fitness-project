@@ -37,7 +37,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-background to-muted">
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
           <div className="text-left space-y-1">
             <h1 className="text-2xl font-bold tracking-tight">
