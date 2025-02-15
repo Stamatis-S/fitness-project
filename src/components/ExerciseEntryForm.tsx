@@ -11,8 +11,10 @@ import { toast } from "sonner";
 import { PlusCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ExerciseFormData } from "@/components/workout/types";
+import { useAuth } from "@/components/AuthProvider";
 
 export function ExerciseEntryForm() {
+  const { session } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
   const methods = useForm<ExerciseFormData>({
     defaultValues: {
@@ -33,6 +35,11 @@ export function ExerciseEntryForm() {
       return;
     }
 
+    if (!session?.user?.id) {
+      toast.error("Please log in to save exercises");
+      return;
+    }
+
     try {
       const isCustomExercise = data.exercise === "custom";
       
@@ -43,7 +50,8 @@ export function ExerciseEntryForm() {
         custom_exercise: isCustomExercise ? data.customExercise : null,
         set_number: index + 1,
         weight_kg: set.weight,
-        reps: set.reps
+        reps: set.reps,
+        user_id: session.user.id
       }));
 
       const { error } = await supabase
