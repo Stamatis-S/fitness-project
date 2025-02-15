@@ -4,10 +4,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ExerciseFormData } from "./types";
-import { type ExerciseCategory } from "@/components/workout/CategorySelector";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import type { ExerciseCategory } from "@/lib/constants";
 
 interface Exercise {
   id: number;
