@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { ExerciseFormData } from "@/components/workout/types";
 import { useAuth } from "@/components/AuthProvider";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AnimatePresence, motion } from "framer-motion";
 
 export function ExerciseEntryForm() {
   const { session } = useAuth();
@@ -98,50 +99,82 @@ export function ExerciseEntryForm() {
     <Card className="p-4 md:p-6">
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
-          <DateSelector 
-            date={methods.watch("date")} 
-            onDateChange={(date) => methods.setValue("date", date)} 
-          />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <DateSelector 
+              date={methods.watch("date")} 
+              onDateChange={(date) => methods.setValue("date", date)} 
+            />
+          </motion.div>
           
-          <CategorySelector 
-            onCategoryChange={(category) => setSelectedCategory(category)} 
-          />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <CategorySelector 
+              onCategoryChange={(category) => setSelectedCategory(category)}
+              selectedCategory={selectedCategory}
+            />
+          </motion.div>
           
-          {selectedCategory && (
-            <ScrollArea className="h-[300px] rounded-md border p-4">
-              <ExerciseSelector 
-                category={selectedCategory}
-                value={methods.watch("exercise")}
-                onValueChange={(value) => methods.setValue("exercise", value)}
-                customExercise={methods.watch("customExercise")}
-                onCustomExerciseChange={(value) => methods.setValue("customExercise", value)}
-              />
-            </ScrollArea>
-          )}
+          <AnimatePresence>
+            {selectedCategory && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <ScrollArea className="h-[300px] rounded-md border p-4">
+                  <ExerciseSelector 
+                    category={selectedCategory}
+                    value={methods.watch("exercise")}
+                    onValueChange={(value) => methods.setValue("exercise", value)}
+                    customExercise={methods.watch("customExercise")}
+                    onCustomExerciseChange={(value) => methods.setValue("customExercise", value)}
+                  />
+                </ScrollArea>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="space-y-4">
-            {fields.map((field, index) => (
-              <SetInput
-                key={field.id}
-                index={index}
-                onRemove={remove}
-              />
-            ))}
+            <AnimatePresence>
+              {fields.map((field, index) => (
+                <SetInput
+                  key={field.id}
+                  index={index}
+                  onRemove={remove}
+                />
+              ))}
+            </AnimatePresence>
             
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-12"
-              onClick={() => append({ weight: 0, reps: 0 })}
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
             >
-              <PlusCircle className="h-5 w-5 mr-2" />
-              Add Set
-            </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-12"
+                onClick={() => append({ weight: 0, reps: 0 })}
+              >
+                <PlusCircle className="h-5 w-5 mr-2" />
+                Add Set
+              </Button>
+            </motion.div>
           </div>
 
-          <Button type="submit" className="w-full h-12 text-lg">
-            Log Exercise
-          </Button>
+          <motion.div
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <Button type="submit" className="w-full h-12 text-lg">
+              Log Exercise
+            </Button>
+          </motion.div>
         </form>
       </FormProvider>
     </Card>
