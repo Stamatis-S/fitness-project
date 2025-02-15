@@ -11,22 +11,19 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-  Legend,
   Area,
   AreaChart,
   Cell,
 } from "recharts";
 import type { WorkoutLog } from "@/pages/Dashboard";
 import { CustomTooltip } from "./CustomTooltip";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, TrendingDown, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import { format, subMonths } from "date-fns";
 import { cn } from "@/lib/utils";
 import { EXERCISE_CATEGORIES } from "@/lib/constants";
@@ -98,7 +95,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
     return {
       category,
       frequency,
-      intensity: frequency / filteredLogs.length
+      intensity: frequency / filteredLogs.length || 0
     };
   }).sort((a, b) => b.frequency - a.frequency);
 
