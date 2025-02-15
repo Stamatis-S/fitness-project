@@ -47,7 +47,7 @@ export function ExerciseEntryForm() {
       const exerciseSets = data.sets.map((set, index) => ({
         workout_date: data.date.toISOString().split('T')[0],
         category: selectedCategory,
-        exercise_id: isCustomExercise ? null : Number(data.exercise),
+        exercise_id: isCustomExercise ? null : parseInt(data.exercise) || null,
         custom_exercise: isCustomExercise ? data.customExercise : null,
         set_number: index + 1,
         weight_kg: set.weight,
