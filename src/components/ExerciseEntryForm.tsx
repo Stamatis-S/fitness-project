@@ -12,6 +12,7 @@ import { PlusCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ExerciseFormData } from "@/components/workout/types";
 import { useAuth } from "@/components/AuthProvider";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function ExerciseEntryForm() {
   const { session } = useAuth();
@@ -74,7 +75,7 @@ export function ExerciseEntryForm() {
   };
 
   return (
-    <Card className="p-6">
+    <Card className="p-4 md:p-6">
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
           <DateSelector 
@@ -87,13 +88,15 @@ export function ExerciseEntryForm() {
           />
           
           {selectedCategory && (
-            <ExerciseSelector 
-              category={selectedCategory}
-              value={methods.watch("exercise")}
-              onValueChange={(value) => methods.setValue("exercise", value)}
-              customExercise={methods.watch("customExercise")}
-              onCustomExerciseChange={(value) => methods.setValue("customExercise", value)}
-            />
+            <ScrollArea className="h-[300px] rounded-md border p-4">
+              <ExerciseSelector 
+                category={selectedCategory}
+                value={methods.watch("exercise")}
+                onValueChange={(value) => methods.setValue("exercise", value)}
+                customExercise={methods.watch("customExercise")}
+                onCustomExerciseChange={(value) => methods.setValue("customExercise", value)}
+              />
+            </ScrollArea>
           )}
 
           <div className="space-y-4">
@@ -108,15 +111,15 @@ export function ExerciseEntryForm() {
             <Button
               type="button"
               variant="outline"
-              className="w-full"
+              className="w-full h-12"
               onClick={() => append({ weight: 0, reps: 0 })}
             >
-              <PlusCircle className="h-4 w-4 mr-2" />
+              <PlusCircle className="h-5 w-5 mr-2" />
               Add Set
             </Button>
           </div>
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full h-12 text-lg">
             Log Exercise
           </Button>
         </form>

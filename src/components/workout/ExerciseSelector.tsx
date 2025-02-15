@@ -2,17 +2,12 @@
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { ExerciseFormData } from "./types";
 import { type ExerciseCategory } from "@/components/workout/CategorySelector";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface Exercise {
   id: number;
@@ -52,27 +47,32 @@ export function ExerciseSelector({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
+      <div className="flex flex-col space-y-2">
         <Label>Exercise Type</Label>
-        <Select 
-          value={useCustomExercise ? "custom" : "predefined"}
-          onValueChange={(value) => {
-            setUseCustomExercise(value === "custom");
-            if (value === "custom") {
-              onValueChange("custom");
-            } else {
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            variant={useCustomExercise ? "outline" : "default"}
+            className="h-12"
+            onClick={() => {
+              setUseCustomExercise(false);
               onValueChange("");
-            }
-          }}
-        >
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="predefined">Select from list</SelectItem>
-            <SelectItem value="custom">Custom exercise</SelectItem>
-          </SelectContent>
-        </Select>
+            }}
+          >
+            Select from list
+          </Button>
+          <Button
+            type="button"
+            variant={useCustomExercise ? "default" : "outline"}
+            className="h-12"
+            onClick={() => {
+              setUseCustomExercise(true);
+              onValueChange("custom");
+            }}
+          >
+            Custom exercise
+          </Button>
+        </div>
       </div>
 
       {useCustomExercise ? (
@@ -82,23 +82,32 @@ export function ExerciseSelector({
             placeholder="Enter exercise name"
             value={customExercise}
             onChange={(e) => onCustomExerciseChange(e.target.value)}
+            className="h-12 text-base"
           />
         </div>
       ) : (
         <div className="space-y-2">
           <Label>Exercise</Label>
-          <Select value={value} onValueChange={onValueChange}>
-            <SelectTrigger>
-              <SelectValue placeholder={isLoading ? "Loading..." : "Select exercise"} />
-            </SelectTrigger>
-            <SelectContent>
-              {exercises?.map((exercise) => (
-                <SelectItem key={exercise.id} value={exercise.id.toString()}>
+          <div className="grid grid-cols-1 gap-2">
+            {isLoading ? (
+              <div className="text-center py-4">Loading exercises...</div>
+            ) : (
+              exercises?.map((exercise) => (
+                <Button
+                  key={exercise.id}
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "h-12 text-base justify-start px-4",
+                    value === exercise.id.toString() && "bg-primary text-primary-foreground"
+                  )}
+                  onClick={() => onValueChange(exercise.id.toString())}
+                >
                   {exercise.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                </Button>
+              ))
+            )}
+          </div>
         </div>
       )}
     </div>
