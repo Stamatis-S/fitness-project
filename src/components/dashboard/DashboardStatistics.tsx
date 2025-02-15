@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { DateRange } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
@@ -22,6 +21,7 @@ import {
   Legend,
   Area,
   AreaChart,
+  Cell,
 } from "recharts";
 import type { WorkoutLog } from "@/pages/Dashboard";
 import { CustomTooltip } from "./CustomTooltip";
