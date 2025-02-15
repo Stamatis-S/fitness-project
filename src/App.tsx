@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { BottomNav } from "@/components/BottomNav";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -26,7 +27,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" />;
   }
 
-  return children;
+  return (
+    <div className="pb-16">
+      {children}
+      <BottomNav />
+    </div>
+  );
 }
 
 const AppRoutes = () => (

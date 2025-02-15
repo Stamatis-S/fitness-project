@@ -1,19 +1,13 @@
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ExerciseEntryForm } from "@/components/ExerciseEntryForm";
-import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { 
   Sun, 
-  Moon, 
-  BarChart2, 
-  Dumbbell, 
-  PlusCircle,
+  Moon,
   User,
   LogOut,
-  Settings
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -41,15 +36,15 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen p-8 bg-gradient-to-b from-background to-muted">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-background to-muted">
+      <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-          <div className="text-left space-y-2">
-            <h1 className="text-4xl font-bold tracking-tight">
-              Gym Buddy
+          <div className="text-left space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight">
+              Add Exercise
             </h1>
-            <p className="text-muted-foreground">
-              Track your fitness journey with precision
+            <p className="text-sm text-muted-foreground">
+              Log your workout details
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -82,33 +77,7 @@ const Index = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="add" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="add" className="space-x-2" onClick={() => navigate("/")}>
-              <PlusCircle className="h-4 w-4" />
-              <span>Add Exercise</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="view" 
-              className="space-x-2"
-              onClick={() => navigate("/saved-exercises")}
-            >
-              <Dumbbell className="h-4 w-4" />
-              <span>Saved Exercises</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="dashboard" 
-              className="space-x-2"
-              onClick={() => navigate("/dashboard")}
-            >
-              <BarChart2 className="h-4 w-4" />
-              <span>Dashboard</span>
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="add">
-            <ExerciseEntryForm />
-          </TabsContent>
-        </Tabs>
+        <ExerciseEntryForm />
       </div>
     </div>
   );
