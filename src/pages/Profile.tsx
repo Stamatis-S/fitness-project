@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 
 interface ProfileData {
   username: string | null;
@@ -73,6 +73,19 @@ export default function Profile() {
     }
   };
 
+  const formatLastUpdated = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      if (!isValid(date)) {
+        return 'Never updated';
+      }
+      return format(date, 'PPpp');
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Never updated';
+    }
+  };
+
   if (!profile) {
     return <div className="p-8">Loading...</div>;
   }
@@ -119,7 +132,7 @@ export default function Profile() {
                 className="h-3"
               />
               <p className="text-sm text-muted-foreground">
-                Last updated: {format(new Date(profile.last_score_update), 'PPpp')}
+                Last updated: {formatLastUpdated(profile.last_score_update)}
               </p>
             </div>
           </div>
