@@ -19,13 +19,23 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   const currentWeight = watch(`sets.${index}.weight`);
   const currentReps = watch(`sets.${index}.reps`);
 
+  const handleWeightChange = (value: string | number) => {
+    // Convert to number and handle empty input
+    const numValue = value === '' ? 0 : Number(value);
+    
+    // Update only if it's a valid number
+    if (!isNaN(numValue)) {
+      setValue(`sets.${index}.weight`, numValue);
+    }
+  };
+
   const handleWeightIncrement = (increment: number) => {
-    const newValue = Math.max(0, currentWeight + increment);
+    const newValue = Math.max(0, (currentWeight || 0) + increment);
     setValue(`sets.${index}.weight`, newValue);
   };
 
   const handleRepsIncrement = (increment: number) => {
-    const newValue = Math.max(0, currentReps + increment);
+    const newValue = Math.max(0, (currentReps || 0) + increment);
     setValue(`sets.${index}.reps`, newValue);
   };
 
@@ -57,14 +67,14 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         <div className="space-y-6">
           <Label className="flex items-center gap-2 text-lg">
             <Weight className="h-5 w-5 text-primary" />
-            Weight: {currentWeight} KG
+            Weight: {currentWeight || 0} KG
           </Label>
           <div className="px-2">
             <Slider
-              value={[currentWeight]}
+              value={[currentWeight || 0]}
               onValueChange={(values) => setValue(`sets.${index}.weight`, values[0])}
               max={200}
-              step={2.5}
+              step={1}
               className="py-4"
             />
           </div>
@@ -81,12 +91,10 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             <Input
               type="number"
               inputMode="decimal"
-              step={2.5}
               className="h-12 text-center text-lg font-medium"
-              {...register(`sets.${index}.weight` as const, { 
-                valueAsNumber: true,
-                min: 0 
-              })}
+              value={currentWeight || ''}
+              onChange={(e) => handleWeightChange(e.target.value)}
+              min={0}
             />
             <Button
               type="button"
@@ -103,11 +111,11 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         <div className="space-y-6">
           <Label className="flex items-center gap-2 text-lg">
             <Repeat className="h-5 w-5 text-primary" />
-            Repetitions: {currentReps}
+            Repetitions: {currentReps || 0}
           </Label>
           <div className="px-2">
             <Slider
-              value={[currentReps]}
+              value={[currentReps || 0]}
               onValueChange={(values) => setValue(`sets.${index}.reps`, values[0])}
               max={30}
               step={1}
