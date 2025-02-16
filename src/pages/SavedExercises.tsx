@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,12 +15,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { WorkoutCharts } from "@/components/saved-exercises/WorkoutCharts";
 import { WorkoutFilters } from "@/components/saved-exercises/WorkoutFilters";
 import { WorkoutTable } from "@/components/saved-exercises/WorkoutTable";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
@@ -32,7 +27,6 @@ export default function SavedExercises() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [showInsights, setShowInsights] = useState(true);
 
   const { data: workoutLogs, refetch } = useQuery({
     queryKey: ['workout_logs'],
@@ -202,25 +196,6 @@ export default function SavedExercises() {
             </Button>
           </div>
         </div>
-
-        <Collapsible
-          open={showInsights}
-          onOpenChange={setShowInsights}
-          className="bg-background rounded-lg shadow p-4"
-        >
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Workout Insights</h2>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <ChevronDown className={`h-4 w-4 transform ${showInsights ? 'rotate-180' : ''} transition-transform`} />
-              </Button>
-            </CollapsibleTrigger>
-          </div>
-          
-          <CollapsibleContent className="mt-4">
-            <WorkoutCharts logs={filteredLogs} />
-          </CollapsibleContent>
-        </Collapsible>
 
         <WorkoutFilters
           searchTerm={searchTerm}

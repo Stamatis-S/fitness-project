@@ -1,14 +1,10 @@
 
-import { Search } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Search } from "lucide-react";
+import { EXERCISE_CATEGORIES } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 interface WorkoutFiltersProps {
   searchTerm: string;
@@ -27,47 +23,74 @@ export function WorkoutFilters({
   dateFilter,
   onDateChange,
 }: WorkoutFiltersProps) {
-  const isMobile = useIsMobile();
-
   return (
-    <div className={`flex flex-col gap-4 bg-background p-4 rounded-lg shadow ${isMobile ? 'sticky top-0 z-10' : ''}`}>
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search exercises..."
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9 h-10 min-h-10"
-        />
-      </div>
-      <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-4`}>
-        <Select value={categoryFilter} onValueChange={onCategoryChange}>
-          <SelectTrigger className={`${isMobile ? 'w-full' : 'w-[200px]'} h-10`}>
-            <SelectValue placeholder="Filter by category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="ΣΤΗΘΟΣ">Chest</SelectItem>
-            <SelectItem value="ΠΛΑΤΗ">Back</SelectItem>
-            <SelectItem value="ΔΙΚΕΦΑΛΑ">Biceps</SelectItem>
-            <SelectItem value="ΤΡΙΚΕΦΑΛΑ">Triceps</SelectItem>
-            <SelectItem value="ΩΜΟΙ">Shoulders</SelectItem>
-            <SelectItem value="ΠΟΔΙΑ">Legs</SelectItem>
-            <SelectItem value="ΚΟΡΜΟΣ">Core</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={dateFilter} onValueChange={onDateChange}>
-          <SelectTrigger className={`${isMobile ? 'w-full' : 'w-[200px]'} h-10`}>
-            <SelectValue placeholder="Filter by date" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Time</SelectItem>
-            <SelectItem value="15days">Last 15 Days</SelectItem>
-            <SelectItem value="30days">Last 30 Days</SelectItem>
-            <SelectItem value="45days">Last 45 Days</SelectItem>
-            <SelectItem value="90days">Last 90 Days</SelectItem>
-          </SelectContent>
-        </Select>
+    <div className="space-y-6 bg-background p-6 rounded-lg shadow">
+      <div className="space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            placeholder="Search exercises..."
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium">Filter by Category</h3>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                "rounded-full",
+                categoryFilter === "all" && "bg-primary text-primary-foreground"
+              )}
+              onClick={() => onCategoryChange("all")}
+            >
+              All Categories
+            </Button>
+            {Object.entries(EXERCISE_CATEGORIES).map(([name, { gradientClass }]) => (
+              <Button
+                key={name}
+                className={cn(
+                  "text-white rounded-full",
+                  gradientClass,
+                  categoryFilter === name && "ring-2 ring-offset-2 ring-primary"
+                )}
+                onClick={() => onCategoryChange(name)}
+              >
+                {name}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium">Filter by Time Range</h3>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: "all", label: "All Time" },
+              { value: "15days", label: "Last 15 Days" },
+              { value: "30days", label: "Last 30 Days" },
+              { value: "45days", label: "Last 45 Days" },
+              { value: "90days", label: "Last 90 Days" },
+            ].map(({ value, label }) => (
+              <Button
+                key={value}
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "rounded-full",
+                  dateFilter === value && "bg-primary text-primary-foreground"
+                )}
+                onClick={() => onDateChange(value)}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
