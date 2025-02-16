@@ -6,9 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Edit2, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, isValid } from "date-fns";
+import { Input } from "@/components/ui/input";
 
 interface ProfileData {
   username: string | null;
@@ -21,6 +22,8 @@ export default function Profile() {
   const { session } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -42,6 +45,7 @@ export default function Profile() {
 
         if (error) throw error;
         setProfile(data);
+        setNewUsername(data.username || "");
       } catch (error) {
         toast.error("Error loading profile");
         console.error("Error:", error);
@@ -52,6 +56,24 @@ export default function Profile() {
       fetchProfile();
     }
   }, [session?.user.id]);
+
+  const handleUpdateUsername = async () => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ username: newUsername })
+        .eq('id', session?.user.id);
+
+      if (error) throw error;
+
+      setProfile(prev => prev ? { ...prev, username: newUsername } : null);
+      setIsEditingUsername(false);
+      toast.success("Username updated successfully!");
+    } catch (error) {
+      toast.error("Error updating username");
+      console.error("Error:", error);
+    }
+  };
 
   const getProgressValue = (score: number) => {
     if (score >= 5001) return 100;
@@ -114,9 +136,36 @@ export default function Profile() {
             <p className="text-muted-foreground">
               Email: {session?.user.email}
             </p>
-            <p className="text-muted-foreground">
-              Username: {profile.username || 'Not set'}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-muted-foreground">
+                Username: {!isEditingUsername && (profile.username || 'Not set')}
+              </p>
+              {isEditingUsername ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    className="max-w-[200px]"
+                    placeholder="Enter new username"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleUpdateUsername}
+                    disabled={!newUsername.trim()}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsEditingUsername(true)}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
