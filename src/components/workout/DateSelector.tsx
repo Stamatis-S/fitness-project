@@ -4,7 +4,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
-import { format, startOfDay } from "date-fns";
+import { format } from "date-fns";
 
 interface DateSelectorProps {
   date: Date;
@@ -14,11 +14,21 @@ interface DateSelectorProps {
 export function DateSelector({ date, onDateChange }: DateSelectorProps) {
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
-      // Create a new date at the start of the selected day in the local timezone
-      const localDate = startOfDay(selectedDate);
-      // Set to noon UTC to avoid timezone issues
-      localDate.setUTCHours(12, 0, 0, 0);
-      onDateChange(localDate);
+      // Create new date object preserving the selected date
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth();
+      const day = selectedDate.getDate();
+      
+      // Create date at noon UTC
+      const utcDate = new Date(Date.UTC(year, month, day, 12, 0, 0, 0));
+      
+      console.log('Date Picker Selection:', {
+        selectedDate: selectedDate.toISOString(),
+        utcDate: utcDate.toISOString(),
+        localDate: utcDate.toLocaleDateString(),
+      });
+      
+      onDateChange(utcDate);
     }
   };
 

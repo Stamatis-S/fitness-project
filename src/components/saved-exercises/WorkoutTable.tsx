@@ -1,5 +1,5 @@
 
-import { format, startOfDay } from "date-fns";
+import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,9 +30,16 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
   };
 
   const formatDate = (dateString: string) => {
-    // Create date from the ISO string and ensure it's handled in local timezone
-    const date = startOfDay(new Date(dateString));
-    date.setUTCHours(12, 0, 0, 0);
+    // Parse the YYYY-MM-DD date string and create a UTC date at noon
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+    
+    console.log('Displaying Date:', {
+      dateString,
+      parsedDate: date.toISOString(),
+      formattedDate: format(date, 'PP'),
+    });
+    
     return format(date, 'PP');
   };
 
