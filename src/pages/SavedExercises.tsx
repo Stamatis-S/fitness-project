@@ -1,10 +1,9 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Download, ChevronDown } from "lucide-react";
+import { Download, ChevronDown, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -166,6 +165,12 @@ export default function SavedExercises() {
     }
   };
 
+  const exportToPDF = () => {
+    toast.info("PDF export coming soon!");
+    // Here you would implement the PDF export functionality
+    // Using a library like jsPDF or similar
+  };
+
   const filteredLogs = filterLogs(workoutLogs);
   const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE);
   const paginatedLogs = filteredLogs.slice(
@@ -176,21 +181,29 @@ export default function SavedExercises() {
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <h1 className="text-3xl font-bold">Saved Exercises</h1>
-          <div className="flex gap-2 w-full md:w-auto">
+        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+          <div className="flex-1" />
+          <h1 className="text-3xl font-bold text-center flex-1">Saved Exercises</h1>
+          <div className="flex gap-2 flex-1 justify-end">
             <Button 
               variant="outline" 
               onClick={exportToCSV}
-              className="flex-1 md:flex-none"
+              className="flex items-center gap-2"
             >
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
+              <Download className="h-4 w-4" />
+              CSV
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={exportToPDF}
+              className="flex items-center gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              PDF
             </Button>
             <Button 
               variant="outline" 
               onClick={() => navigate("/")}
-              className="flex-1 md:flex-none"
             >
               Back to Home
             </Button>
