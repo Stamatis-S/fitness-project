@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -64,6 +63,22 @@ export default function SavedExercises() {
     } catch (error) {
       toast.error("Failed to delete exercise");
       console.error("Error deleting exercise:", error);
+    }
+  };
+
+  const handleEdit = async (id: number, updates: Partial<WorkoutLog>) => {
+    try {
+      const { error } = await supabase
+        .from('workout_logs')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("Exercise updated successfully");
+      refetch();
+    } catch (error) {
+      toast.error("Failed to update exercise");
+      console.error("Error updating exercise:", error);
     }
   };
 
@@ -356,7 +371,11 @@ export default function SavedExercises() {
         />
 
         <div className="bg-background rounded-lg shadow overflow-hidden">
-          <WorkoutTable logs={paginatedLogs} onDelete={handleDelete} />
+          <WorkoutTable 
+            logs={paginatedLogs} 
+            onDelete={handleDelete} 
+            onEdit={handleEdit}
+          />
           
           {totalPages > 1 && (
             <div className="p-4 border-t overflow-x-auto">
