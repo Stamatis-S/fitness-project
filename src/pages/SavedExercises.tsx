@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { Download, ChevronDown, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import jsPDF from "jspdf";
 import {
   Pagination,
   PaginationContent,
@@ -102,16 +103,6 @@ export default function SavedExercises() {
     });
   };
 
-  const sanitizeCSVField = (field: string | number | null): string => {
-    if (field === null || field === undefined) return '';
-    
-    const stringField = String(field);
-    if (/[",\n\r]/.test(stringField)) {
-      return `"${stringField.replace(/"/g, '""')}"`;
-    }
-    return stringField;
-  };
-
   const exportToCSV = () => {
     if (!filteredLogs.length) {
       toast.error("No data to export");
@@ -166,9 +157,125 @@ export default function SavedExercises() {
   };
 
   const exportToPDF = () => {
-    toast.info("PDF export coming soon!");
-    // Here you would implement the PDF export functionality
-    // Using a library like jsPDF or similar
+    if (!filteredLogs.length) {
+      toast.error("No data to export");
+      return;
+    }
+
+    try {
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      
+      // Add title
+      pdf.setFontSize(20);
+      pdf.text("Workout Logs", pageWidth / 2, 15, { align: "center" });
+      
+      // Add date
+      pdf.setFontSize(12);
+      pdf.text(`Generated on: ${format(new Date(), 'PPP')}`, pageWidth / 2, 25, { align: "center" });
+      
+      // Table headers
+      const headers = ["Date", "Category", "Exercise", "Set", "Weight (KG)", "Reps"];
+      const columnWidths = [35, 25, 50, 15, 35, 20];
+      let startY = 40;
+      const lineHeight = 8;
+      
+      // Style for headers
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(11);
+      
+      // Draw headers
+      let currentX = 10;
+      headers.forEach((header, index) => {
+        pdf.text(header, currentX, startY);
+        currentX += columnWidths[index];
+      });
+      
+      // Style for data
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      startY += lineHeight;
+      
+      // Draw data rows
+      filteredLogs.forEach((log, index) => {
+        // Check if we need a new page
+        if (startY > pdf.internal.pageSize.getHeight() - 20) {
+          pdf.addPage();
+          startY = 20;
+        }
+        
+        currentX = 10;
+        const exercise = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
+        
+        // Format data
+        const rowData = [
+          format(new Date(log.workout_date), 'PP'),
+          log.category,
+          exercise,
+          log.set_number.toString(),
+          log.weight_kg?.toString() || '-',
+          log.reps?.toString() || '-'
+        ];
+        
+        // Draw row
+        rowData.forEach((text, colIndex) => {
+          // Handle long text
+          const maxWidth = columnWidths[colIndex] - 2;
+          if (pdf.getTextWidth(text) > maxWidth) {
+            text = text.substring(0, 15) + "...";
+          }
+          
+          pdf.text(text, currentX, startY);
+          currentX += columnWidths[colIndex];
+        });
+        
+        startY += lineHeight;
+      });
+      
+      // Add footer
+      const pageCount = pdf.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.text(
+          `Page ${i} of ${pageCount}`,
+          pdf.internal.pageSize.getWidth() / 2,
+          pdf.internal.pageSize.getHeight() - 10,
+          { align: "center" }
+        );
+      }
+      
+      // Save the PDF
+      const filename = `workout_logs_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+      pdf.save(filename);
+      
+      toast.success("PDF exported successfully");
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      toast.error(
+        <div className="flex flex-col gap-2">
+          <span>Failed to export PDF</span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => exportToPDF()}
+            className="mt-2"
+          >
+            Retry Export
+          </Button>
+        </div>
+      );
+    }
+  };
+
+  const sanitizeCSVField = (field: string | number | null): string => {
+    if (field === null || field === undefined) return '';
+    
+    const stringField = String(field);
+    if (/[",\n\r]/.test(stringField)) {
+      return `"${stringField.replace(/"/g, '""')}"`;
+    }
+    return stringField;
   };
 
   const filteredLogs = filterLogs(workoutLogs);
