@@ -169,7 +169,6 @@ export default function SavedExercises() {
         format: "a4",
       });
 
-      // Add Unicode font
       pdf.addFont("Helvetica", "Helvetica", "normal");
       pdf.setFont("Helvetica");
       
@@ -177,15 +176,12 @@ export default function SavedExercises() {
       const margin = 40;
       const availableWidth = pageWidth - (2 * margin);
       
-      // Add title
       pdf.setFontSize(20);
       pdf.text("Workout Logs", pageWidth / 2, margin, { align: "center" });
       
-      // Add date
       pdf.setFontSize(12);
       pdf.text(`Generated on: ${format(new Date(), 'PPP')}`, pageWidth / 2, margin + 25, { align: "center" });
       
-      // Table headers
       const headers = ["Date", "Category", "Exercise", "Set", "Weight (KG)", "Reps"];
       const columnWidths = [
         availableWidth * 0.2, // Date
@@ -199,25 +195,20 @@ export default function SavedExercises() {
       let startY = margin + 50;
       const lineHeight = 25;
       
-      // Style for headers
       pdf.setFontSize(11);
       pdf.setFont("Helvetica", "bold");
       
-      // Draw headers
       let currentX = margin;
       headers.forEach((header, index) => {
         pdf.text(header, currentX, startY);
         currentX += columnWidths[index];
       });
       
-      // Style for data
       pdf.setFont("Helvetica", "normal");
       pdf.setFontSize(10);
       startY += lineHeight;
       
-      // Draw data rows
       filteredLogs.forEach((log) => {
-        // Check if we need a new page
         if (startY > pdf.internal.pageSize.getHeight() - margin) {
           pdf.addPage();
           startY = margin;
@@ -226,7 +217,6 @@ export default function SavedExercises() {
         currentX = margin;
         const exercise = sanitizePDFText(log.custom_exercise || log.exercises?.name || 'Unknown Exercise');
         
-        // Format data
         const rowData = [
           format(new Date(log.workout_date), 'PP'),
           sanitizePDFText(log.category),
@@ -236,15 +226,15 @@ export default function SavedExercises() {
           log.reps?.toString() || '-'
         ];
         
-        // Draw row
         rowData.forEach((text, colIndex) => {
           const maxWidth = columnWidths[colIndex] - 5;
           let displayText = text;
           
-          // Truncate text if too long
           if (pdf.getTextWidth(displayText) > maxWidth) {
             displayText = displayText.substring(0, 15) + "...";
           }
+          
+          displayText = sanitizePDFText(displayText);
           
           pdf.text(displayText, currentX, startY);
           currentX += columnWidths[colIndex];
@@ -253,7 +243,6 @@ export default function SavedExercises() {
         startY += lineHeight;
       });
       
-      // Add footer with page numbers
       const pageCount = pdf.internal.pages.length - 1;
       for (let i = 1; i <= pageCount; i++) {
         pdf.setPage(i);
@@ -266,7 +255,6 @@ export default function SavedExercises() {
         );
       }
       
-      // Save the PDF
       const filename = `workout_logs_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
       pdf.save(filename);
       
@@ -301,9 +289,17 @@ export default function SavedExercises() {
 
   const sanitizePDFText = (text: string | number | null): string => {
     if (text === null || text === undefined) return '-';
-    return String(text)
-      .normalize('NFKC') // Normalize Unicode characters
-      .replace(/[^\x20-\x7E\u0370-\u03FF]/g, '-'); // Keep ASCII and Greek ranges
+    const str = String(text);
+    
+    try {
+      const normalized = str.normalize('NFKD');
+      return normalized
+        .normalize('NFC')
+        .replace(/[^\p{L}\p{N}\s\-.,]/gu, '?');
+    } catch (e) {
+      console.warn('Text normalization failed:', e);
+      return str.replace(/[^\x20-\x7E]/g, '?');
+    }
   };
 
   const filteredLogs = filterLogs(workoutLogs);
