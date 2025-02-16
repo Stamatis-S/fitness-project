@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -30,6 +31,13 @@ interface DashboardStatisticsProps {
 
 type TimeRange = "1M" | "3M" | "6M" | "1Y" | "ALL";
 
+// Define interfaces for our data structures
+interface ExerciseData {
+  weight: number;
+  category: string;
+  color: string;
+}
+
 export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("3M");
 
@@ -50,7 +58,6 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
 
   const filteredLogs = getFilteredData();
 
-  // Update the color references in your data processing
   const categoryDistribution = filteredLogs.reduce((acc: any[], log) => {
     const existingCategory = acc.find(cat => cat.name === log.category);
     if (existingCategory) {
@@ -65,14 +72,13 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
     return acc;
   }, []);
 
-  // Calculate percentages
   const total = categoryDistribution.reduce((sum, item) => sum + item.value, 0);
   categoryDistribution.forEach(item => {
     item.percentage = Number(((item.value / total) * 100).toFixed(1));
   });
 
   const maxWeightData = Object.entries(
-    filteredLogs.reduce((acc: Record<string, { weight: number; category: string }>, log) => {
+    filteredLogs.reduce((acc: Record<string, ExerciseData>, log) => {
       const exerciseName = log.custom_exercise || log.exercises?.name;
       if (!exerciseName || !log.weight_kg) return acc;
       
