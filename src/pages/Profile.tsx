@@ -54,22 +54,25 @@ export default function Profile() {
   }, [session?.user.id]);
 
   const getProgressValue = (score: number) => {
-    if (score >= 3001) return 100;
-    if (score >= 1501) return 75;
-    if (score >= 501) return 50;
-    return Math.max((score / 500) * 25, 0);
+    if (score >= 5001) return 100;
+    if (score >= 3501) return 80;
+    if (score >= 2001) return 60;
+    if (score >= 1001) return 40;
+    return Math.max((score / 1000) * 20, 0);
   };
 
   const getLevelColor = (level: string) => {
     switch (level) {
+      case 'Monster':
+        return 'text-[#FF0000] dark:text-[#FF4444]';
       case 'Elite':
-        return 'text-purple-500 dark:text-purple-400';
+        return 'text-[#A855F7] dark:text-[#A855F7]';
       case 'Advanced':
-        return 'text-blue-500 dark:text-blue-400';
+        return 'text-[#4488EF] dark:text-[#4488EF]';
       case 'Intermediate':
-        return 'text-green-500 dark:text-green-400';
+        return 'text-[#22C55E] dark:text-[#22C55E]';
       default:
-        return 'text-orange-500 dark:text-orange-400';
+        return 'text-[#EAB308] dark:text-[#EAB308]';
     }
   };
 
@@ -139,22 +142,26 @@ export default function Profile() {
 
           <div className="space-y-2">
             <h3 className="text-lg font-medium">Level Requirements</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="space-y-1">
-                <p className="font-medium text-orange-500 dark:text-orange-400">Beginner</p>
-                <p className="text-sm text-muted-foreground">0 - 500</p>
+                <p className="font-medium text-[#EAB308]">Beginner</p>
+                <p className="text-sm text-muted-foreground">0 - 1,000</p>
               </div>
               <div className="space-y-1">
-                <p className="font-medium text-green-500 dark:text-green-400">Intermediate</p>
-                <p className="text-sm text-muted-foreground">501 - 1,500</p>
+                <p className="font-medium text-[#22C55E]">Intermediate</p>
+                <p className="text-sm text-muted-foreground">1,001 - 2,000</p>
               </div>
               <div className="space-y-1">
-                <p className="font-medium text-blue-500 dark:text-blue-400">Advanced</p>
-                <p className="text-sm text-muted-foreground">1,501 - 3,000</p>
+                <p className="font-medium text-[#4488EF]">Advanced</p>
+                <p className="text-sm text-muted-foreground">2,001 - 3,500</p>
               </div>
               <div className="space-y-1">
-                <p className="font-medium text-purple-500 dark:text-purple-400">Elite</p>
-                <p className="text-sm text-muted-foreground">3,001+</p>
+                <p className="font-medium text-[#A855F7]">Elite</p>
+                <p className="text-sm text-muted-foreground">3,501 - 5,000</p>
+              </div>
+              <div className="space-y-1">
+                <p className="font-medium text-[#FF0000] dark:text-[#FF4444]">Monster</p>
+                <p className="text-sm text-muted-foreground">5,001+</p>
               </div>
             </div>
           </div>
