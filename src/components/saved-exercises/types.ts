@@ -1,4 +1,5 @@
 
+// Move types to a separate file to avoid circular dependencies
 export interface WorkoutLog {
   id: number;
   workout_date: string;
@@ -14,7 +15,6 @@ export interface WorkoutLog {
   reps: number | null;
 }
 
-// Type for updates to avoid category requirement
 export type WorkoutLogUpdate = {
   workout_date?: string;
   weight_kg?: number | null;
