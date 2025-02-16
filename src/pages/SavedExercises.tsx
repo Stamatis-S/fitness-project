@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -232,8 +233,8 @@ export default function SavedExercises() {
         startY += lineHeight;
       });
       
-      // Add footer
-      const pageCount = pdf.internal.getNumberOfPages();
+      // Add footer with page numbers
+      const pageCount = pdf.internal.pages.length - 1;
       for (let i = 1; i <= pageCount; i++) {
         pdf.setPage(i);
         pdf.setFontSize(8);
