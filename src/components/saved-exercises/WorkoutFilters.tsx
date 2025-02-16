@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { EXERCISE_CATEGORIES, CATEGORY_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface WorkoutFiltersProps {
   searchTerm: string;
@@ -24,7 +25,12 @@ export function WorkoutFilters({
   onDateChange,
 }: WorkoutFiltersProps) {
   return (
-    <div className="space-y-6 bg-background p-6 rounded-lg shadow">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="glass-card space-y-6 p-6 rounded-lg"
+    >
       <div className="space-y-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -32,36 +38,44 @@ export function WorkoutFilters({
             placeholder="Search exercises..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
+            className="pl-10 glass-card border-none"
           />
         </div>
 
         <div className="space-y-2">
           <h3 className="text-sm font-medium">Filter by Category</h3>
           <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className={cn(
-                "rounded-full",
-                categoryFilter === "all" && "bg-primary text-primary-foreground"
+                "px-4 py-2 rounded-full text-sm font-medium glass-button",
+                categoryFilter === "all" ? "bg-primary text-primary-foreground" : "bg-background"
               )}
               onClick={() => onCategoryChange("all")}
             >
               All Categories
-            </Button>
+            </motion.button>
             {Object.entries(EXERCISE_CATEGORIES).map(([name]) => (
-              <Button
+              <motion.button
                 key={name}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "text-white rounded-full",
-                  categoryFilter === name && "ring-2 ring-offset-2 ring-primary"
+                  "category-button px-4 py-2 text-sm font-medium text-white rounded-full",
+                  "transition-all duration-300",
+                  categoryFilter === name && "ring-2 ring-offset-2 ring-white"
                 )}
-                style={{ backgroundColor: CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS] }}
+                style={{ 
+                  backgroundColor: CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS],
+                  boxShadow: categoryFilter === name 
+                    ? `0 0 20px ${CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS]}80`
+                    : 'none'
+                }}
                 onClick={() => onCategoryChange(name)}
               >
                 {name}
-              </Button>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -76,22 +90,24 @@ export function WorkoutFilters({
               { value: "45days", label: "Last 45 Days" },
               { value: "90days", label: "Last 90 Days" },
             ].map(({ value, label }) => (
-              <Button
+              <motion.button
                 key={value}
-                variant="outline"
-                size="sm"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "rounded-full",
-                  dateFilter === value && "bg-primary text-primary-foreground"
+                  "px-4 py-2 rounded-full text-sm font-medium glass-button",
+                  dateFilter === value 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-background"
                 )}
                 onClick={() => onDateChange(value)}
               >
                 {label}
-              </Button>
+              </motion.button>
             ))}
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
