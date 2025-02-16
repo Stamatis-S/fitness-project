@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,7 +54,14 @@ export default function Profile() {
           .single();
 
         if (error) throw error;
-        setProfile(data);
+        
+        // Assert that language_preference is either 'en' or 'el'
+        const language = data.language_preference === 'el' ? 'el' : 'en';
+        
+        setProfile({
+          ...data,
+          language_preference: language
+        });
         setNewUsername(data.username || "");
       } catch (error) {
         toast.error(t('error'));
