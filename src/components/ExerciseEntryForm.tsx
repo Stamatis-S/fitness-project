@@ -15,13 +15,18 @@ import { useAuth } from "@/components/AuthProvider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnimatePresence, motion } from "framer-motion";
 import type { ExerciseCategory } from "@/lib/constants";
+import { startOfDay } from "date-fns";
 
 export function ExerciseEntryForm() {
   const { session } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
   const methods = useForm<ExerciseFormData>({
     defaultValues: {
-      date: new Date(),
+      date: (() => {
+        const today = startOfDay(new Date());
+        today.setUTCHours(12, 0, 0, 0);
+        return today;
+      })(),
       exercise: "",
       sets: [{ weight: 0, reps: 0 }]
     }
@@ -65,12 +70,12 @@ export function ExerciseEntryForm() {
     try {
       const isCustomExercise = data.exercise === "custom";
       
-      // Ensure the date is set to noon UTC
-      const normalizedDate = new Date(data.date);
-      normalizedDate.setUTCHours(12, 0, 0, 0);
+      // Use the date's local date part and set to noon UTC
+      const localDate = startOfDay(data.date);
+      localDate.setUTCHours(12, 0, 0, 0);
       
       const exerciseSets = data.sets.map((set, index) => ({
-        workout_date: normalizedDate.toISOString().split('T')[0],
+        workout_date: localDate.toISOString().split('T')[0],
         category: selectedCategory,
         exercise_id: isCustomExercise ? null : parseInt(data.exercise) || null,
         custom_exercise: isCustomExercise ? data.customExercise : null,
@@ -88,7 +93,11 @@ export function ExerciseEntryForm() {
 
       toast.success("Exercise logged successfully!");
       methods.reset({
-        date: new Date(),
+        date: (() => {
+          const today = startOfDay(new Date());
+          today.setUTCHours(12, 0, 0, 0);
+          return today;
+        })(),
         exercise: "",
         sets: [{ weight: 0, reps: 0 }]
       });
