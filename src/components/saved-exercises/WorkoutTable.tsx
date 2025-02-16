@@ -1,5 +1,6 @@
+
 import { format } from "date-fns";
-import { Trash2, Edit } from "lucide-react";
+import { Trash2, Edit, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -28,7 +29,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
 
 interface WorkoutTableProps {
   logs: WorkoutLog[];
