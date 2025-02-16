@@ -3,13 +3,12 @@ import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ExerciseFormData } from "./types";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import type { ExerciseCategory } from "@/lib/constants";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Search } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface Exercise {
   id: number;
@@ -52,16 +51,6 @@ export function ExerciseSelector({
     exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Group exercises by first letter for collapsible sections
-  const groupedExercises = filteredExercises.reduce((acc: Record<string, Exercise[]>, exercise) => {
-    const firstLetter = exercise.name[0].toUpperCase();
-    if (!acc[firstLetter]) {
-      acc[firstLetter] = [];
-    }
-    acc[firstLetter].push(exercise);
-    return acc;
-  }, {});
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-2">
@@ -70,7 +59,7 @@ export function ExerciseSelector({
           <Button
             type="button"
             variant={useCustomExercise ? "outline" : "default"}
-            className="h-12 rounded-full"
+            className="h-12 rounded-xl"
             onClick={() => {
               setUseCustomExercise(false);
               onValueChange("");
@@ -81,7 +70,7 @@ export function ExerciseSelector({
           <Button
             type="button"
             variant={useCustomExercise ? "default" : "outline"}
-            className="h-12 rounded-full"
+            className="h-12 rounded-xl"
             onClick={() => {
               setUseCustomExercise(true);
               onValueChange("custom");
@@ -99,7 +88,7 @@ export function ExerciseSelector({
             placeholder="Enter exercise name"
             value={customExercise}
             onChange={(e) => onCustomExerciseChange(e.target.value)}
-            className="h-12 text-base rounded-full"
+            className="h-12 text-base"
           />
         </div>
       ) : (
@@ -110,41 +99,40 @@ export function ExerciseSelector({
               placeholder="Search exercises..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-12 pl-10 pr-4 rounded-full"
+              className="h-12 pl-10 pr-4"
             />
           </div>
 
-          <div className="rounded-lg border bg-card">
+          <motion.div 
+            className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto p-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
             {isLoading ? (
-              <div className="text-center py-4">Loading exercises...</div>
+              <div className="col-span-full text-center py-4">Loading exercises...</div>
             ) : (
-              <Accordion type="multiple" className="w-full">
-                {Object.entries(groupedExercises).map(([letter, letterExercises]) => (
-                  <AccordionItem key={letter} value={letter}>
-                    <AccordionTrigger className="px-4">
-                      {letter} ({letterExercises.length})
-                    </AccordionTrigger>
-                    <AccordionContent className="space-y-2 p-4">
-                      {letterExercises.map((exercise) => (
-                        <Button
-                          key={exercise.id}
-                          type="button"
-                          variant="outline"
-                          className={cn(
-                            "w-full h-12 text-base justify-start px-4 rounded-full transition-colors",
-                            value === exercise.id.toString() && "bg-primary text-primary-foreground"
-                          )}
-                          onClick={() => onValueChange(exercise.id.toString())}
-                        >
-                          {exercise.name}
-                        </Button>
-                      ))}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+              filteredExercises.map((exercise) => (
+                <Button
+                  key={exercise.id}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "h-auto py-2 px-3 text-sm text-left justify-start whitespace-normal",
+                    value === exercise.id.toString() && "bg-primary text-primary-foreground"
+                  )}
+                  onClick={() => onValueChange(exercise.id.toString())}
+                >
+                  {exercise.name}
+                </Button>
+              ))
             )}
-          </div>
+            {!isLoading && filteredExercises.length === 0 && (
+              <div className="col-span-full text-center py-4 text-muted-foreground">
+                No exercises found
+              </div>
+            )}
+          </motion.div>
         </div>
       )}
     </div>
