@@ -30,6 +30,9 @@
     "weight": "Weight",
     "reps": "Reps",
     "sets": "Sets",
+    "date": "Date",
+    "pick_date": "Pick a date",
+    "category_label": "Exercise Category",
     "categories": {
       "ΣΤΗΘΟΣ": "Chest",
       "ΠΛΑΤΗ": "Back",
