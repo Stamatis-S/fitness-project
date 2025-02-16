@@ -65,8 +65,12 @@ export function ExerciseEntryForm() {
     try {
       const isCustomExercise = data.exercise === "custom";
       
+      // Ensure the date is set to noon UTC
+      const normalizedDate = new Date(data.date);
+      normalizedDate.setUTCHours(12, 0, 0, 0);
+      
       const exerciseSets = data.sets.map((set, index) => ({
-        workout_date: data.date.toISOString().split('T')[0],
+        workout_date: normalizedDate.toISOString().split('T')[0],
         category: selectedCategory,
         exercise_id: isCustomExercise ? null : parseInt(data.exercise) || null,
         custom_exercise: isCustomExercise ? data.customExercise : null,

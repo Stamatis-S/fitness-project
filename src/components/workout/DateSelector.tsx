@@ -12,6 +12,15 @@ interface DateSelectorProps {
 }
 
 export function DateSelector({ date, onDateChange }: DateSelectorProps) {
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      // Ensure the date is set to noon UTC to avoid timezone issues
+      const normalizedDate = new Date(selectedDate);
+      normalizedDate.setUTCHours(12, 0, 0, 0);
+      onDateChange(normalizedDate);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <Label>Date</Label>
@@ -29,7 +38,7 @@ export function DateSelector({ date, onDateChange }: DateSelectorProps) {
           <Calendar
             mode="single"
             selected={date}
-            onSelect={(date) => date && onDateChange(date)}
+            onSelect={handleDateSelect}
             initialFocus
           />
         </PopoverContent>

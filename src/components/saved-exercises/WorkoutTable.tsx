@@ -29,6 +29,13 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
     return log.exercises?.name || 'Unknown Exercise';
   };
 
+  const formatDate = (dateString: string) => {
+    // Parse the date string and set it to noon UTC
+    const date = new Date(dateString);
+    date.setUTCHours(12, 0, 0, 0);
+    return format(date, 'PP');
+  };
+
   if (isMobile) {
     return (
       <div className="space-y-4">
@@ -38,7 +45,7 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
               <div className="space-y-1">
                 <h3 className="font-medium">{getExerciseName(log)}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(log.workout_date), 'PP')}
+                  {formatDate(log.workout_date)}
                 </p>
               </div>
               <Button
@@ -90,7 +97,7 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
         <TableBody>
           {logs.map((log: WorkoutLog) => (
             <TableRow key={log.id}>
-              <TableCell>{format(new Date(log.workout_date), 'PP')}</TableCell>
+              <TableCell>{formatDate(log.workout_date)}</TableCell>
               <TableCell>{log.category}</TableCell>
               <TableCell>{getExerciseName(log)}</TableCell>
               <TableCell>{log.set_number}</TableCell>
