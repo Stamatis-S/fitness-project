@@ -16,14 +16,15 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-  Area,
-  AreaChart,
+  LineChart,
+  Line,
+  Legend,
   Cell,
 } from "recharts";
 import type { WorkoutLog } from "@/pages/Dashboard";
 import { CustomTooltip } from "./CustomTooltip";
 import { motion } from "framer-motion";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { Dumbbell, TrendingDown, TrendingUp } from "lucide-react";
 import { format, subMonths } from "date-fns";
 import { cn } from "@/lib/utils";
 import { EXERCISE_CATEGORIES } from "@/lib/constants";
@@ -33,6 +34,17 @@ interface DashboardStatisticsProps {
 }
 
 type TimeRange = "1M" | "3M" | "6M" | "1Y" | "ALL";
+
+// Color mapping for consistent category colors
+const CATEGORY_COLORS = {
+  "ΣΤΗΘΟΣ": "#F97316", // Bright Orange
+  "ΠΛΑΤΗ": "#8B5CF6", // Vivid Purple
+  "ΔΙΚΕΦΑΛΑ": "#0EA5E9", // Ocean Blue
+  "ΤΡΙΚΕΦΑΛΑ": "#7E69AB", // Secondary Purple
+  "ΩΜΟΙ": "#D946EF", // Magenta Pink
+  "ΠΟΔΙΑ": "#2563EB", // Royal Blue
+  "ΚΟΡΜΟΣ": "#FEC6A1", // Soft Orange
+};
 
 export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("3M");
@@ -56,7 +68,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
 
   const filteredLogs = getFilteredData();
 
-  // Progress Line Chart Data
+  // Progress Line Chart Data with average calculation
   const progressData = filteredLogs.reduce((acc: any[], log) => {
     const date = format(new Date(log.workout_date), 'MMM dd');
     const existingDay = acc.find(item => item.date === date);
@@ -66,38 +78,53 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
     if (existingDay) {
       existingDay.weight = Math.max(existingDay.weight, log.weight_kg);
       existingDay.volume += volume;
+      existingDay.count++;
+      existingDay.avgWeight = existingDay.weight / existingDay.count;
     } else {
       acc.push({
         date,
         weight: log.weight_kg,
-        volume: volume
+        volume: volume,
+        count: 1,
+        avgWeight: log.weight_kg
       });
     }
     return acc;
   }, []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  // Radar Chart Data
-  const radarData = Object.entries(EXERCISE_CATEGORIES).map(([category]) => {
-    const categoryLogs = filteredLogs.filter(log => log.category === category);
-    const totalVolume = categoryLogs.reduce((sum, log) => sum + (log.weight_kg * log.reps), 0);
-    const maxWeight = categoryLogs.reduce((max, log) => Math.max(max, log.weight_kg), 0);
-    
-    return {
-      category,
-      volume: totalVolume,
-      maxWeight: maxWeight
-    };
-  });
+  // Calculate baseline averages for radar chart
+  const calculateBaselines = () => {
+    const totalVolumes = Object.keys(EXERCISE_CATEGORIES).reduce((acc, category) => {
+      const logs = filteredLogs.filter(log => log.category === category);
+      const volume = logs.reduce((sum, log) => sum + (log.weight_kg * log.reps), 0);
+      acc[category] = volume;
+      return acc;
+    }, {} as Record<string, number>);
 
-  // Heatmap Data
-  const heatmapData = Object.entries(EXERCISE_CATEGORIES).map(([category]) => {
-    const frequency = filteredLogs.filter(log => log.category === category).length;
+    const avgVolume = Object.values(totalVolumes).reduce((a, b) => a + b, 0) / Object.keys(totalVolumes).length;
+
+    return Object.keys(EXERCISE_CATEGORIES).map(category => ({
+      category,
+      volume: totalVolumes[category],
+      baseline: avgVolume
+    }));
+  };
+
+  const radarData = calculateBaselines();
+
+  // Training frequency data with sets and sessions
+  const frequencyData = Object.entries(EXERCISE_CATEGORIES).map(([category]) => {
+    const categoryLogs = filteredLogs.filter(log => log.category === category);
+    const uniqueSessions = new Set(categoryLogs.map(log => log.workout_date)).size;
+    const totalSets = categoryLogs.length;
+
     return {
       category,
-      frequency,
-      intensity: frequency / filteredLogs.length || 0
+      sets: totalSets,
+      sessions: uniqueSessions,
+      color: CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS]
     };
-  }).sort((a, b) => b.frequency - a.frequency);
+  }).sort((a, b) => b.sets - a.sets);
 
   // Calculate trends
   const calculateTrend = (data: any[], key: string) => {
@@ -114,7 +141,12 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="p-6 col-span-full">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <h2 className="text-xl font-semibold">Performance Overview</h2>
+          <div>
+            <h2 className="text-xl font-semibold">Performance Overview</h2>
+            <p className="text-sm text-muted-foreground">
+              {selectedMetric === "weight" ? "Average Weight Lifted per Session" : "Total Volume per Session"}
+            </p>
+          </div>
           <div className="flex gap-4">
             <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
               <SelectTrigger className="w-[120px]">
@@ -142,25 +174,34 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
         
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={progressData}>
-              <defs>
-                <linearGradient id="colorProgress" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1}/>
-                </linearGradient>
-              </defs>
+            <LineChart data={progressData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
+              <XAxis 
+                dataKey="date"
+                label={{ 
+                  value: 'Date',
+                  position: 'insideBottom',
+                  offset: -5
+                }}
+              />
+              <YAxis
+                label={{ 
+                  value: selectedMetric === "weight" ? 'Weight (kg)' : 'Volume (kg × reps)',
+                  angle: -90,
+                  position: 'insideLeft',
+                  offset: 10
+                }}
+              />
               <Tooltip content={<CustomTooltip />} />
-              <Area
+              <Legend />
+              <Line
                 type="monotone"
                 dataKey={selectedMetric}
                 stroke="#8884d8"
-                fillOpacity={1}
-                fill="url(#colorProgress)"
+                dot={{ r: 4 }}
+                activeDot={{ r: 8 }}
               />
-            </AreaChart>
+            </LineChart>
           </ResponsiveContainer>
         </div>
 
@@ -177,7 +218,10 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
               )}
             </div>
             <div>
-              <Label>Weight Trend</Label>
+              <div className="flex items-center gap-2">
+                <Label>Weight Trend</Label>
+                <Dumbbell className="h-4 w-4 text-muted-foreground" />
+              </div>
               <p className={cn(
                 "text-sm font-medium",
                 weightTrend > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
@@ -225,7 +269,16 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                 fill="#8884d8"
                 fillOpacity={0.6}
               />
+              <Radar
+                name="Baseline"
+                dataKey="baseline"
+                stroke="#82ca9d"
+                strokeDasharray="3 3"
+                fill="#82ca9d"
+                fillOpacity={0.2}
+              />
               <Tooltip content={<CustomTooltip />} />
+              <Legend />
             </RadarChart>
           </ResponsiveContainer>
         </div>
@@ -236,7 +289,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
         <div className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={heatmapData}
+              data={frequencyData}
               layout="vertical"
               margin={{ left: 100 }}
             >
@@ -244,16 +297,15 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
               <XAxis type="number" />
               <YAxis type="category" dataKey="category" width={100} />
               <Tooltip content={<CustomTooltip />} />
-              <Bar
-                dataKey="frequency"
-                fill="#82ca9d"
-                background={{ fill: '#eee' }}
-              >
-                {heatmapData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={`rgb(${Math.round(255 * (1 - entry.intensity))}, ${Math.round(255 * entry.intensity)}, 100)`}
-                  />
+              <Legend />
+              <Bar name="Total Sets" dataKey="sets" fill="#82ca9d">
+                {frequencyData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+              <Bar name="Unique Sessions" dataKey="sessions" fill="#8884d8">
+                {frequencyData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} opacity={0.6} />
                 ))}
               </Bar>
             </BarChart>
