@@ -169,8 +169,12 @@ export default function SavedExercises() {
         format: "a4",
       });
 
-      pdf.addFont("Helvetica", "Helvetica", "normal");
-      pdf.setFont("Helvetica");
+      // Set NotoSans font
+      pdf.setFont('NotoSans', 'normal');
+      
+      // Test Greek text rendering
+      pdf.setFontSize(12);
+      pdf.text('Ελληνικά Δεδομένα', 10, 10);
       
       const pageWidth = pdf.internal.pageSize.getWidth();
       const margin = 40;
@@ -184,19 +188,19 @@ export default function SavedExercises() {
       
       const headers = ["Date", "Category", "Exercise", "Set", "Weight (KG)", "Reps"];
       const columnWidths = [
-        availableWidth * 0.2, // Date
-        availableWidth * 0.15, // Category
-        availableWidth * 0.3, // Exercise
-        availableWidth * 0.1, // Set
-        availableWidth * 0.15, // Weight
-        availableWidth * 0.1  // Reps
+        availableWidth * 0.2,
+        availableWidth * 0.15,
+        availableWidth * 0.3,
+        availableWidth * 0.1,
+        availableWidth * 0.15,
+        availableWidth * 0.1
       ];
       
       let startY = margin + 50;
       const lineHeight = 25;
       
       pdf.setFontSize(11);
-      pdf.setFont("Helvetica", "bold");
+      pdf.setFont('NotoSans', 'bold');
       
       let currentX = margin;
       headers.forEach((header, index) => {
@@ -204,7 +208,7 @@ export default function SavedExercises() {
         currentX += columnWidths[index];
       });
       
-      pdf.setFont("Helvetica", "normal");
+      pdf.setFont('NotoSans', 'normal');
       pdf.setFontSize(10);
       startY += lineHeight;
       
@@ -212,14 +216,15 @@ export default function SavedExercises() {
         if (startY > pdf.internal.pageSize.getHeight() - margin) {
           pdf.addPage();
           startY = margin;
+          pdf.setFont('NotoSans', 'normal');
         }
         
         currentX = margin;
-        const exercise = sanitizePDFText(log.custom_exercise || log.exercises?.name || 'Unknown Exercise');
+        const exercise = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
         
         const rowData = [
           format(new Date(log.workout_date), 'PP'),
-          sanitizePDFText(log.category),
+          log.category,
           exercise,
           log.set_number.toString(),
           log.weight_kg?.toString() || '-',
@@ -234,10 +239,8 @@ export default function SavedExercises() {
             displayText = displayText.substring(0, 15) + "...";
           }
           
-          displayText = sanitizePDFText(displayText);
-          
           pdf.text(displayText, currentX, startY);
-          currentX += columnWidths[colIndex];
+          currentX += columnWidths[index];
         });
         
         startY += lineHeight;
@@ -246,6 +249,7 @@ export default function SavedExercises() {
       const pageCount = pdf.internal.pages.length - 1;
       for (let i = 1; i <= pageCount; i++) {
         pdf.setPage(i);
+        pdf.setFont('NotoSans', 'normal');
         pdf.setFontSize(8);
         pdf.text(
           `Page ${i} of ${pageCount}`,
