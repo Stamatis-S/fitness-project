@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,23 +22,13 @@ import {
 import type { WorkoutLog } from "@/pages/Dashboard";
 import { CustomTooltip } from "./CustomTooltip";
 import { format, subMonths } from "date-fns";
-import { EXERCISE_CATEGORIES } from "@/lib/constants";
+import { EXERCISE_CATEGORIES, CATEGORY_COLORS } from "@/lib/constants";
 
 interface DashboardStatisticsProps {
   workoutLogs: WorkoutLog[];
 }
 
 type TimeRange = "1M" | "3M" | "6M" | "1Y" | "ALL";
-
-const CATEGORY_COLORS = {
-  "ΣΤΗΘΟΣ": "#F97316", // Bright Orange
-  "ΠΛΑΤΗ": "#8B5CF6", // Vivid Purple
-  "ΔΙΚΕΦΑΛΑ": "#0EA5E9", // Ocean Blue
-  "ΤΡΙΚΕΦΑΛΑ": "#7E69AB", // Secondary Purple
-  "ΩΜΟΙ": "#D946EF", // Magenta Pink
-  "ΠΟΔΙΑ": "#2563EB", // Royal Blue
-  "ΚΟΡΜΟΣ": "#FEC6A1", // Soft Orange
-};
 
 export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("3M");
@@ -61,7 +50,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
 
   const filteredLogs = getFilteredData();
 
-  // Category distribution data
+  // Update the color references in your data processing
   const categoryDistribution = filteredLogs.reduce((acc: any[], log) => {
     const existingCategory = acc.find(cat => cat.name === log.category);
     if (existingCategory) {
@@ -82,7 +71,6 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
     item.percentage = Number(((item.value / total) * 100).toFixed(1));
   });
 
-  // Max weight per exercise data
   const maxWeightData = Object.entries(
     filteredLogs.reduce((acc: Record<string, { weight: number; category: string }>, log) => {
       const exerciseName = log.custom_exercise || log.exercises?.name;
@@ -91,7 +79,8 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
       if (!acc[exerciseName] || acc[exerciseName].weight < log.weight_kg) {
         acc[exerciseName] = { 
           weight: log.weight_kg,
-          category: log.category
+          category: log.category,
+          color: CATEGORY_COLORS[log.category as keyof typeof CATEGORY_COLORS]
         };
       }
       return acc;
@@ -101,10 +90,10 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
       exercise,
       maxWeight: data.weight,
       category: data.category,
-      color: CATEGORY_COLORS[data.category as keyof typeof CATEGORY_COLORS]
+      color: data.color
     }))
     .sort((a, b) => b.maxWeight - a.maxWeight)
-    .slice(0, 10); // Top 10 exercises by max weight
+    .slice(0, 10);
 
   // Calculate baseline averages for radar chart
   const calculateBaselines = () => {

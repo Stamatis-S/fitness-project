@@ -1,4 +1,3 @@
-
 export const EXERCISE_CATEGORIES = {
   "ΣΤΗΘΟΣ": { color: "#f87171", gradientClass: "from-red-500 to-red-600" },
   "ΠΛΑΤΗ": { color: "#60a5fa", gradientClass: "from-blue-500 to-blue-600" },
@@ -10,3 +9,15 @@ export const EXERCISE_CATEGORIES = {
 } as const;
 
 export type ExerciseCategory = keyof typeof EXERCISE_CATEGORIES;
+
+export const CATEGORY_COLORS = {
+  "ΣΤΗΘΟΣ": "#FF0000",    // Red
+  "ΠΛΑΤΗ": "#4488EF",     // Blue
+  "ΔΙΚΕΦΑΛΑ": "#A855F7",  // Purple
+  "ΤΡΙΚΕΦΑΛΑ": "#6366F1", // Indigo
+  "ΩΜΟΙ": "#22C55E",      // Green
+  "ΠΟΔΙΑ": "#EAB308",     // Yellow
+  "ΚΟΡΜΟΣ": "#EC4899",    // Pink
+} as const;
+
+export type CategoryColor = keyof typeof CATEGORY_COLORS;
