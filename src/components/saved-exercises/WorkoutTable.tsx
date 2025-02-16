@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { WorkoutLog } from "./types";
+import { WorkoutLog, WorkoutLogUpdate } from "./types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
@@ -34,7 +33,7 @@ import { CalendarIcon } from "lucide-react";
 interface WorkoutTableProps {
   logs: WorkoutLog[];
   onDelete: (id: number) => void;
-  onEdit: (id: number, updatedLog: Partial<WorkoutLog>) => void;
+  onEdit: (id: number, updatedLog: WorkoutLogUpdate) => void;
 }
 
 export function WorkoutTable({ logs, onDelete, onEdit }: WorkoutTableProps) {
@@ -62,14 +61,14 @@ export function WorkoutTable({ logs, onDelete, onEdit }: WorkoutTableProps) {
   const handleDateSelect = (date: Date | undefined) => {
     if (date) {
       setEditDate(date);
-      setIsDatePickerOpen(false); // Close the date picker after selection
+      setIsDatePickerOpen(false);
     }
   };
 
   const handleSave = () => {
     if (!editingLog || !editDate) return;
 
-    const updates: Partial<WorkoutLog> = {
+    const updates: WorkoutLogUpdate = {
       workout_date: editDate.toISOString().split('T')[0],
       weight_kg: editWeight ? parseFloat(editWeight) : null,
       reps: editReps ? parseInt(editReps) : null,

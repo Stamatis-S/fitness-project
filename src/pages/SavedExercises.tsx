@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/pagination";
 import { WorkoutFilters } from "@/components/saved-exercises/WorkoutFilters";
 import { WorkoutTable } from "@/components/saved-exercises/WorkoutTable";
-import type { WorkoutLog } from "@/components/saved-exercises/types";
+import type { WorkoutLog, WorkoutLogUpdate } from "@/components/saved-exercises/types";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -66,7 +66,7 @@ export default function SavedExercises() {
     }
   };
 
-  const handleEdit = async (id: number, updates: Partial<WorkoutLog>) => {
+  const handleEdit = async (id: number, updates: WorkoutLogUpdate) => {
     try {
       const { error } = await supabase
         .from('workout_logs')
