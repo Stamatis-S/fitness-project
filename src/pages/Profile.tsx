@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,12 +9,22 @@ import { ChevronLeft, Edit2, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, isValid } from "date-fns";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/hooks/useLanguage";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ProfileData {
   username: string | null;
   fitness_score: number;
   fitness_level: string;
   last_score_update: string;
+  language_preference: 'en' | 'el';
 }
 
 export default function Profile() {
@@ -24,11 +33,12 @@ export default function Profile() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState("");
+  const { t } = useTranslation();
+  const { currentLanguage, changeLanguage, isChanging } = useLanguage();
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        // First, trigger a recalculation of the fitness score
         const { error: calcError } = await supabase.rpc(
           'calculate_fitness_score',
           { user_id_param: session?.user.id }
@@ -36,10 +46,9 @@ export default function Profile() {
 
         if (calcError) throw calcError;
 
-        // Then fetch the updated profile data
         const { data, error } = await supabase
           .from('profiles')
-          .select('username, fitness_score, fitness_level, last_score_update')
+          .select('username, fitness_score, fitness_level, last_score_update, language_preference')
           .eq('id', session?.user.id)
           .single();
 
@@ -47,7 +56,7 @@ export default function Profile() {
         setProfile(data);
         setNewUsername(data.username || "");
       } catch (error) {
-        toast.error("Error loading profile");
+        toast.error(t('error'));
         console.error("Error:", error);
       }
     };
@@ -55,7 +64,7 @@ export default function Profile() {
     if (session?.user.id) {
       fetchProfile();
     }
-  }, [session?.user.id]);
+  }, [session?.user.id, t]);
 
   const handleUpdateUsername = async () => {
     try {
@@ -120,7 +129,9 @@ export default function Profile() {
       <div className="max-w-3xl mx-auto space-y-8">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex-1" />
-          <h1 className="text-4xl font-bold tracking-tight text-center flex-1">Profile</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-center flex-1">
+            {t('profile.title')}
+          </h1>
           <div className="flex-1 flex justify-end">
             <Button
               variant="ghost"
@@ -128,12 +139,31 @@ export default function Profile() {
               onClick={() => navigate("/")}
             >
               <ChevronLeft className="h-4 w-4" />
-              Back to Home
+              {t('common.back_to_home')}
             </Button>
           </div>
         </div>
         
         <Card className="p-6 space-y-6 border bg-card text-card-foreground shadow-sm">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold">{t('profile.language_settings')}</h2>
+            <div className="flex items-center gap-4">
+              <Select
+                value={currentLanguage}
+                onValueChange={(value: 'en' | 'el') => changeLanguage(value)}
+                disabled={isChanging}
+              >
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder={t('profile.language')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">{t('profile.english')}</SelectItem>
+                  <SelectItem value="el">{t('profile.greek')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold">Account Information</h2>
             <p className="text-muted-foreground">

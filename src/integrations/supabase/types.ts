@@ -30,6 +30,32 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_translations: {
+        Row: {
+          exercise_id: number
+          language: string
+          name: string
+        }
+        Insert: {
+          exercise_id: number
+          language: string
+          name: string
+        }
+        Update: {
+          exercise_id?: number
+          language?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_translations_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercises: {
         Row: {
           category: Database["public"]["Enums"]["exercise_category"]
@@ -57,6 +83,7 @@ export type Database = {
           fitness_level: string | null
           fitness_score: number | null
           id: string
+          language_preference: string | null
           last_score_update: string | null
           updated_at: string
           username: string | null
@@ -66,6 +93,7 @@ export type Database = {
           fitness_level?: string | null
           fitness_score?: number | null
           id: string
+          language_preference?: string | null
           last_score_update?: string | null
           updated_at?: string
           username?: string | null
@@ -75,6 +103,7 @@ export type Database = {
           fitness_level?: string | null
           fitness_score?: number | null
           id?: string
+          language_preference?: string | null
           last_score_update?: string | null
           updated_at?: string
           username?: string | null
