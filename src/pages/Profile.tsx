@@ -118,16 +118,19 @@ export default function Profile() {
   return (
     <div className="min-h-screen p-8 bg-gradient-to-b from-background to-muted">
       <div className="max-w-3xl mx-auto space-y-8">
-        <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold tracking-tight">Profile</h1>
-          <Button
-            variant="ghost"
-            className="flex items-center gap-2 hover:bg-accent"
-            onClick={() => navigate("/")}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back to Home
-          </Button>
+        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+          <div className="flex-1" />
+          <h1 className="text-4xl font-bold tracking-tight text-center flex-1">Profile</h1>
+          <div className="flex-1 flex justify-end">
+            <Button
+              variant="ghost"
+              className="flex items-center gap-2 hover:bg-accent"
+              onClick={() => navigate("/")}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Back to Home
+            </Button>
+          </div>
         </div>
         
         <Card className="p-6 space-y-6 border bg-card text-card-foreground shadow-sm">

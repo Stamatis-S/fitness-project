@@ -55,11 +55,14 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <h1 className="text-3xl font-bold">My Dashboard</h1>
-          <Button variant="outline" onClick={() => navigate("/")}>
-            Back to Home
-          </Button>
+        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+          <div className="flex-1" />
+          <h1 className="text-4xl font-bold text-center flex-1">My Dashboard</h1>
+          <div className="flex-1 flex justify-end">
+            <Button variant="outline" onClick={() => navigate("/")}>
+              Back to Home
+            </Button>
+          </div>
         </div>
 
         {workoutLogs && <WorkoutInsights logs={workoutLogs} />}
