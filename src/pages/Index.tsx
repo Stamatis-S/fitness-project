@@ -38,16 +38,15 @@ const Index = () => {
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-background to-muted">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
-          <div className="text-left space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight">
-              Add Exercise
-            </h1>
-            <p className="text-sm text-muted-foreground">
+        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+          <div className="flex-1" />
+          <h1 className="text-4xl font-bold text-center flex-1">
+            Add Exercise
+            <span className="block text-lg font-medium text-muted-foreground mt-1">
               Log your workout details
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+            </span>
+          </h1>
+          <div className="flex-1 flex justify-end">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
