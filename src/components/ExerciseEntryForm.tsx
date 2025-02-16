@@ -62,11 +62,11 @@ export function ExerciseEntryForm() {
     }
 
     const hasInvalidSets = data.sets.some(set => 
-      !set.weight || !set.reps || set.weight < 0 || set.reps < 0
+      set.weight < 0 || set.reps < 0 || !Number.isInteger(set.reps)
     );
 
     if (hasInvalidSets) {
-      toast.error("Please enter valid weight and reps for all sets");
+      toast.error("Please enter valid values. Weight must be 0 or greater, and reps must be a positive whole number.");
       return;
     }
 

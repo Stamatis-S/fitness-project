@@ -23,8 +23,8 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     // Convert to number and handle empty input
     const numValue = value === '' ? 0 : Number(value);
     
-    // Update only if it's a valid number
-    if (!isNaN(numValue)) {
+    // Update only if it's a valid number and not negative
+    if (!isNaN(numValue) && numValue >= 0) {
       setValue(`sets.${index}.weight`, numValue);
     }
   };
@@ -36,7 +36,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
 
   const handleRepsIncrement = (increment: number) => {
     const newValue = Math.max(0, (currentReps || 0) + increment);
-    setValue(`sets.${index}.reps`, newValue);
+    setValue(`sets.${index}.reps`, Math.floor(newValue)); // Ensure whole numbers for reps
   };
 
   return (
@@ -92,9 +92,10 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               type="number"
               inputMode="decimal"
               className="h-12 text-center text-lg font-medium"
-              value={currentWeight || ''}
+              value={currentWeight || 0}
               onChange={(e) => handleWeightChange(e.target.value)}
               min={0}
+              step="0.5"
             />
             <Button
               type="button"
@@ -116,7 +117,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
           <div className="px-2">
             <Slider
               value={[currentReps || 0]}
-              onValueChange={(values) => setValue(`sets.${index}.reps`, values[0])}
+              onValueChange={(values) => setValue(`sets.${index}.reps`, Math.floor(values[0]))}
               max={30}
               step={1}
               className="py-4"
@@ -136,10 +137,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               type="number"
               inputMode="numeric"
               className="h-12 text-center text-lg font-medium"
-              {...register(`sets.${index}.reps` as const, { 
-                valueAsNumber: true,
-                min: 0 
-              })}
+              value={currentReps || 0}
+              onChange={(e) => setValue(`sets.${index}.reps`, Math.max(0, Math.floor(Number(e.target.value))))}
+              min={0}
             />
             <Button
               type="button"
