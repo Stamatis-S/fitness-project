@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -164,54 +163,73 @@ export default function SavedExercises() {
     }
 
     try {
-      const pdf = new jsPDF();
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "pt",
+        format: "a4",
+      });
+
+      // Add Unicode font
+      pdf.addFont("Helvetica", "Helvetica", "normal");
+      pdf.setFont("Helvetica");
+      
       const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 40;
+      const availableWidth = pageWidth - (2 * margin);
       
       // Add title
       pdf.setFontSize(20);
-      pdf.text("Workout Logs", pageWidth / 2, 15, { align: "center" });
+      pdf.text("Workout Logs", pageWidth / 2, margin, { align: "center" });
       
       // Add date
       pdf.setFontSize(12);
-      pdf.text(`Generated on: ${format(new Date(), 'PPP')}`, pageWidth / 2, 25, { align: "center" });
+      pdf.text(`Generated on: ${format(new Date(), 'PPP')}`, pageWidth / 2, margin + 25, { align: "center" });
       
       // Table headers
       const headers = ["Date", "Category", "Exercise", "Set", "Weight (KG)", "Reps"];
-      const columnWidths = [35, 25, 50, 15, 35, 20];
-      let startY = 40;
-      const lineHeight = 8;
+      const columnWidths = [
+        availableWidth * 0.2, // Date
+        availableWidth * 0.15, // Category
+        availableWidth * 0.3, // Exercise
+        availableWidth * 0.1, // Set
+        availableWidth * 0.15, // Weight
+        availableWidth * 0.1  // Reps
+      ];
+      
+      let startY = margin + 50;
+      const lineHeight = 25;
       
       // Style for headers
-      pdf.setFont("helvetica", "bold");
       pdf.setFontSize(11);
+      pdf.setFont("Helvetica", "bold");
       
       // Draw headers
-      let currentX = 10;
+      let currentX = margin;
       headers.forEach((header, index) => {
         pdf.text(header, currentX, startY);
         currentX += columnWidths[index];
       });
       
       // Style for data
-      pdf.setFont("helvetica", "normal");
+      pdf.setFont("Helvetica", "normal");
       pdf.setFontSize(10);
       startY += lineHeight;
       
       // Draw data rows
-      filteredLogs.forEach((log, index) => {
+      filteredLogs.forEach((log) => {
         // Check if we need a new page
-        if (startY > pdf.internal.pageSize.getHeight() - 20) {
+        if (startY > pdf.internal.pageSize.getHeight() - margin) {
           pdf.addPage();
-          startY = 20;
+          startY = margin;
         }
         
-        currentX = 10;
-        const exercise = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
+        currentX = margin;
+        const exercise = sanitizePDFText(log.custom_exercise || log.exercises?.name || 'Unknown Exercise');
         
         // Format data
         const rowData = [
           format(new Date(log.workout_date), 'PP'),
-          log.category,
+          sanitizePDFText(log.category),
           exercise,
           log.set_number.toString(),
           log.weight_kg?.toString() || '-',
@@ -220,13 +238,15 @@ export default function SavedExercises() {
         
         // Draw row
         rowData.forEach((text, colIndex) => {
-          // Handle long text
-          const maxWidth = columnWidths[colIndex] - 2;
-          if (pdf.getTextWidth(text) > maxWidth) {
-            text = text.substring(0, 15) + "...";
+          const maxWidth = columnWidths[colIndex] - 5;
+          let displayText = text;
+          
+          // Truncate text if too long
+          if (pdf.getTextWidth(displayText) > maxWidth) {
+            displayText = displayText.substring(0, 15) + "...";
           }
           
-          pdf.text(text, currentX, startY);
+          pdf.text(displayText, currentX, startY);
           currentX += columnWidths[colIndex];
         });
         
@@ -240,8 +260,8 @@ export default function SavedExercises() {
         pdf.setFontSize(8);
         pdf.text(
           `Page ${i} of ${pageCount}`,
-          pdf.internal.pageSize.getWidth() / 2,
-          pdf.internal.pageSize.getHeight() - 10,
+          pageWidth / 2,
+          pdf.internal.pageSize.getHeight() - margin,
           { align: "center" }
         );
       }
@@ -277,6 +297,13 @@ export default function SavedExercises() {
       return `"${stringField.replace(/"/g, '""')}"`;
     }
     return stringField;
+  };
+
+  const sanitizePDFText = (text: string | number | null): string => {
+    if (text === null || text === undefined) return '-';
+    return String(text)
+      .normalize('NFKC') // Normalize Unicode characters
+      .replace(/[^\x20-\x7E\u0370-\u03FF]/g, '-'); // Keep ASCII and Greek ranges
   };
 
   const filteredLogs = filterLogs(workoutLogs);
