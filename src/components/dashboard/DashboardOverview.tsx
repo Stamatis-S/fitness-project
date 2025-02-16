@@ -7,18 +7,14 @@ import {
   ResponsiveContainer,
   Tooltip,
   Legend,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid
 } from "recharts";
 import type { WorkoutLog } from "@/pages/Dashboard";
 import { EXERCISE_CATEGORIES } from "@/lib/constants";
 import { CustomTooltip } from "./CustomTooltip";
-import { Dumbbell, Target, TrendingUp, TrendingDown } from "lucide-react";
+import { Dumbbell, Target, TrendingUp, TrendingDown, Activity } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface DashboardOverviewProps {
   workoutLogs: WorkoutLog[];
@@ -31,13 +27,13 @@ type CategoryData = {
 };
 
 const CATEGORY_COLORS = {
-  "ΣΤΗΘΟΣ": "#F97316", // Bright Orange
-  "ΠΛΑΤΗ": "#8B5CF6", // Vivid Purple
-  "ΔΙΚΕΦΑΛΑ": "#0EA5E9", // Ocean Blue
-  "ΤΡΙΚΕΦΑΛΑ": "#7E69AB", // Secondary Purple
-  "ΩΜΟΙ": "#D946EF", // Magenta Pink
-  "ΠΟΔΙΑ": "#2563EB", // Royal Blue
-  "ΚΟΡΜΟΣ": "#FEC6A1", // Soft Orange
+  "ΣΤΗΘΟΣ": "#F2FCE2", // Soft Green
+  "ΠΛΑΤΗ": "#FEF7CD", // Soft Yellow
+  "ΔΙΚΕΦΑΛΑ": "#FEC6A1", // Soft Orange
+  "ΤΡΙΚΕΦΑΛΑ": "#E5DEFF", // Soft Purple
+  "ΩΜΟΙ": "#FFDEE2", // Soft Pink
+  "ΠΟΔΙΑ": "#D3E4FD", // Soft Blue
+  "ΚΟΡΜΟΣ": "#F1F0FB", // Soft Gray
 };
 
 export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
@@ -89,33 +85,21 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
       return { exercise, weight, percentChange };
     };
 
+    const getTotalVolume = () => {
+      const thisWeekVolume = thisWeekLogs.reduce((sum, log) => sum + (log.weight_kg * log.reps), 0);
+      const lastWeekVolume = lastWeekLogs.reduce((sum, log) => sum + (log.weight_kg * log.reps), 0);
+      const percentChange = lastWeekVolume ? ((thisWeekVolume - lastWeekVolume) / lastWeekVolume) * 100 : 0;
+      return { volume: thisWeekVolume, percentChange };
+    };
+
     return {
       mostUsed: getMostUsed(),
-      maxWeight: getMaxWeight()
+      maxWeight: getMaxWeight(),
+      volume: getTotalVolume()
     };
   };
 
   const metrics = calculateMetrics();
-
-  // Progress over time data
-  const progressData = workoutLogs
-    .reduce((acc: any[], log) => {
-      const date = format(new Date(log.workout_date), 'MMM dd');
-      const existingDay = acc.find(item => item.date === date);
-      
-      if (existingDay) {
-        existingDay.maxWeight = Math.max(existingDay.maxWeight, log.weight_kg || 0);
-        existingDay.totalSets++;
-      } else {
-        acc.push({
-          date,
-          maxWeight: log.weight_kg || 0,
-          totalSets: 1
-        });
-      }
-      return acc;
-    }, [])
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   // Category distribution data
   const categoryDistribution = workoutLogs.reduce((acc: CategoryData[], log) => {
@@ -135,95 +119,155 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card className="p-6 col-span-full">
-        <h2 className="text-2xl font-bold mb-6">Key Metrics</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Target className="h-5 w-5" />
-              <span className="text-lg">Most Used Exercise</span>
-            </div>
-            <p className="text-3xl font-bold">{metrics.mostUsed.exercise}</p>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-medium">{metrics.mostUsed.count} sets</span>
-              {metrics.mostUsed.percentChange !== 0 && (
-                <span className={cn(
-                  "flex items-center text-sm",
-                  metrics.mostUsed.percentChange > 0 ? "text-green-600" : "text-red-600"
-                )}>
-                  {metrics.mostUsed.percentChange > 0 ? (
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 mr-1" />
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="col-span-full"
+      >
+        <Card className="p-6 bg-gradient-to-br from-background to-muted/20">
+          <h2 className="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+            Key Metrics
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-muted-foreground">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Target className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-lg font-medium">Most Used Exercise</span>
+              </div>
+              <div className="pl-12">
+                <p className="text-3xl font-bold tracking-tight">{metrics.mostUsed.exercise}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-lg">{metrics.mostUsed.count} sets</span>
+                  {metrics.mostUsed.percentChange !== 0 && (
+                    <motion.span 
+                      initial={{ scale: 0.95 }}
+                      animate={{ scale: 1 }}
+                      className={cn(
+                        "flex items-center text-sm px-2 py-1 rounded-full",
+                        metrics.mostUsed.percentChange > 0 
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+                          : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+                      )}
+                    >
+                      {metrics.mostUsed.percentChange > 0 ? (
+                        <TrendingUp className="h-4 w-4 mr-1" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4 mr-1" />
+                      )}
+                      {Math.abs(metrics.mostUsed.percentChange).toFixed(1)}%
+                    </motion.span>
                   )}
-                  {Math.abs(metrics.mostUsed.percentChange).toFixed(1)}% from last week
-                </span>
-              )}
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Dumbbell className="h-5 w-5" />
-              <span className="text-lg">Most Weight Lifted</span>
-            </div>
-            <p className="text-3xl font-bold">{metrics.maxWeight.exercise}</p>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-medium">{metrics.maxWeight.weight} kg</span>
-              {metrics.maxWeight.percentChange !== 0 && (
-                <span className={cn(
-                  "flex items-center text-sm",
-                  metrics.maxWeight.percentChange > 0 ? "text-green-600" : "text-red-600"
-                )}>
-                  {metrics.maxWeight.percentChange > 0 ? (
-                    <TrendingUp className="h-4 w-4 mr-1" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 mr-1" />
+            
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-muted-foreground">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Dumbbell className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-lg font-medium">Most Weight Lifted</span>
+              </div>
+              <div className="pl-12">
+                <p className="text-3xl font-bold tracking-tight">{metrics.maxWeight.exercise}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-lg">{metrics.maxWeight.weight} kg</span>
+                  {metrics.maxWeight.percentChange !== 0 && (
+                    <motion.span 
+                      initial={{ scale: 0.95 }}
+                      animate={{ scale: 1 }}
+                      className={cn(
+                        "flex items-center text-sm px-2 py-1 rounded-full",
+                        metrics.maxWeight.percentChange > 0 
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+                          : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+                      )}
+                    >
+                      {metrics.maxWeight.percentChange > 0 ? (
+                        <TrendingUp className="h-4 w-4 mr-1" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4 mr-1" />
+                      )}
+                      {Math.abs(metrics.maxWeight.percentChange).toFixed(1)}%
+                    </motion.span>
                   )}
-                  {Math.abs(metrics.maxWeight.percentChange).toFixed(1)}% from last week
-                </span>
-              )}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </Card>
 
-      <Card className="p-6 col-span-full">
-        <h2 className="text-xl font-semibold mb-4">Progress Over Time</h2>
-        <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={progressData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="date" 
-                label={{ value: 'Date', position: 'insideBottom', offset: -5 }}
-              />
-              <YAxis 
-                label={{ value: 'Weight (kg)', angle: -90, position: 'insideLeft' }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="maxWeight"
-                name="Max Weight"
-                stroke="#8884d8"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 8 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="totalSets"
-                name="Total Sets"
-                stroke="#82ca9d"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                activeDot={{ r: 8 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </Card>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-muted-foreground">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Activity className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-lg font-medium">Weekly Volume</span>
+              </div>
+              <div className="pl-12">
+                <p className="text-3xl font-bold tracking-tight">{Math.round(metrics.volume.volume).toLocaleString()} kg</p>
+                <div className="flex items-center gap-2 mt-2">
+                  {metrics.volume.percentChange !== 0 && (
+                    <motion.span 
+                      initial={{ scale: 0.95 }}
+                      animate={{ scale: 1 }}
+                      className={cn(
+                        "flex items-center text-sm px-2 py-1 rounded-full",
+                        metrics.volume.percentChange > 0 
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+                          : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+                      )}
+                    >
+                      {metrics.volume.percentChange > 0 ? (
+                        <TrendingUp className="h-4 w-4 mr-1" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4 mr-1" />
+                      )}
+                      {Math.abs(metrics.volume.percentChange).toFixed(1)}%
+                    </motion.span>
+                  )}
+                  <span className="text-sm text-muted-foreground">vs last week</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="col-span-full"
+      >
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-6">Exercise Distribution</h2>
+          <div className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={categoryDistribution}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={150}
+                  label={({ name, percentage }) => `${name} (${percentage}%)`}
+                >
+                  {categoryDistribution.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={CATEGORY_COLORS[entry.name as keyof typeof CATEGORY_COLORS]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      </motion.div>
     </div>
   );
 }
