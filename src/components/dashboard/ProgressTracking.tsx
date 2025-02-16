@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import type { WorkoutLog } from "@/pages/Dashboard";
 import { CustomTooltip } from "./CustomTooltip";
@@ -56,25 +55,51 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
   }, [workoutLogs]);
 
   const progressData = useMemo(() => {
-    const dataByDate = new Map<string, { [key: string]: number }>();
+    const dataMap = new Map<string, Map<string, number>>();
+    
+    const sortedLogs = [...workoutLogs].sort((a, b) => 
+      new Date(a.workout_date).getTime() - new Date(b.workout_date).getTime()
+    );
 
-    workoutLogs.forEach(log => {
-      const date = format(new Date(log.workout_date), 'MMM yyyy');
+    sortedLogs.forEach(log => {
+      const date = log.workout_date;
       const exercise = log.custom_exercise || log.exercises?.name;
+      
       if (!exercise) return;
-
-      if (!dataByDate.has(date)) {
-        dataByDate.set(date, {});
+      
+      if (!dataMap.has(date)) {
+        dataMap.set(date, new Map());
       }
-      const dateData = dataByDate.get(date)!;
-      dateData[exercise] = Math.max(dateData[exercise] || 0, log.weight_kg);
+      
+      const exerciseMap = dataMap.get(date)!;
+      const currentMax = exerciseMap.get(exercise) || 0;
+      exerciseMap.set(exercise, Math.max(currentMax, log.weight_kg || 0));
     });
 
-    return Array.from(dataByDate.entries()).map(([date, values]) => ({
-      date,
-      ...values,
-    }));
-  }, [workoutLogs]);
+    const chartData = Array.from(dataMap.entries()).map(([date, exerciseMap]) => {
+      const dataPoint: { [key: string]: any } = {
+        date: format(parseISO(date), 'MMM d, yyyy'),
+        rawDate: date,
+      };
+      
+      selectedExercises.forEach(exercise => {
+        dataPoint[exercise] = exerciseMap.get(exercise) || null;
+      });
+      
+      return dataPoint;
+    });
+
+    return chartData.sort((a, b) => 
+      new Date(a.rawDate).getTime() - new Date(b.rawDate).getTime()
+    );
+  }, [workoutLogs, selectedExercises]);
+
+  console.log('Chart Data:', {
+    selectedExercises,
+    progressData,
+    totalLogs: workoutLogs.length,
+    uniqueDates: new Set(workoutLogs.map(log => log.workout_date)).size,
+  });
 
   return (
     <Card className="p-6">
@@ -82,7 +107,12 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
         <h2 className="text-xl font-semibold">Progress Over Time</h2>
         <Button
           variant="outline"
-          onClick={() => setCompareMode(!compareMode)}
+          onClick={() => {
+            if (!compareMode && selectedExercises.length > 2) {
+              setSelectedExercises(selectedExercises.slice(0, 2));
+            }
+            setCompareMode(!compareMode);
+          }}
           className="shrink-0"
         >
           {compareMode ? "Exit Compare Mode" : "Compare Exercises"}
@@ -124,10 +154,26 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
       
       <div className="h-[400px] mt-4">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={progressData}>
+          <LineChart
+            data={progressData}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
+            <XAxis
+              dataKey="date"
+              tickFormatter={(value) => value}
+              angle={-45}
+              textAnchor="end"
+              height={80}
+            />
+            <YAxis
+              label={{ 
+                value: 'Weight (kg)', 
+                angle: -90, 
+                position: 'insideLeft',
+                style: { textAnchor: 'middle' }
+              }}
+            />
             <RechartsTooltip content={<CustomTooltip />} />
             <Legend />
             {selectedExercises
@@ -139,6 +185,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                   dataKey={exercise}
                   stroke={COLORS[index % COLORS.length]}
                   dot={{ r: 4 }}
+                  connectNulls={true}
                 />
               ))}
           </LineChart>
