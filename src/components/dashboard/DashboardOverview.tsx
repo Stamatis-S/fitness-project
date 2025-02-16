@@ -1,16 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-} from "recharts";
 import type { WorkoutLog } from "@/pages/Dashboard";
-import { EXERCISE_CATEGORIES } from "@/lib/constants";
-import { CustomTooltip } from "./CustomTooltip";
 import { Dumbbell, Target, TrendingUp, TrendingDown, Activity } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -19,22 +9,6 @@ import { motion } from "framer-motion";
 interface DashboardOverviewProps {
   workoutLogs: WorkoutLog[];
 }
-
-type CategoryData = {
-  name: string;
-  value: number;
-  percentage?: number;
-};
-
-const CATEGORY_COLORS = {
-  "ΣΤΗΘΟΣ": "#F2FCE2", // Soft Green
-  "ΠΛΑΤΗ": "#FEF7CD", // Soft Yellow
-  "ΔΙΚΕΦΑΛΑ": "#FEC6A1", // Soft Orange
-  "ΤΡΙΚΕΦΑΛΑ": "#E5DEFF", // Soft Purple
-  "ΩΜΟΙ": "#FFDEE2", // Soft Pink
-  "ΠΟΔΙΑ": "#D3E4FD", // Soft Blue
-  "ΚΟΡΜΟΣ": "#F1F0FB", // Soft Gray
-};
 
 export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   // Calculate key metrics with weekly comparison
@@ -100,22 +74,6 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   };
 
   const metrics = calculateMetrics();
-
-  // Category distribution data
-  const categoryDistribution = workoutLogs.reduce((acc: CategoryData[], log) => {
-    const existingCategory = acc.find(cat => cat.name === log.category);
-    if (existingCategory) {
-      existingCategory.value++;
-    } else {
-      acc.push({ name: log.category, value: 1 });
-    }
-    return acc;
-  }, []);
-
-  const total = categoryDistribution.reduce((sum, item) => sum + item.value, 0);
-  categoryDistribution.forEach(item => {
-    item.percentage = Number(((item.value / total) * 100).toFixed(2));
-  });
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -230,41 +188,6 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
                 </div>
               </div>
             </div>
-          </div>
-        </Card>
-      </motion.div>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="col-span-full"
-      >
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-6">Exercise Distribution</h2>
-          <div className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={categoryDistribution}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={150}
-                  label={({ name, percentage }) => `${name} (${percentage}%)`}
-                >
-                  {categoryDistribution.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={CATEGORY_COLORS[entry.name as keyof typeof CATEGORY_COLORS]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
           </div>
         </Card>
       </motion.div>
