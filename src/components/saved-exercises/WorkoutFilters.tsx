@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { EXERCISE_CATEGORIES } from "@/lib/constants";
+import { EXERCISE_CATEGORIES, CATEGORY_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 interface WorkoutFiltersProps {
@@ -50,14 +50,14 @@ export function WorkoutFilters({
             >
               All Categories
             </Button>
-            {Object.entries(EXERCISE_CATEGORIES).map(([name, { gradientClass }]) => (
+            {Object.entries(EXERCISE_CATEGORIES).map(([name]) => (
               <Button
                 key={name}
                 className={cn(
                   "text-white rounded-full",
-                  gradientClass,
                   categoryFilter === name && "ring-2 ring-offset-2 ring-primary"
                 )}
+                style={{ backgroundColor: CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS] }}
                 onClick={() => onCategoryChange(name)}
               >
                 {name}
