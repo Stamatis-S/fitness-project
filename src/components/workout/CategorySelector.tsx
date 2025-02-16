@@ -3,7 +3,6 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { EXERCISE_CATEGORIES, type ExerciseCategory, CATEGORY_COLORS } from "@/lib/constants";
-import { useTranslation } from "react-i18next";
 
 interface CategorySelectorProps {
   onCategoryChange: (category: ExerciseCategory) => void;
@@ -11,11 +10,9 @@ interface CategorySelectorProps {
 }
 
 export function CategorySelector({ onCategoryChange, selectedCategory }: CategorySelectorProps) {
-  const { t } = useTranslation();
-
   return (
     <div className="space-y-4">
-      <Label className="text-lg">{t('exercises.category_label')}</Label>
+      <Label className="text-lg">Exercise Category</Label>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {Object.entries(EXERCISE_CATEGORIES).map(([name]) => (
           <motion.button
@@ -30,7 +27,7 @@ export function CategorySelector({ onCategoryChange, selectedCategory }: Categor
             )}
             style={{ backgroundColor: CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS] }}
           >
-            {t(`exercises.categories.${name}`)}
+            {name}
           </motion.button>
         ))}
       </div>
