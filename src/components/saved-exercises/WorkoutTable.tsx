@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { WorkoutLog } from "./types";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -42,6 +43,7 @@ export function WorkoutTable({ logs, onDelete, onEdit }: WorkoutTableProps) {
   const [editDate, setEditDate] = useState<Date | null>(null);
   const [editWeight, setEditWeight] = useState<string>("");
   const [editReps, setEditReps] = useState<string>("");
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   const getExerciseName = (log: WorkoutLog) => {
     if (log.custom_exercise) {
@@ -57,17 +59,29 @@ export function WorkoutTable({ logs, onDelete, onEdit }: WorkoutTableProps) {
     setEditReps(log.reps?.toString() || "");
   };
 
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setEditDate(date);
+      setIsDatePickerOpen(false); // Close the date picker after selection
+    }
+  };
+
   const handleSave = () => {
-    if (!editingLog) return;
+    if (!editingLog || !editDate) return;
 
     const updates: Partial<WorkoutLog> = {
-      workout_date: editDate?.toISOString().split('T')[0] || editingLog.workout_date,
+      workout_date: editDate.toISOString().split('T')[0],
       weight_kg: editWeight ? parseFloat(editWeight) : null,
       reps: editReps ? parseInt(editReps) : null,
     };
 
     onEdit(editingLog.id, updates);
     setEditingLog(null);
+  };
+
+  const handleCloseDialog = () => {
+    setEditingLog(null);
+    setIsDatePickerOpen(false);
   };
 
   if (isMobile) {
@@ -122,29 +136,43 @@ export function WorkoutTable({ logs, onDelete, onEdit }: WorkoutTableProps) {
           ))}
         </div>
 
-        <Dialog open={!!editingLog} onOpenChange={() => setEditingLog(null)}>
+        <Dialog open={!!editingLog} onOpenChange={handleCloseDialog}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Exercise</DialogTitle>
+              <DialogDescription>
+                Modify the exercise details below.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>Date</Label>
-                <Popover>
+                <Popover 
+                  open={isDatePickerOpen} 
+                  onOpenChange={setIsDatePickerOpen}
+                >
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className="w-full justify-start text-left font-normal"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsDatePickerOpen(true);
+                      }}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {editDate ? format(editDate, "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent 
+                    className="w-auto p-0" 
+                    align="start"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <Calendar
                       mode="single"
                       selected={editDate || undefined}
-                      onSelect={(date) => setEditDate(date)}
+                      onSelect={handleDateSelect}
                       initialFocus
                     />
                   </PopoverContent>
@@ -230,29 +258,43 @@ export function WorkoutTable({ logs, onDelete, onEdit }: WorkoutTableProps) {
         </Table>
       </div>
 
-      <Dialog open={!!editingLog} onOpenChange={() => setEditingLog(null)}>
+      <Dialog open={!!editingLog} onOpenChange={handleCloseDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Exercise</DialogTitle>
+            <DialogDescription>
+              Modify the exercise details below.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Date</Label>
-              <Popover>
+              <Popover 
+                open={isDatePickerOpen} 
+                onOpenChange={setIsDatePickerOpen}
+              >
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className="w-full justify-start text-left font-normal"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDatePickerOpen(true);
+                    }}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {editDate ? format(editDate, "PPP") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent 
+                  className="w-auto p-0" 
+                  align="start"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Calendar
                     mode="single"
                     selected={editDate || undefined}
-                    onSelect={(date) => setEditDate(date)}
+                    onSelect={handleDateSelect}
                     initialFocus
                   />
                 </PopoverContent>
