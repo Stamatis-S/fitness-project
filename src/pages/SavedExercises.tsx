@@ -120,6 +120,31 @@ export default function SavedExercises() {
     });
   };
 
+  const sanitizeCSVField = (field: string | number | null): string => {
+    if (field === null || field === undefined) return '';
+    
+    const stringField = String(field);
+    if (/[",\n\r]/.test(stringField)) {
+      return `"${stringField.replace(/"/g, '""')}"`;
+    }
+    return stringField;
+  };
+
+  const sanitizePDFText = (text: string | number | null): string => {
+    if (text === null || text === undefined) return '-';
+    const str = String(text);
+    
+    try {
+      const normalized = str.normalize('NFKD');
+      return normalized
+        .normalize('NFC')
+        .replace(/[^\p{L}\p{N}\s\-.,]/gu, '?');
+    } catch (e) {
+      console.warn('Text normalization failed:', e);
+      return str.replace(/[^\x20-\x7E]/g, '?');
+    }
+  };
+
   const exportToCSV = () => {
     if (!filteredLogs.length) {
       toast.error("No data to export");
@@ -150,10 +175,7 @@ export default function SavedExercises() {
       const BOM = '\uFEFF';
       const csvContent = BOM + csvRows.join('\n');
 
-      const blob = new Blob([csvContent], { 
-        type: 'text/csv;charset=utf-8'
-      });
-
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       const filename = `workout_logs_${format(new Date(), 'yyyy-MM-dd')}.csv`;
@@ -161,7 +183,6 @@ export default function SavedExercises() {
       link.setAttribute('href', url);
       link.setAttribute('download', filename);
       document.body.appendChild(link);
-      
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
@@ -186,12 +207,7 @@ export default function SavedExercises() {
         format: "a4",
       });
 
-      // Set NotoSans font
-      pdf.setFont('NotoSans', 'normal');
-      
-      // Test Greek text rendering
-      pdf.setFontSize(12);
-      pdf.text('Ελληνικά Δεδομένα', 10, 10);
+      pdf.setFont('helvetica', 'normal');
       
       const pageWidth = pdf.internal.pageSize.getWidth();
       const margin = 40;
@@ -217,7 +233,7 @@ export default function SavedExercises() {
       const lineHeight = 25;
       
       pdf.setFontSize(11);
-      pdf.setFont('NotoSans', 'bold');
+      pdf.setFont('helvetica', 'bold');
       
       let currentX = margin;
       headers.forEach((header, index) => {
@@ -225,7 +241,7 @@ export default function SavedExercises() {
         currentX += columnWidths[index];
       });
       
-      pdf.setFont('NotoSans', 'normal');
+      pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(10);
       startY += lineHeight;
       
@@ -233,7 +249,7 @@ export default function SavedExercises() {
         if (startY > pdf.internal.pageSize.getHeight() - margin) {
           pdf.addPage();
           startY = margin;
-          pdf.setFont('NotoSans', 'normal');
+          pdf.setFont('helvetica', 'normal');
         }
         
         currentX = margin;
@@ -250,14 +266,14 @@ export default function SavedExercises() {
         
         rowData.forEach((text, colIndex) => {
           const maxWidth = columnWidths[colIndex] - 5;
-          let displayText = text;
+          let displayText = sanitizePDFText(text);
           
           if (pdf.getTextWidth(displayText) > maxWidth) {
             displayText = displayText.substring(0, 15) + "...";
           }
           
           pdf.text(displayText, currentX, startY);
-          currentX += columnWidths[colIndex]; // Fixed: Changed index to colIndex
+          currentX += columnWidths[colIndex];
         });
         
         startY += lineHeight;
@@ -266,7 +282,7 @@ export default function SavedExercises() {
       const pageCount = pdf.internal.pages.length - 1;
       for (let i = 1; i <= pageCount; i++) {
         pdf.setPage(i);
-        pdf.setFont('NotoSans', 'normal');
+        pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(8);
         pdf.text(
           `Page ${i} of ${pageCount}`,
@@ -295,31 +311,6 @@ export default function SavedExercises() {
           </Button>
         </div>
       );
-    }
-  };
-
-  const sanitizeCSVField = (field: string | number | null): string => {
-    if (field === null || field === undefined) return '';
-    
-    const stringField = String(field);
-    if (/[",\n\r]/.test(stringField)) {
-      return `"${stringField.replace(/"/g, '""')}"`;
-    }
-    return stringField;
-  };
-
-  const sanitizePDFText = (text: string | number | null): string => {
-    if (text === null || text === undefined) return '-';
-    const str = String(text);
-    
-    try {
-      const normalized = str.normalize('NFKD');
-      return normalized
-        .normalize('NFC')
-        .replace(/[^\p{L}\p{N}\s\-.,]/gu, '?');
-    } catch (e) {
-      console.warn('Text normalization failed:', e);
-      return str.replace(/[^\x20-\x7E]/g, '?');
     }
   };
 
