@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import {
   BarChart,
   Bar,
@@ -16,17 +15,14 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-  LineChart,
-  Line,
   Legend,
+  PieChart,
+  Pie,
   Cell,
 } from "recharts";
 import type { WorkoutLog } from "@/pages/Dashboard";
 import { CustomTooltip } from "./CustomTooltip";
-import { motion } from "framer-motion";
-import { Dumbbell, TrendingDown, TrendingUp } from "lucide-react";
 import { format, subMonths } from "date-fns";
-import { cn } from "@/lib/utils";
 import { EXERCISE_CATEGORIES } from "@/lib/constants";
 
 interface DashboardStatisticsProps {
@@ -35,7 +31,6 @@ interface DashboardStatisticsProps {
 
 type TimeRange = "1M" | "3M" | "6M" | "1Y" | "ALL";
 
-// Color mapping for consistent category colors
 const CATEGORY_COLORS = {
   "ΣΤΗΘΟΣ": "#F97316", // Bright Orange
   "ΠΛΑΤΗ": "#8B5CF6", // Vivid Purple
@@ -48,9 +43,7 @@ const CATEGORY_COLORS = {
 
 export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("3M");
-  const [selectedMetric, setSelectedMetric] = useState<"weight" | "volume">("weight");
 
-  // Filter data based on time range
   const getFilteredData = () => {
     const now = new Date();
     const ranges = {
@@ -68,189 +61,134 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
 
   const filteredLogs = getFilteredData();
 
-  // Progress Line Chart Data with average calculation
-  const progressData = filteredLogs.reduce((acc: any[], log) => {
-    const date = format(new Date(log.workout_date), 'MMM dd');
-    const existingDay = acc.find(item => item.date === date);
-    
-    const volume = log.weight_kg * log.reps;
-    
-    if (existingDay) {
-      existingDay.weight = Math.max(existingDay.weight, log.weight_kg);
-      existingDay.volume += volume;
-      existingDay.count++;
-      existingDay.avgWeight = existingDay.weight / existingDay.count;
+  // Category distribution data
+  const categoryDistribution = filteredLogs.reduce((acc: any[], log) => {
+    const existingCategory = acc.find(cat => cat.name === log.category);
+    if (existingCategory) {
+      existingCategory.value++;
     } else {
-      acc.push({
-        date,
-        weight: log.weight_kg,
-        volume: volume,
-        count: 1,
-        avgWeight: log.weight_kg
+      acc.push({ 
+        name: log.category, 
+        value: 1,
+        color: CATEGORY_COLORS[log.category as keyof typeof CATEGORY_COLORS]
       });
     }
     return acc;
-  }, []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, []);
+
+  // Calculate percentages
+  const total = categoryDistribution.reduce((sum, item) => sum + item.value, 0);
+  categoryDistribution.forEach(item => {
+    item.percentage = Number(((item.value / total) * 100).toFixed(1));
+  });
+
+  // Max weight per exercise data
+  const maxWeightData = Object.entries(
+    filteredLogs.reduce((acc: Record<string, { weight: number; category: string }>, log) => {
+      const exerciseName = log.custom_exercise || log.exercises?.name;
+      if (!exerciseName || !log.weight_kg) return acc;
+      
+      if (!acc[exerciseName] || acc[exerciseName].weight < log.weight_kg) {
+        acc[exerciseName] = { 
+          weight: log.weight_kg,
+          category: log.category
+        };
+      }
+      return acc;
+    }, {})
+  )
+    .map(([exercise, data]) => ({
+      exercise,
+      maxWeight: data.weight,
+      category: data.category,
+      color: CATEGORY_COLORS[data.category as keyof typeof CATEGORY_COLORS]
+    }))
+    .sort((a, b) => b.maxWeight - a.maxWeight)
+    .slice(0, 10); // Top 10 exercises by max weight
 
   // Calculate baseline averages for radar chart
   const calculateBaselines = () => {
-    const totalVolumes = Object.keys(EXERCISE_CATEGORIES).reduce((acc, category) => {
+    const categoryTotals = Object.keys(EXERCISE_CATEGORIES).reduce((acc, category) => {
       const logs = filteredLogs.filter(log => log.category === category);
       const volume = logs.reduce((sum, log) => sum + (log.weight_kg * log.reps), 0);
       acc[category] = volume;
       return acc;
     }, {} as Record<string, number>);
 
-    const avgVolume = Object.values(totalVolumes).reduce((a, b) => a + b, 0) / Object.keys(totalVolumes).length;
+    const avgVolume = Object.values(categoryTotals).reduce((a, b) => a + b, 0) / Object.keys(categoryTotals).length;
 
     return Object.keys(EXERCISE_CATEGORIES).map(category => ({
       category,
-      volume: totalVolumes[category],
-      baseline: avgVolume
+      volume: categoryTotals[category],
+      baseline: avgVolume,
+      color: CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS]
     }));
   };
 
   const radarData = calculateBaselines();
 
-  // Training frequency data with sets and sessions
-  const frequencyData = Object.entries(EXERCISE_CATEGORIES).map(([category]) => {
-    const categoryLogs = filteredLogs.filter(log => log.category === category);
-    const uniqueSessions = new Set(categoryLogs.map(log => log.workout_date)).size;
-    const totalSets = categoryLogs.length;
-
-    return {
-      category,
-      sets: totalSets,
-      sessions: uniqueSessions,
-      color: CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS]
-    };
-  }).sort((a, b) => b.sets - a.sets);
-
-  // Calculate trends
-  const calculateTrend = (data: any[], key: string) => {
-    if (data.length < 2) return 0;
-    const first = data[0][key];
-    const last = data[data.length - 1][key];
-    return ((last - first) / first) * 100;
-  };
-
-  const weightTrend = calculateTrend(progressData, 'weight');
-  const volumeTrend = calculateTrend(progressData, 'volume');
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="p-6 col-span-full">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-          <div>
-            <h2 className="text-xl font-semibold">Performance Overview</h2>
-            <p className="text-sm text-muted-foreground">
-              {selectedMetric === "weight" ? "Average Weight Lifted per Session" : "Total Volume per Session"}
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Time Range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1M">Last Month</SelectItem>
-                <SelectItem value="3M">Last 3 Months</SelectItem>
-                <SelectItem value="6M">Last 6 Months</SelectItem>
-                <SelectItem value="1Y">Last Year</SelectItem>
-                <SelectItem value="ALL">All Time</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={selectedMetric} onValueChange={(value: "weight" | "volume") => setSelectedMetric(value)}>
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Metric" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="weight">Weight</SelectItem>
-                <SelectItem value="volume">Volume</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        <div className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={progressData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="date"
-                label={{ 
-                  value: 'Date',
-                  position: 'insideBottom',
-                  offset: -5
-                }}
-              />
-              <YAxis
-                label={{ 
-                  value: selectedMetric === "weight" ? 'Weight (kg)' : 'Volume (kg × reps)',
-                  angle: -90,
-                  position: 'insideLeft',
-                  offset: 10
-                }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey={selectedMetric}
-                stroke="#8884d8"
-                dot={{ r: 4 }}
-                activeDot={{ r: 8 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold">Statistics Overview</h2>
+          <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Time Range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1M">Last Month</SelectItem>
+              <SelectItem value="3M">Last 3 Months</SelectItem>
+              <SelectItem value="6M">Last 6 Months</SelectItem>
+              <SelectItem value="1Y">Last Year</SelectItem>
+              <SelectItem value="ALL">All Time</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <div className="flex items-center gap-2">
-            <div className={cn(
-              "p-2 rounded",
-              weightTrend > 0 ? "bg-green-100 dark:bg-green-900/20" : "bg-red-100 dark:bg-red-900/20"
-            )}>
-              {weightTrend > 0 ? (
-                <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-              ) : (
-                <TrendingDown className="h-5 w-5 text-red-600 dark:text-red-400" />
-              )}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <Label>Weight Trend</Label>
-                <Dumbbell className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className={cn(
-                "text-sm font-medium",
-                weightTrend > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-              )}>
-                {Math.abs(weightTrend).toFixed(1)}% {weightTrend > 0 ? "increase" : "decrease"}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className={cn(
-              "p-2 rounded",
-              volumeTrend > 0 ? "bg-green-100 dark:bg-green-900/20" : "bg-red-100 dark:bg-red-900/20"
-            )}>
-              {volumeTrend > 0 ? (
-                <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-              ) : (
-                <TrendingDown className="h-5 w-5 text-red-600 dark:text-red-400" />
-              )}
-            </div>
-            <div>
-              <Label>Volume Trend</Label>
-              <p className={cn(
-                "text-sm font-medium",
-                volumeTrend > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
-              )}>
-                {Math.abs(volumeTrend).toFixed(1)}% {volumeTrend > 0 ? "increase" : "decrease"}
-              </p>
-            </div>
-          </div>
+        <div className="h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={categoryDistribution}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={150}
+                label={({ name, percentage }) => `${name} (${percentage}%)`}
+              >
+                {categoryDistribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-4">Max Weight Per Exercise</h2>
+        <div className="h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={maxWeightData}
+              layout="vertical"
+              margin={{ left: 150 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" label={{ value: 'Weight (kg)', position: 'insideBottom' }} />
+              <YAxis type="category" dataKey="exercise" width={150} />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="maxWeight" name="Max Weight">
+                {maxWeightData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </Card>
 
@@ -280,35 +218,6 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
               <Tooltip content={<CustomTooltip />} />
               <Legend />
             </RadarChart>
-          </ResponsiveContainer>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Training Frequency</h2>
-        <div className="h-[400px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={frequencyData}
-              layout="vertical"
-              margin={{ left: 100 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis type="category" dataKey="category" width={100} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar name="Total Sets" dataKey="sets" fill="#82ca9d">
-                {frequencyData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Bar>
-              <Bar name="Unique Sessions" dataKey="sessions" fill="#8884d8">
-                {frequencyData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} opacity={0.6} />
-                ))}
-              </Bar>
-            </BarChart>
           </ResponsiveContainer>
         </div>
       </Card>
