@@ -5,19 +5,78 @@ import { Slider } from "@/components/ui/slider";
 import { Trash2, Weight, Repeat, Plus, Minus } from "lucide-react";
 import { UseFieldArrayRemove } from "react-hook-form";
 import { ExerciseFormData } from "./types";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, useWatch } from "react-hook-form";
 import { motion } from "framer-motion";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
 
 interface SetInputProps {
   index: number;
   onRemove: UseFieldArrayRemove;
 }
 
+interface CommonValue {
+  value: number;
+  count: number;
+}
+
 export function SetInput({ index, onRemove }: SetInputProps) {
   const { setValue, watch } = useFormContext<ExerciseFormData>();
+  const { session } = useAuth();
   const currentWeight = watch(`sets.${index}.weight`) || 0;
   const currentReps = watch(`sets.${index}.reps`) || 0;
+  const selectedExercise = useWatch({ name: 'exercise' });
+  const customExercise = useWatch({ name: 'customExercise' });
+
+  // Fetch common values for the selected exercise
+  const { data: commonValues } = useQuery({
+    queryKey: ['common-values', selectedExercise, customExercise],
+    queryFn: async () => {
+      if (!session?.user?.id) return null;
+
+      const isCustomExercise = selectedExercise === 'custom';
+      let query = supabase
+        .from('workout_logs')
+        .select('weight_kg, reps')
+        .eq('user_id', session.user.id);
+
+      if (isCustomExercise) {
+        query = query.eq('custom_exercise', customExercise);
+      } else {
+        query = query.eq('exercise_id', selectedExercise);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const weightValues: Record<number, number> = {};
+      const repValues: Record<number, number> = {};
+
+      data.forEach(log => {
+        if (log.weight_kg) {
+          weightValues[log.weight_kg] = (weightValues[log.weight_kg] || 0) + 1;
+        }
+        if (log.reps) {
+          repValues[log.reps] = (repValues[log.reps] || 0) + 1;
+        }
+      });
+
+      const formatCommonValues = (values: Record<number, number>): CommonValue[] => {
+        return Object.entries(values)
+          .map(([value, count]) => ({ value: Number(value), count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 3);
+      };
+
+      return {
+        weights: formatCommonValues(weightValues),
+        reps: formatCommonValues(repValues),
+      };
+    },
+    enabled: !!session?.user?.id && !!selectedExercise,
+  });
 
   const handleWeightIncrement = useCallback((increment: number) => {
     const newValue = Math.max(0, currentWeight + increment);
@@ -38,6 +97,30 @@ export function SetInput({ index, onRemove }: SetInputProps) {
       setValue(`sets.${index}.reps`, Math.floor(value));
     }
   }, [index, setValue]);
+
+  const handleQuickSelect = useCallback((field: 'weight' | 'reps', value: number) => {
+    if (field === 'weight') {
+      setValue(`sets.${index}.weight`, Number(value.toFixed(1)));
+    } else {
+      setValue(`sets.${index}.reps`, Math.floor(value));
+    }
+  }, [index, setValue]);
+
+  const QuickSelectButton = ({ value, field }: { value: number, field: 'weight' | 'reps' }) => (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={() => handleQuickSelect(field, value)}
+      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors hover:bg-primary hover:text-primary-foreground
+        ${field === 'weight' ? 'bg-blue-50 dark:bg-blue-950' : 'bg-green-50 dark:bg-green-950'}
+        ${(field === 'weight' ? currentWeight === value : currentReps === value) ? 
+          'border-primary text-primary dark:border-primary dark:text-primary' : 
+          'border-muted-foreground/20'}`}
+    >
+      {value}{field === 'weight' ? 'kg' : ''}
+    </Button>
+  );
 
   return (
     <motion.div
@@ -70,6 +153,13 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             <Weight className="h-4 w-4 text-primary" />
             Weight: {currentWeight.toFixed(1)} KG
           </Label>
+          {commonValues?.weights && commonValues.weights.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {commonValues.weights.map((common, i) => (
+                <QuickSelectButton key={i} value={common.value} field="weight" />
+              ))}
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <Button
               type="button"
@@ -106,6 +196,13 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             <Repeat className="h-4 w-4 text-primary" />
             Reps: {currentReps}
           </Label>
+          {commonValues?.reps && commonValues.reps.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {commonValues.reps.map((common, i) => (
+                <QuickSelectButton key={i} value={common.value} field="reps" />
+              ))}
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <Button
               type="button"
