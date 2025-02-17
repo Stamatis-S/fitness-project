@@ -140,40 +140,44 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
           </Select>
         </div>
 
-        <div className={`${isMobile ? 'h-[400px]' : 'h-[500px]'} overflow-x-auto`}>
-          <div className={`${isMobile ? 'min-w-[300px]' : 'w-full'} h-full`}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={categoryDistribution}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={isMobile ? 120 : 180}
-                  label={({ name, percentage }) => (
-                    `${name.length > 15 ? name.substring(0, 15) + '...' : name} (${percentage}%)`
-                  )}
-                  labelLine={{ strokeWidth: 1 }}
-                >
-                  {categoryDistribution.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.color}
-                      className="hover:opacity-80 transition-opacity"
-                    />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-                <Legend
-                  layout={isMobile ? "horizontal" : "vertical"}
-                  align={isMobile ? "center" : "right"}
-                  verticalAlign={isMobile ? "bottom" : "middle"}
-                  wrapperStyle={isMobile ? { paddingTop: "20px" } : {}}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+        <div className={`${isMobile ? 'h-[360px]' : 'h-[400px]}`}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={categoryDistribution}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={isMobile ? 100 : 140}
+                label={({ name, percentage }) => `${name} (${percentage}%)`}
+                labelLine={{ 
+                  stroke: 'currentColor',
+                  strokeWidth: 1,
+                  strokeOpacity: 0.5,
+                  length: 10
+                }}
+              >
+                {categoryDistribution.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={entry.color}
+                    className="hover:opacity-80 transition-opacity"
+                  />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend
+                layout="horizontal"
+                align="center"
+                verticalAlign="bottom"
+                wrapperStyle={{ 
+                  paddingTop: "20px",
+                  fontSize: isMobile ? "10px" : "12px"
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       </Card>
 
