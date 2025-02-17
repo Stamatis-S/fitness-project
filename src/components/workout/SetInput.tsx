@@ -21,41 +21,49 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   const currentReps = watch(`sets.${index}.reps`);
 
   const handleWeightChange = useCallback((value: string | number) => {
-    console.log('handleWeightChange called with value:', value);
-    
-    // Convert to number and handle empty input
-    const numValue = value === '' ? 0 : Number(value);
-    console.log('Converted numValue:', numValue);
-    
-    // Update only if it's a valid number
-    if (!isNaN(numValue)) {
-      console.log('Setting weight value:', numValue);
-      setValue(`sets.${index}.weight`, numValue);
+    try {
+      console.log('handleWeightChange called with value:', value);
+      
+      // Convert to number and handle empty input
+      const numValue = value === '' ? 0 : Number(value);
+      console.log('Converted numValue:', numValue);
+      
+      // Update only if it's a valid number
+      if (!isNaN(numValue)) {
+        console.log('Setting weight value:', numValue);
+        setValue(`sets.${index}.weight`, numValue);
+      }
+    } catch (error) {
+      console.error('Error in handleWeightChange:', error);
     }
   }, [index, setValue]);
 
   const handleWeightIncrement = useCallback((increment: number) => {
-    console.log('handleWeightIncrement called with increment:', increment);
-    const newValue = Math.max(0, (currentWeight || 0) + increment);
-    console.log('New weight value after increment:', newValue);
-    setValue(`sets.${index}.weight`, newValue);
+    try {
+      console.log('handleWeightIncrement called with increment:', increment);
+      const newValue = Math.max(0, (currentWeight || 0) + increment);
+      console.log('New weight value after increment:', newValue);
+      setValue(`sets.${index}.weight`, newValue);
+    } catch (error) {
+      console.error('Error in handleWeightIncrement:', error);
+    }
   }, [currentWeight, index, setValue]);
 
-  const handleRepsIncrement = useCallback((increment: number) => {
-    console.log('handleRepsIncrement called with increment:', increment);
-    const newValue = Math.max(0, (currentReps || 0) + increment);
-    console.log('New reps value after increment:', newValue);
-    setValue(`sets.${index}.reps`, Math.floor(newValue));
-  }, [currentReps, index, setValue]);
-
   const handleInputInteraction = useCallback((event: React.SyntheticEvent) => {
-    console.log('Input interaction:', {
-      type: event.type,
-      target: event.target,
-      isTouchEvent: event.nativeEvent instanceof TouchEvent,
-      timestamp: new Date().toISOString(),
-      currentValue: currentWeight
-    });
+    try {
+      event.preventDefault(); // Prevent default behavior
+      event.stopPropagation(); // Stop event bubbling
+      
+      console.log('Input interaction:', {
+        type: event.type,
+        target: event.target,
+        isTouchEvent: event.nativeEvent instanceof TouchEvent,
+        timestamp: new Date().toISOString(),
+        currentValue: currentWeight
+      });
+    } catch (error) {
+      console.error('Error in handleInputInteraction:', error);
+    }
   }, [currentWeight]);
 
   return (
@@ -111,7 +119,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               <Minus className="h-4 w-4" />
             </Button>
             <Input
-              type="number"
+              type="text"
               inputMode="decimal"
               className="h-12 text-center text-lg font-medium"
               value={currentWeight || 0}
@@ -119,9 +127,6 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               onFocus={handleInputInteraction}
               onClick={handleInputInteraction}
               onTouchStart={handleInputInteraction}
-              min={0}
-              step="any"
-              pattern="[0-9]*"
               aria-label="Weight in KG"
             />
             <Button
