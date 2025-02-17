@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,12 +94,11 @@ export default function Profile() {
   };
 
   const getProgressValue = (score: number) => {
-    // Updated thresholds to match new scoring system
-    if (score >= 3000) return 100;
-    if (score >= 2000) return 80;
-    if (score >= 1200) return 60;
-    if (score >= 600) return 40;
-    return Math.max((score / 600) * 20, 0);
+    if (score >= 5001) return 100;
+    if (score >= 3501) return 80;
+    if (score >= 2001) return 60;
+    if (score >= 1001) return 40;
+    return Math.max((score / 1001) * 20, 0);
   };
 
   const getLevelColor = (level: string) => {
@@ -231,23 +229,23 @@ export default function Profile() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="space-y-1">
                 <p className="font-medium text-[#EAB308]">Beginner</p>
-                <p className="text-sm text-muted-foreground">0 - 599</p>
+                <p className="text-sm text-muted-foreground">0 - 1,000</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#22C55E]">Intermediate</p>
-                <p className="text-sm text-muted-foreground">600 - 1,199</p>
+                <p className="text-sm text-muted-foreground">1,001 - 2,000</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#4488EF]">Advanced</p>
-                <p className="text-sm text-muted-foreground">1,200 - 1,999</p>
+                <p className="text-sm text-muted-foreground">2,001 - 3,500</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#A855F7]">Elite</p>
-                <p className="text-sm text-muted-foreground">2,000 - 2,999</p>
+                <p className="text-sm text-muted-foreground">3,501 - 5,000</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#FF0000] dark:text-[#FF4444]">Monster</p>
-                <p className="text-sm text-muted-foreground">3,000+</p>
+                <p className="text-sm text-muted-foreground">5,001+</p>
               </div>
             </div>
           </div>
