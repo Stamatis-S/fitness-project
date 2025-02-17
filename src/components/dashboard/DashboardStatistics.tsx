@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -140,7 +141,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
           </Select>
         </div>
 
-        <div className={`${isMobile ? 'h-[360px]' : 'h-[400px]}`}>
+        <div className={`${isMobile ? "h-[360px]" : "h-[400px]"}`}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -152,7 +153,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                 outerRadius={isMobile ? 100 : 140}
                 label={({ name, percentage }) => `${name} (${percentage}%)`}
                 labelLine={{ 
-                  stroke: 'currentColor',
+                  stroke: "currentColor",
                   strokeWidth: 1,
                   strokeOpacity: 0.5,
                   length: 10
@@ -205,16 +206,16 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                 <XAxis 
                   type="number"
                   tickFormatter={(value) => `${value}kg`}
-                  domain={[0, 'auto']}
+                  domain={[0, "auto"]}
                   label={{ 
-                    value: 'Weight (kg)', 
-                    position: 'insideBottom',
+                    value: "Weight (kg)", 
+                    position: "insideBottom",
                     offset: -10,
                     fontSize: isMobile ? 10 : 12
                   }}
                   tick={{ 
                     fontSize: isMobile ? 10 : 12,
-                    fill: 'currentColor'
+                    fill: "currentColor"
                   }}
                 />
                 <YAxis 
@@ -223,21 +224,21 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                   width={isMobile ? 70 : 110}
                   tick={{ 
                     fontSize: isMobile ? 10 : 12,
-                    fill: 'currentColor',
+                    fill: "currentColor",
                     width: isMobile ? 65 : 100,
                     dy: 3
                   }}
                   tickFormatter={(value) => {
                     const maxChars = isMobile ? 12 : 15;
                     if (value.length > maxChars) {
-                      return value.substring(0, maxChars) + '...';
+                      return value.substring(0, maxChars) + "...";
                     }
                     return value;
                   }}
                 />
                 <Tooltip 
                   content={<CustomTooltip />}
-                  cursor={{ fill: 'transparent' }}
+                  cursor={{ fill: "transparent" }}
                 />
                 <Bar 
                   dataKey="maxWeight"
@@ -261,8 +262,8 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
 
       <Card className="p-4 sm:p-6">
         <h2 className="text-xl font-semibold mb-4">Muscle Group Balance</h2>
-        <div className={`${isMobile ? 'h-[400px]' : 'h-[400px]'} overflow-x-auto`}>
-          <div className={`${isMobile ? 'min-w-[300px]' : 'w-full'} h-full`}>
+        <div className={`${isMobile ? "h-[400px]" : "h-[400px]"} overflow-x-auto`}>
+          <div className={`${isMobile ? "min-w-[300px]" : "w-full"} h-full`}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData}>
                 <PolarGrid />
