@@ -166,20 +166,63 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
 
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Max Weight Per Exercise</h2>
-        <div className="h-[400px]">
+        <div className="h-[500px] sm:h-[400px]"> {/* Increased height for better mobile display */}
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={maxWeightData}
               layout="vertical"
-              margin={{ left: 150 }}
+              margin={{
+                left: 160, // Increased left margin for exercise names
+                right: 20,
+                top: 10,
+                bottom: 20,
+              }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" label={{ value: 'Weight (kg)', position: 'insideBottom' }} />
-              <YAxis type="category" dataKey="exercise" width={150} />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="maxWeight" name="Max Weight">
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                horizontal={true}
+                vertical={false}
+              />
+              <XAxis 
+                type="number"
+                tickFormatter={(value) => `${value}kg`}
+                domain={[0, 'auto']}
+                label={{ 
+                  value: 'Weight (kg)', 
+                  position: 'insideBottom',
+                  offset: -10
+                }}
+              />
+              <YAxis 
+                type="category" 
+                dataKey="exercise" 
+                width={150}
+                tick={{ 
+                  fontSize: 12,
+                  width: 140,
+                  wordBreak: 'break-word'
+                }}
+                tickFormatter={(value) => {
+                  // Limit exercise name length and add ellipsis if needed
+                  return value.length > 20 ? value.substring(0, 20) + '...' : value;
+                }}
+              />
+              <Tooltip 
+                content={<CustomTooltip />}
+                cursor={{ fill: 'transparent' }}
+              />
+              <Bar 
+                dataKey="maxWeight"
+                name="Max Weight"
+                minPointSize={2}
+                barSize={24} // Consistent bar height
+              >
                 {maxWeightData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell 
+                    key={`cell-${index}`}
+                    fill={entry.color}
+                    className="hover:opacity-80 transition-opacity"
+                  />
                 ))}
               </Bar>
             </BarChart>
