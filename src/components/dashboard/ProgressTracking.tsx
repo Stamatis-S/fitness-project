@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,61 +46,99 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [compareMode, setCompareMode] = useState(false);
 
+  // Validate workout logs
+  if (!Array.isArray(workoutLogs)) {
+    console.error('Invalid workoutLogs:', workoutLogs);
+    return <Card className="p-6">Loading...</Card>;
+  }
+
+  // Get unique exercise names from logs with validation
   const exerciseNames = useMemo(() => {
-    const names = new Set<string>();
-    workoutLogs.forEach(log => {
-      const name = log.custom_exercise || log.exercises?.name;
-      if (name) names.add(name);
-    });
-    return Array.from(names);
+    try {
+      const names = new Set<string>();
+      workoutLogs.forEach(log => {
+        if (!log) return;
+        const name = log.custom_exercise || (log.exercises && log.exercises.name);
+        if (name) names.add(name);
+      });
+      return Array.from(names);
+    } catch (error) {
+      console.error('Error processing exercise names:', error);
+      return [];
+    }
   }, [workoutLogs]);
 
+  // Process workout data for the chart with error handling
   const progressData = useMemo(() => {
-    const dataMap = new Map<string, Map<string, number>>();
-    
-    const sortedLogs = [...workoutLogs].sort((a, b) => 
-      new Date(a.workout_date).getTime() - new Date(b.workout_date).getTime()
-    );
+    try {
+      const dataMap = new Map<string, Map<string, number>>();
+      
+      const sortedLogs = [...workoutLogs]
+        .filter(log => log && log.workout_date) // Filter out invalid logs
+        .sort((a, b) => {
+          const dateA = new Date(a.workout_date).getTime();
+          const dateB = new Date(b.workout_date).getTime();
+          return dateA - dateB;
+        });
 
-    sortedLogs.forEach(log => {
-      const date = log.workout_date;
-      const exercise = log.custom_exercise || log.exercises?.name;
-      
-      if (!exercise) return;
-      
-      if (!dataMap.has(date)) {
-        dataMap.set(date, new Map());
-      }
-      
-      const exerciseMap = dataMap.get(date)!;
-      const currentMax = exerciseMap.get(exercise) || 0;
-      exerciseMap.set(exercise, Math.max(currentMax, log.weight_kg || 0));
-    });
-
-    const chartData = Array.from(dataMap.entries()).map(([date, exerciseMap]) => {
-      const dataPoint: { [key: string]: any } = {
-        date: format(parseISO(date), 'MMM d, yyyy'),
-        rawDate: date,
-      };
-      
-      selectedExercises.forEach(exercise => {
-        dataPoint[exercise] = exerciseMap.get(exercise) || null;
+      sortedLogs.forEach(log => {
+        if (!log.workout_date) return;
+        
+        const date = log.workout_date;
+        const exercise = log.custom_exercise || (log.exercises && log.exercises.name);
+        
+        if (!exercise) return;
+        
+        if (!dataMap.has(date)) {
+          dataMap.set(date, new Map());
+        }
+        
+        const exerciseMap = dataMap.get(date)!;
+        const currentMax = exerciseMap.get(exercise) || 0;
+        exerciseMap.set(exercise, Math.max(currentMax, log.weight_kg || 0));
       });
-      
-      return dataPoint;
-    });
 
-    return chartData.sort((a, b) => 
-      new Date(a.rawDate).getTime() - new Date(b.rawDate).getTime()
-    );
+      return Array.from(dataMap.entries())
+        .map(([date, exerciseMap]) => {
+          try {
+            const dataPoint: Record<string, any> = {
+              date: format(parseISO(date), 'MMM d, yyyy'),
+              rawDate: date,
+            };
+            
+            selectedExercises.forEach(exercise => {
+              dataPoint[exercise] = exerciseMap.get(exercise) ?? null;
+            });
+            
+            return dataPoint;
+          } catch (error) {
+            console.error('Error processing data point:', error);
+            return null;
+          }
+        })
+        .filter(Boolean)
+        .sort((a, b) => new Date(a!.rawDate).getTime() - new Date(b!.rawDate).getTime());
+    } catch (error) {
+      console.error('Error processing progress data:', error);
+      return [];
+    }
   }, [workoutLogs, selectedExercises]);
 
-  console.log('Chart Data:', {
+  // Debug logging
+  console.log('Chart Component State:', {
     selectedExercises,
-    progressData,
-    totalLogs: workoutLogs.length,
-    uniqueDates: new Set(workoutLogs.map(log => log.workout_date)).size,
+    exerciseNames,
+    progressDataLength: progressData.length,
+    workoutLogsLength: workoutLogs.length,
   });
+
+  if (!progressData.length && selectedExercises.length > 0) {
+    return (
+      <Card className="p-6">
+        <div className="text-center">No data available for selected exercises</div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6">
@@ -109,7 +148,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
           variant="outline"
           onClick={() => {
             if (!compareMode && selectedExercises.length > 2) {
-              setSelectedExercises(selectedExercises.slice(0, 2));
+              setSelectedExercises(prev => prev.slice(0, 2));
             }
             setCompareMode(!compareMode);
           }}
@@ -153,43 +192,50 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
       </ScrollArea>
       
       <div className="h-[400px] mt-4">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={progressData}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              tickFormatter={(value) => value}
-              angle={-45}
-              textAnchor="end"
-              height={80}
-            />
-            <YAxis
-              label={{ 
-                value: 'Weight (kg)', 
-                angle: -90, 
-                position: 'insideLeft',
-                style: { textAnchor: 'middle' }
-              }}
-            />
-            <RechartsTooltip content={<CustomTooltip />} />
-            <Legend />
-            {selectedExercises
-              .slice(0, compareMode ? 2 : undefined)
-              .map((exercise, index) => (
-                <Line
-                  key={exercise}
-                  type="monotone"
-                  dataKey={exercise}
-                  stroke={COLORS[index % COLORS.length]}
-                  dot={{ r: 4 }}
-                  connectNulls={true}
-                />
-              ))}
-          </LineChart>
-        </ResponsiveContainer>
+        {progressData.length > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={progressData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="date"
+                angle={-45}
+                textAnchor="end"
+                height={80}
+              />
+              <YAxis
+                label={{ 
+                  value: 'Weight (kg)', 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { textAnchor: 'middle' }
+                }}
+              />
+              <RechartsTooltip content={<CustomTooltip />} />
+              <Legend />
+              {selectedExercises
+                .slice(0, compareMode ? 2 : undefined)
+                .map((exercise, index) => (
+                  <Line
+                    key={exercise}
+                    type="monotone"
+                    dataKey={exercise}
+                    stroke={COLORS[index % COLORS.length]}
+                    dot={{ r: 4 }}
+                    connectNulls
+                  />
+                ))}
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-full flex items-center justify-center text-muted-foreground">
+            {selectedExercises.length === 0 
+              ? "Select exercises to view progress"
+              : "No data available for selected exercises"}
+          </div>
+        )}
       </div>
     </Card>
   );
