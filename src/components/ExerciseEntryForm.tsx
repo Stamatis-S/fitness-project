@@ -144,6 +144,32 @@ export function ExerciseEntryForm() {
     <Card className="max-w-2xl mx-auto p-4 md:p-6">
       <FormProvider {...methods}>
         <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="flex items-center justify-between mb-4">
+            {step !== 'category' && (
+              <Button
+                type="button"
+                onClick={handleBack}
+                variant="ghost"
+                className="flex items-center gap-2 -ml-2"
+              >
+                <ArrowLeft className="h-5 w-5" />
+                Back
+              </Button>
+            )}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex-1 text-center"
+            >
+              <h2 className="text-xl font-semibold">
+                {step === 'category' && 'Select Category'}
+                {step === 'exercise' && 'Choose Exercise'}
+                {step === 'sets' && 'Add Sets'}
+              </h2>
+            </motion.div>
+            {step !== 'category' && <div className="w-[73px]" />} {/* Spacer for alignment */}
+          </div>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -155,20 +181,6 @@ export function ExerciseEntryForm() {
           </motion.div>
           
           <Tabs value={step} className="space-y-6">
-            <div className="relative">
-              {step !== 'category' && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-0 top-0 z-10"
-                  onClick={handleBack}
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              )}
-            </div>
-
             <TabsContent value="category" className="m-0">
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
@@ -178,7 +190,7 @@ export function ExerciseEntryForm() {
                 <CategorySelector 
                   onCategoryChange={(category) => {
                     setSelectedCategory(category);
-                    handleNext();
+                    setStep('exercise'); // Immediately move to exercise selection
                   }}
                   selectedCategory={selectedCategory}
                 />
