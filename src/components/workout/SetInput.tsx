@@ -1,4 +1,3 @@
-
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -7,7 +6,7 @@ import { UseFieldArrayRemove } from "react-hook-form";
 import { ExerciseFormData } from "./types";
 import { useFormContext, useWatch } from "react-hook-form";
 import { motion } from "framer-motion";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
@@ -30,10 +29,15 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   const selectedExercise = useWatch({ name: 'exercise' });
   const customExercise = useWatch({ name: 'customExercise' });
 
-  // Fetch common values for the selected exercise
-  const { data: commonValues } = useQuery({
+  const { data: commonValues, isLoading, error } = useQuery({
     queryKey: ['common-values', selectedExercise, customExercise],
     queryFn: async () => {
+      console.log('Fetching common values for:', {
+        userId: session?.user?.id,
+        selectedExercise,
+        customExercise
+      });
+
       if (!session?.user?.id) return null;
 
       const isCustomExercise = selectedExercise === 'custom';
@@ -49,6 +53,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
       }
 
       const { data, error } = await query;
+      
+      console.log('Query response:', { data, error });
+      
       if (error) throw error;
 
       const weightValues: Record<number, number> = {};
@@ -70,13 +77,27 @@ export function SetInput({ index, onRemove }: SetInputProps) {
           .slice(0, 3);
       };
 
-      return {
+      const result = {
         weights: formatCommonValues(weightValues),
         reps: formatCommonValues(repValues),
       };
+
+      console.log('Formatted common values:', result);
+      return result;
     },
     enabled: !!session?.user?.id && !!selectedExercise,
   });
+
+  useEffect(() => {
+    console.log('Component state:', {
+      session: !!session,
+      selectedExercise,
+      customExercise,
+      commonValues,
+      isLoading,
+      error
+    });
+  }, [session, selectedExercise, customExercise, commonValues, isLoading, error]);
 
   const handleWeightIncrement = useCallback((increment: number) => {
     const newValue = Math.max(0, currentWeight + increment);
@@ -106,21 +127,24 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     }
   }, [index, setValue]);
 
-  const QuickSelectButton = ({ value, field }: { value: number, field: 'weight' | 'reps' }) => (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      onClick={() => handleQuickSelect(field, value)}
-      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors hover:bg-primary hover:text-primary-foreground
-        ${field === 'weight' ? 'bg-blue-50 dark:bg-blue-950' : 'bg-green-50 dark:bg-green-950'}
-        ${(field === 'weight' ? currentWeight === value : currentReps === value) ? 
-          'border-primary text-primary dark:border-primary dark:text-primary' : 
-          'border-muted-foreground/20'}`}
-    >
-      {value}{field === 'weight' ? 'kg' : ''}
-    </Button>
-  );
+  const QuickSelectButton = ({ value, field }: { value: number, field: 'weight' | 'reps' }) => {
+    console.log('Rendering quick select button:', { value, field });
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => handleQuickSelect(field, value)}
+        className={`rounded-full px-3 py-1 text-xs font-medium transition-colors hover:bg-primary hover:text-primary-foreground
+          ${field === 'weight' ? 'bg-blue-50 dark:bg-blue-950' : 'bg-green-50 dark:bg-green-950'}
+          ${(field === 'weight' ? currentWeight === value : currentReps === value) ? 
+            'border-primary text-primary dark:border-primary dark:text-primary' : 
+            'border-muted-foreground/20'}`}
+      >
+        {value}{field === 'weight' ? 'kg' : ''}
+      </Button>
+    );
+  };
 
   return (
     <motion.div
