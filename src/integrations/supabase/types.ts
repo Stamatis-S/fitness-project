@@ -81,6 +81,42 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_cycles: {
+        Row: {
+          completed_at: string | null
+          completed_days: number | null
+          created_at: string
+          id: number
+          is_active: boolean | null
+          last_notification_sent: string | null
+          notifications_enabled: boolean | null
+          start_date: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_days?: number | null
+          created_at?: string
+          id?: number
+          is_active?: boolean | null
+          last_notification_sent?: string | null
+          notifications_enabled?: boolean | null
+          start_date: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_days?: number | null
+          created_at?: string
+          id?: number
+          is_active?: boolean | null
+          last_notification_sent?: string | null
+          notifications_enabled?: boolean | null
+          start_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       workout_logs: {
         Row: {
           category: Database["public"]["Enums"]["exercise_category"]

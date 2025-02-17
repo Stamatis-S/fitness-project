@@ -21,6 +21,18 @@ interface WorkoutCycleCardProps {
   workoutDates: string[];
 }
 
+interface WorkoutCycle {
+  id: number;
+  user_id: string;
+  start_date: string;
+  completed_days: number;
+  is_active: boolean;
+  created_at: string;
+  completed_at: string | null;
+  notifications_enabled: boolean;
+  last_notification_sent: string | null;
+}
+
 const CYCLE_DAYS = 12;
 const STORAGE_KEY = 'workout_cycle_start_date';
 
@@ -29,7 +41,7 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
   const [isComplete, setIsComplete] = useState(false);
 
   // Query current cycle
-  const { data: currentCycle, refetch: refetchCycle } = useQuery({
+  const { data: currentCycle, refetch: refetchCycle } = useQuery<WorkoutCycle | null>({
     queryKey: ['workout_cycle'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -37,35 +49,34 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
         .select('*')
         .eq('user_id', session?.user?.id)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
     },
+    enabled: !!session?.user?.id,
   });
 
   // Save cycle to database
   const saveCycleMutation = useMutation({
     mutationFn: async (startDate: Date) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('workout_cycles')
-        .insert([
-          {
-            user_id: session?.user?.id,
-            start_date: format(startDate, 'yyyy-MM-dd'),
-            is_active: true
-          }
-        ]);
+        .insert({
+          user_id: session?.user?.id,
+          start_date: format(startDate, 'yyyy-MM-dd'),
+          is_active: true,
+          completed_days: 0
+        });
 
       if (error) throw error;
-      return data;
     },
   });
 
   // Update cycle progress
   const updateCycleMutation = useMutation({
     mutationFn: async ({ id, completedDays, isActive }: { id: number; completedDays: number; isActive: boolean }) => {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('workout_cycles')
         .update({
           completed_days: completedDays,
@@ -75,7 +86,6 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
         .eq('id', id);
 
       if (error) throw error;
-      return data;
     },
   });
 
@@ -100,7 +110,7 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
   });
 
   useEffect(() => {
-    if (currentCycle?.start_date) {
+    if (currentCycle?.start_date && session?.user?.id) {
       // Count actual workout days since cycle start
       const cycleStartDate = new Date(currentCycle.start_date);
       const workoutDaysSinceCycleStart = workoutDates.filter(date => 
@@ -129,7 +139,7 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
         });
       }
     }
-  }, [currentCycle, workoutDates]);
+  }, [currentCycle, workoutDates, session?.user?.id]);
 
   const handleDateSelect = async (date: Date | undefined) => {
     if (!date || !session?.user?.id) return;
@@ -142,7 +152,7 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
     }
     
     if (currentCycle?.is_active && !isComplete) {
-      toast.error("Cannot start new cycle before completing current one");
+      toast.error("Cannot start new cycle before completion");
       return;
     }
 
@@ -162,7 +172,7 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
     : 0;
 
   const daysLeft = currentCycle?.is_active 
-    ? CYCLE_DAYS - currentCycle.completed_days 
+    ? CYCLE_DAYS - (currentCycle.completed_days || 0)
     : CYCLE_DAYS;
 
   return (
