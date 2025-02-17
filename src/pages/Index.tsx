@@ -25,12 +25,19 @@ const Index = () => {
   const { theme, setTheme } = useTheme();
   const { session } = useAuth();
 
+  // Add error boundary for auth-related operations
+  if (!session) {
+    console.log('No active session, redirecting to auth');
+    return null;
+  }
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
       toast.success("Successfully logged out");
       navigate("/auth");
     } catch (error) {
+      console.error('Logout error:', error);
       toast.error("Error logging out");
     }
   };
@@ -76,7 +83,9 @@ const Index = () => {
           </div>
         </div>
 
-        <ExerciseEntryForm />
+        <div className="relative">
+          {session && <ExerciseEntryForm />}
+        </div>
       </div>
     </div>
   );
