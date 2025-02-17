@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -122,6 +121,27 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
 
   const radarData = calculateBaselines();
 
+  const renderCustomLabel = ({ name, percentage, cx, cy, midAngle, innerRadius, outerRadius }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 1.4;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="currentColor"
+        textAnchor={x > cx ? "start" : "end"}
+        dominantBaseline="central"
+        fontSize={isMobile ? "8px" : "10px"}
+        fontWeight="500"
+      >
+        {`${name} (${percentage}%)`}
+      </text>
+    );
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="p-4 sm:p-6 col-span-full">
@@ -151,12 +171,12 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                 cx="50%"
                 cy="50%"
                 outerRadius={isMobile ? 100 : 140}
-                label={({ name, percentage }) => `${name} (${percentage}%)`}
-                labelLine={{ 
+                label={renderCustomLabel}
+                labelLine={{
                   stroke: "currentColor",
-                  strokeWidth: 1,
+                  strokeWidth: 0.5,
                   strokeOpacity: 0.5,
-                  length: 10
+                  type: "polyline"
                 }}
               >
                 {categoryDistribution.map((entry, index) => (
@@ -174,7 +194,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                 verticalAlign="bottom"
                 wrapperStyle={{ 
                   paddingTop: "20px",
-                  fontSize: isMobile ? "10px" : "12px"
+                  fontSize: isMobile ? "9px" : "11px"
                 }}
               />
             </PieChart>
