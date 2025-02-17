@@ -68,21 +68,22 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
     }
   }, [workoutLogs]);
 
-  // Process workout data for the chart with error handling
+  // Process workout data for the chart with weighted averages
   const progressData = useMemo(() => {
     try {
-      const dataMap = new Map<string, Map<string, number>>();
+      const dataMap = new Map<string, Map<string, { totalWeight: number; totalReps: number }>>();
       
       const sortedLogs = [...workoutLogs]
-        .filter(log => log && log.workout_date) // Filter out invalid logs
+        .filter(log => log && log.workout_date && log.weight_kg && log.reps) // Filter out invalid logs
         .sort((a, b) => {
           const dateA = new Date(a.workout_date).getTime();
           const dateB = new Date(b.workout_date).getTime();
           return dateA - dateB;
         });
 
+      // Group by date and exercise, accumulate weights and reps
       sortedLogs.forEach(log => {
-        if (!log.workout_date) return;
+        if (!log.workout_date || !log.weight_kg || !log.reps) return;
         
         const date = log.workout_date;
         const exercise = log.custom_exercise || (log.exercises && log.exercises.name);
@@ -94,10 +95,16 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
         }
         
         const exerciseMap = dataMap.get(date)!;
-        const currentMax = exerciseMap.get(exercise) || 0;
-        exerciseMap.set(exercise, Math.max(currentMax, log.weight_kg || 0));
+        if (!exerciseMap.has(exercise)) {
+          exerciseMap.set(exercise, { totalWeight: 0, totalReps: 0 });
+        }
+        
+        const current = exerciseMap.get(exercise)!;
+        current.totalWeight += log.weight_kg * log.reps;
+        current.totalReps += log.reps;
       });
 
+      // Convert accumulated data to weighted averages
       return Array.from(dataMap.entries())
         .map(([date, exerciseMap]) => {
           try {
@@ -107,7 +114,13 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
             };
             
             selectedExercises.forEach(exercise => {
-              dataPoint[exercise] = exerciseMap.get(exercise) ?? null;
+              const exerciseData = exerciseMap.get(exercise);
+              if (exerciseData && exerciseData.totalReps > 0) {
+                // Calculate weighted average
+                dataPoint[exercise] = Number((exerciseData.totalWeight / exerciseData.totalReps).toFixed(2));
+              } else {
+                dataPoint[exercise] = null;
+              }
             });
             
             return dataPoint;
@@ -207,7 +220,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
               />
               <YAxis
                 label={{ 
-                  value: 'Weight (kg)', 
+                  value: 'Weighted Average (kg)', 
                   angle: -90, 
                   position: 'insideLeft',
                   style: { textAnchor: 'middle' }
