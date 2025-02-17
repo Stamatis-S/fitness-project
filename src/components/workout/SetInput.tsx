@@ -44,10 +44,10 @@ export function SetInput({ index, onRemove }: SetInputProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="space-y-4 p-6 rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow"
+      className="p-4 rounded-xl border bg-card shadow-sm hover:shadow-md transition-shadow"
     >
-      <div className="flex items-center justify-between">
-        <Label className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+      <div className="flex items-center justify-between mb-4">
+        <Label className="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
           Set {index + 1}
         </Label>
         {index > 0 && (
@@ -55,91 +55,83 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             type="button"
             variant="ghost"
             size="icon"
-            className="h-10 w-10 hover:text-red-500 transition-colors rounded-full"
+            className="h-8 w-8 hover:text-red-500 transition-colors rounded-full"
             onClick={() => onRemove(index)}
           >
-            <Trash2 className="h-5 w-5" />
+            <Trash2 className="h-4 w-4" />
           </Button>
         )}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="space-y-6">
-          <Label className="flex items-center gap-2 text-lg">
-            <Weight className="h-5 w-5 text-primary" />
+      <div className="grid grid-cols-2 gap-4">
+        {/* Weight Controls */}
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Weight className="h-4 w-4 text-primary" />
             Weight: {currentWeight.toFixed(1)} KG
           </Label>
-          <div className="px-2">
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-full shrink-0"
+              onClick={() => handleWeightIncrement(-0.5)}
+            >
+              <Minus className="h-3 w-3" />
+            </Button>
             <Slider
               defaultValue={[currentWeight]}
               value={[currentWeight]}
               onValueChange={(values) => handleSliderChange('weight', values)}
               max={200}
               step={0.5}
-              className="py-4"
+              className="flex-1"
             />
-          </div>
-          <div className="flex items-center gap-4">
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="rounded-full"
-              onClick={() => handleWeightIncrement(-0.5)}
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <div className="h-12 px-4 flex items-center justify-center text-lg font-medium border rounded-md bg-background min-w-[100px]">
-              {currentWeight.toFixed(1)} KG
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="rounded-full"
+              className="h-8 w-8 rounded-full shrink-0"
               onClick={() => handleWeightIncrement(0.5)}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3 w-3" />
             </Button>
           </div>
         </div>
-        
-        <div className="space-y-6">
-          <Label className="flex items-center gap-2 text-lg">
-            <Repeat className="h-5 w-5 text-primary" />
-            Repetitions: {currentReps}
+
+        {/* Reps Controls */}
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Repeat className="h-4 w-4 text-primary" />
+            Reps: {currentReps}
           </Label>
-          <div className="px-2">
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-full shrink-0"
+              onClick={() => handleRepsIncrement(-1)}
+            >
+              <Minus className="h-3 w-3" />
+            </Button>
             <Slider
               defaultValue={[currentReps]}
               value={[currentReps]}
               onValueChange={(values) => handleSliderChange('reps', values)}
               max={30}
               step={1}
-              className="py-4"
+              className="flex-1"
             />
-          </div>
-          <div className="flex items-center gap-4">
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="rounded-full"
-              onClick={() => handleRepsIncrement(-1)}
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <div className="h-12 px-4 flex items-center justify-center text-lg font-medium border rounded-md bg-background min-w-[100px]">
-              {currentReps} reps
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="rounded-full"
+              className="h-8 w-8 rounded-full shrink-0"
               onClick={() => handleRepsIncrement(1)}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3 w-3" />
             </Button>
           </div>
         </div>
