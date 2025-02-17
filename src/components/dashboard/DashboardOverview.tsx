@@ -22,47 +22,94 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
       new Date(log.workout_date) >= twoWeeksAgo && new Date(log.workout_date) < oneWeekAgo
     );
 
-    const exerciseCountsThisWeek = new Map<string, number>();
-    const exerciseCountsLastWeek = new Map<string, number>();
-    const maxWeightThisWeek = new Map<string, number>();
-    const maxWeightLastWeek = new Map<string, number>();
-
+    // Create a map to count exercise occurrences for this week
+    const exerciseCounts = new Map<string, { count: number, sets: number }>();
     thisWeekLogs.forEach(log => {
-      const exercise = log.custom_exercise || log.exercises?.name;
-      if (!exercise) return;
-      exerciseCountsThisWeek.set(exercise, (exerciseCountsThisWeek.get(exercise) || 0) + 1);
-      maxWeightThisWeek.set(exercise, Math.max(maxWeightThisWeek.get(exercise) || 0, log.weight_kg || 0));
+      const exerciseName = log.custom_exercise || log.exercises?.name;
+      if (!exerciseName) return;
+      
+      const current = exerciseCounts.get(exerciseName) || { count: 0, sets: 0 };
+      exerciseCounts.set(exerciseName, {
+        count: current.count + 1,
+        sets: current.sets + 1
+      });
     });
 
+    // Create a map for last week's exercise counts
+    const lastWeekCounts = new Map<string, { count: number, sets: number }>();
     lastWeekLogs.forEach(log => {
-      const exercise = log.custom_exercise || log.exercises?.name;
-      if (!exercise) return;
-      exerciseCountsLastWeek.set(exercise, (exerciseCountsLastWeek.get(exercise) || 0) + 1);
-      maxWeightLastWeek.set(exercise, Math.max(maxWeightLastWeek.get(exercise) || 0, log.weight_kg || 0));
+      const exerciseName = log.custom_exercise || log.exercises?.name;
+      if (!exerciseName) return;
+      
+      const current = lastWeekCounts.get(exerciseName) || { count: 0, sets: 0 };
+      lastWeekCounts.set(exerciseName, {
+        count: current.count + 1,
+        sets: current.sets + 1
+      });
     });
 
     const getMostUsed = () => {
-      const [exercise = '', count = 0] = [...exerciseCountsThisWeek.entries()]
-        .sort(([,a], [,b]) => b - a)[0] || [];
-      const lastWeekCount = exerciseCountsLastWeek.get(exercise) || 0;
-      const percentChange = lastWeekCount ? ((count - lastWeekCount) / lastWeekCount) * 100 : 0;
-      return { exercise, count, percentChange };
+      if (exerciseCounts.size === 0) {
+        return { exercise: 'No exercises recorded', count: 0, percentChange: 0 };
+      }
+
+      // Sort by total sets and get the most used exercise
+      const sortedExercises = Array.from(exerciseCounts.entries())
+        .sort(([, a], [, b]) => b.sets - a.sets);
+
+      const [mostUsedExercise, { sets }] = sortedExercises[0];
+      const lastWeekStats = lastWeekCounts.get(mostUsedExercise);
+      const percentChange = lastWeekStats 
+        ? ((sets - lastWeekStats.sets) / lastWeekStats.sets) * 100 
+        : 100; // If not present last week, treat as 100% increase
+
+      return {
+        exercise: mostUsedExercise,
+        count: sets,
+        percentChange
+      };
     };
 
     const getMaxWeight = () => {
-      const entries = [...maxWeightThisWeek.entries()];
-      if (!entries.length) return { exercise: '', weight: 0, percentChange: 0 };
+      const maxWeightMap = new Map<string, number>();
       
-      const [exercise, weight] = entries.sort(([,a], [,b]) => b - a)[0];
-      const lastWeekWeight = maxWeightLastWeek.get(exercise) || 0;
-      const percentChange = lastWeekWeight ? ((weight - lastWeekWeight) / lastWeekWeight) * 100 : 0;
+      thisWeekLogs.forEach(log => {
+        const exerciseName = log.custom_exercise || log.exercises?.name;
+        if (!exerciseName || !log.weight_kg) return;
+        
+        const currentMax = maxWeightMap.get(exerciseName) || 0;
+        maxWeightMap.set(exerciseName, Math.max(currentMax, log.weight_kg));
+      });
+
+      if (maxWeightMap.size === 0) {
+        return { exercise: 'No exercises recorded', weight: 0, percentChange: 0 };
+      }
+
+      const [exercise, weight] = Array.from(maxWeightMap.entries())
+        .sort(([, a], [, b]) => b - a)[0];
+
+      const lastWeekMaxWeight = Math.max(...lastWeekLogs
+        .filter(log => (log.custom_exercise || log.exercises?.name) === exercise)
+        .map(log => log.weight_kg || 0));
+
+      const percentChange = lastWeekMaxWeight 
+        ? ((weight - lastWeekMaxWeight) / lastWeekMaxWeight) * 100 
+        : 100;
+
       return { exercise, weight, percentChange };
     };
 
     const getTotalVolume = () => {
-      const thisWeekVolume = thisWeekLogs.reduce((sum, log) => sum + (log.weight_kg * log.reps), 0);
-      const lastWeekVolume = lastWeekLogs.reduce((sum, log) => sum + (log.weight_kg * log.reps), 0);
-      const percentChange = lastWeekVolume ? ((thisWeekVolume - lastWeekVolume) / lastWeekVolume) * 100 : 0;
+      const thisWeekVolume = thisWeekLogs.reduce((sum, log) => 
+        sum + ((log.weight_kg || 0) * (log.reps || 0)), 0);
+      
+      const lastWeekVolume = lastWeekLogs.reduce((sum, log) => 
+        sum + ((log.weight_kg || 0) * (log.reps || 0)), 0);
+
+      const percentChange = lastWeekVolume 
+        ? ((thisWeekVolume - lastWeekVolume) / lastWeekVolume) * 100 
+        : thisWeekVolume > 0 ? 100 : 0;
+
       return { volume: thisWeekVolume, percentChange };
     };
 
