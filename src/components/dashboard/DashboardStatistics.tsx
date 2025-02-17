@@ -186,8 +186,8 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                 data={maxWeightData}
                 layout="vertical"
                 margin={{
-                  left: isMobile ? 100 : 160,
-                  right: isMobile ? 10 : 20,
+                  left: isMobile ? 80 : 120,
+                  right: isMobile ? 16 : 24,
                   top: 5,
                   bottom: 20,
                 }}
@@ -216,34 +216,19 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                 <YAxis 
                   type="category" 
                   dataKey="exercise" 
-                  width={isMobile ? 90 : 150}
+                  width={isMobile ? 70 : 110}
                   tick={{ 
                     fontSize: isMobile ? 10 : 12,
                     fill: 'currentColor',
-                    width: isMobile ? 85 : 140,
-                    lineHeight: isMobile ? 12 : 16
+                    width: isMobile ? 65 : 100,
+                    dy: 3
                   }}
                   tickFormatter={(value) => {
-                    const words = value.split(' ');
-                    const maxLength = isMobile ? 12 : 20;
-                    let result = '';
-                    let currentLine = '';
-                    
-                    for (const word of words) {
-                      if ((currentLine + word).length > maxLength) {
-                        result += (result ? '\n' : '') + currentLine;
-                        currentLine = word + ' ';
-                      } else {
-                        currentLine += word + ' ';
-                      }
+                    const maxChars = isMobile ? 12 : 15;
+                    if (value.length > maxChars) {
+                      return value.substring(0, maxChars) + '...';
                     }
-                    result += (result ? '\n' : '') + currentLine.trim();
-                    
-                    const lines = result.split('\n');
-                    if (lines.length > 2) {
-                      return lines.slice(0, 2).join('\n') + '...';
-                    }
-                    return result;
+                    return value;
                   }}
                 />
                 <Tooltip 
@@ -254,7 +239,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                   dataKey="maxWeight"
                   name="Max Weight"
                   minPointSize={2}
-                  barSize={isMobile ? 16 : 24}
+                  barSize={isMobile ? 20 : 28}
                 >
                   {maxWeightData.map((entry, index) => (
                     <Cell 
