@@ -8,17 +8,17 @@
     <meta name="description" content="Lovable Generated Project" />
     <meta name="author" content="Lovable" />
     <meta property="og:image" content="/og-image.png" />
-    <!-- Add onerror handler and ensure CORS is properly set -->
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <!-- Move script here and ensure it loads first -->
     <script 
       src="https://cdn.gpteng.co/gptengineer.js" 
       type="module" 
       crossorigin="anonymous"
       onerror="console.error('Failed to load GPT Engineer script:', event)"
     ></script>
-  </head>
-
-  <body>
-    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
