@@ -8,6 +8,7 @@ import { UseFieldArrayRemove } from "react-hook-form";
 import { ExerciseFormData } from "./types";
 import { useFormContext } from "react-hook-form";
 import { motion } from "framer-motion";
+import { useCallback } from "react";
 
 interface SetInputProps {
   index: number;
@@ -19,25 +20,43 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   const currentWeight = watch(`sets.${index}.weight`);
   const currentReps = watch(`sets.${index}.reps`);
 
-  const handleWeightChange = (value: string | number) => {
+  const handleWeightChange = useCallback((value: string | number) => {
+    console.log('handleWeightChange called with value:', value);
+    
     // Convert to number and handle empty input
     const numValue = value === '' ? 0 : Number(value);
+    console.log('Converted numValue:', numValue);
     
-    // Update only if it's a valid number and not negative
-    if (!isNaN(numValue) && numValue >= 0) {
+    // Update only if it's a valid number
+    if (!isNaN(numValue)) {
+      console.log('Setting weight value:', numValue);
       setValue(`sets.${index}.weight`, numValue);
     }
-  };
+  }, [index, setValue]);
 
-  const handleWeightIncrement = (increment: number) => {
+  const handleWeightIncrement = useCallback((increment: number) => {
+    console.log('handleWeightIncrement called with increment:', increment);
     const newValue = Math.max(0, (currentWeight || 0) + increment);
+    console.log('New weight value after increment:', newValue);
     setValue(`sets.${index}.weight`, newValue);
-  };
+  }, [currentWeight, index, setValue]);
 
-  const handleRepsIncrement = (increment: number) => {
+  const handleRepsIncrement = useCallback((increment: number) => {
+    console.log('handleRepsIncrement called with increment:', increment);
     const newValue = Math.max(0, (currentReps || 0) + increment);
-    setValue(`sets.${index}.reps`, Math.floor(newValue)); // Ensure whole numbers for reps
-  };
+    console.log('New reps value after increment:', newValue);
+    setValue(`sets.${index}.reps`, Math.floor(newValue));
+  }, [currentReps, index, setValue]);
+
+  const handleInputInteraction = useCallback((event: React.SyntheticEvent) => {
+    console.log('Input interaction:', {
+      type: event.type,
+      target: event.target,
+      isTouchEvent: event.nativeEvent instanceof TouchEvent,
+      timestamp: new Date().toISOString(),
+      currentValue: currentWeight
+    });
+  }, [currentWeight]);
 
   return (
     <motion.div
@@ -72,7 +91,10 @@ export function SetInput({ index, onRemove }: SetInputProps) {
           <div className="px-2">
             <Slider
               value={[currentWeight || 0]}
-              onValueChange={(values) => setValue(`sets.${index}.weight`, values[0])}
+              onValueChange={(values) => {
+                console.log('Slider value changed:', values);
+                setValue(`sets.${index}.weight`, values[0]);
+              }}
               max={200}
               step={1}
               className="py-4"
@@ -94,8 +116,13 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               className="h-12 text-center text-lg font-medium"
               value={currentWeight || 0}
               onChange={(e) => handleWeightChange(e.target.value)}
+              onFocus={handleInputInteraction}
+              onClick={handleInputInteraction}
+              onTouchStart={handleInputInteraction}
               min={0}
-              step="0.5"
+              step="any"
+              pattern="[0-9]*"
+              aria-label="Weight in KG"
             />
             <Button
               type="button"
@@ -140,6 +167,8 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               value={currentReps || 0}
               onChange={(e) => setValue(`sets.${index}.reps`, Math.max(0, Math.floor(Number(e.target.value))))}
               min={0}
+              pattern="[0-9]*"
+              aria-label="Number of repetitions"
             />
             <Button
               type="button"
