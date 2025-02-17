@@ -1,8 +1,9 @@
 
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
-import { CalendarCheck, TrendingUp, AlertCircle } from "lucide-react";
+import { TrendingUp, AlertCircle } from "lucide-react";
 import type { WorkoutLog } from "@/pages/Dashboard";
+import { WorkoutCycleCard } from "./WorkoutCycleCard";
 
 interface WorkoutInsightsProps {
   logs: WorkoutLog[];
@@ -11,19 +12,6 @@ interface WorkoutInsightsProps {
 export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
   const insights = useMemo(() => {
     if (!logs?.length) return null;
-
-    // Calculate streak
-    const sortedDates = [...new Set(logs.map(log => log.workout_date))]
-      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-    
-    let streak = 1;
-    for (let i = 0; i < sortedDates.length - 1; i++) {
-      const curr = new Date(sortedDates[i]);
-      const next = new Date(sortedDates[i + 1]);
-      const diffDays = Math.floor((curr.getTime() - next.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays === 1) streak++;
-      else break;
-    }
 
     // Find missing workout categories
     const lastMonth = new Date();
@@ -68,9 +56,9 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
       .sort((a, b) => parseFloat(b.improvement) - parseFloat(a.improvement));
 
     return {
-      streak,
       missingCategories,
-      improvements: significantImprovements
+      improvements: significantImprovements,
+      lastWorkoutDate: logs[logs.length - 1]?.workout_date
     };
   }, [logs]);
 
@@ -78,15 +66,7 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <Card className="p-4">
-        <div className="flex items-center gap-3">
-          <CalendarCheck className="h-8 w-8 text-green-500" />
-          <div>
-            <h3 className="font-semibold">Workout Streak</h3>
-            <p>{insights.streak} consecutive days</p>
-          </div>
-        </div>
-      </Card>
+      <WorkoutCycleCard lastWorkoutDate={insights.lastWorkoutDate} />
 
       {insights.missingCategories.length > 0 && (
         <Card className="p-4">
