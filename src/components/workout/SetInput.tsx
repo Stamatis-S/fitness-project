@@ -16,55 +16,31 @@ interface SetInputProps {
 }
 
 export function SetInput({ index, onRemove }: SetInputProps) {
-  const { register, setValue, watch } = useFormContext<ExerciseFormData>();
+  const { setValue, watch } = useFormContext<ExerciseFormData>();
   const currentWeight = watch(`sets.${index}.weight`);
   const currentReps = watch(`sets.${index}.reps`);
-
-  const handleWeightChange = useCallback((value: string | number) => {
-    try {
-      console.log('handleWeightChange called with value:', value);
-      
-      // Convert to number and handle empty input
-      const numValue = value === '' ? 0 : Number(value);
-      console.log('Converted numValue:', numValue);
-      
-      // Update only if it's a valid number
-      if (!isNaN(numValue)) {
-        console.log('Setting weight value:', numValue);
-        setValue(`sets.${index}.weight`, numValue);
-      }
-    } catch (error) {
-      console.error('Error in handleWeightChange:', error);
-    }
-  }, [index, setValue]);
 
   const handleWeightIncrement = useCallback((increment: number) => {
     try {
       console.log('handleWeightIncrement called with increment:', increment);
       const newValue = Math.max(0, (currentWeight || 0) + increment);
       console.log('New weight value after increment:', newValue);
-      setValue(`sets.${index}.weight`, newValue);
+      setValue(`sets.${index}.weight`, Number(newValue.toFixed(1)));
     } catch (error) {
       console.error('Error in handleWeightIncrement:', error);
     }
   }, [currentWeight, index, setValue]);
 
-  const handleInputInteraction = useCallback((event: React.SyntheticEvent) => {
+  const handleRepsIncrement = useCallback((increment: number) => {
     try {
-      event.preventDefault(); // Prevent default behavior
-      event.stopPropagation(); // Stop event bubbling
-      
-      console.log('Input interaction:', {
-        type: event.type,
-        target: event.target,
-        isTouchEvent: event.nativeEvent instanceof TouchEvent,
-        timestamp: new Date().toISOString(),
-        currentValue: currentWeight
-      });
+      console.log('handleRepsIncrement called with increment:', increment);
+      const newValue = Math.max(0, (currentReps || 0) + increment);
+      console.log('New reps value after increment:', newValue);
+      setValue(`sets.${index}.reps`, Math.floor(newValue));
     } catch (error) {
-      console.error('Error in handleInputInteraction:', error);
+      console.error('Error in handleRepsIncrement:', error);
     }
-  }, [currentWeight]);
+  }, [currentReps, index, setValue]);
 
   return (
     <motion.div
@@ -94,17 +70,17 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         <div className="space-y-6">
           <Label className="flex items-center gap-2 text-lg">
             <Weight className="h-5 w-5 text-primary" />
-            Weight: {currentWeight || 0} KG
+            Weight: {currentWeight?.toFixed(1) || "0.0"} KG
           </Label>
           <div className="px-2">
             <Slider
               value={[currentWeight || 0]}
               onValueChange={(values) => {
                 console.log('Slider value changed:', values);
-                setValue(`sets.${index}.weight`, values[0]);
+                setValue(`sets.${index}.weight`, Number(values[0].toFixed(1)));
               }}
               max={200}
-              step={1}
+              step={0.5}
               className="py-4"
             />
           </div>
@@ -114,27 +90,19 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               variant="outline"
               size="icon"
               className="rounded-full"
-              onClick={() => handleWeightIncrement(-2.5)}
+              onClick={() => handleWeightIncrement(-0.5)}
             >
               <Minus className="h-4 w-4" />
             </Button>
-            <Input
-              type="text"
-              inputMode="decimal"
-              className="h-12 text-center text-lg font-medium"
-              value={currentWeight || 0}
-              onChange={(e) => handleWeightChange(e.target.value)}
-              onFocus={handleInputInteraction}
-              onClick={handleInputInteraction}
-              onTouchStart={handleInputInteraction}
-              aria-label="Weight in KG"
-            />
+            <div className="h-12 px-4 flex items-center justify-center text-lg font-medium border rounded-md bg-background min-w-[100px]">
+              {currentWeight?.toFixed(1) || "0.0"} KG
+            </div>
             <Button
               type="button"
               variant="outline"
               size="icon"
               className="rounded-full"
-              onClick={() => handleWeightIncrement(2.5)}
+              onClick={() => handleWeightIncrement(0.5)}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -165,16 +133,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             >
               <Minus className="h-4 w-4" />
             </Button>
-            <Input
-              type="number"
-              inputMode="numeric"
-              className="h-12 text-center text-lg font-medium"
-              value={currentReps || 0}
-              onChange={(e) => setValue(`sets.${index}.reps`, Math.max(0, Math.floor(Number(e.target.value))))}
-              min={0}
-              pattern="[0-9]*"
-              aria-label="Number of repetitions"
-            />
+            <div className="h-12 px-4 flex items-center justify-center text-lg font-medium border rounded-md bg-background min-w-[100px]">
+              {currentReps || 0} reps
+            </div>
             <Button
               type="button"
               variant="outline"
