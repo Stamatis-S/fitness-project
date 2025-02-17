@@ -121,9 +121,9 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
 
   const radarData = calculateBaselines();
 
-  const renderCustomLabel = ({ name, percentage, cx, cy, midAngle, innerRadius, outerRadius }: any) => {
+  const renderCustomLabel = ({ percentage, cx, cy, midAngle, innerRadius, outerRadius }: any) => {
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 1.4;
+    const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -134,10 +134,10 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
         fill="currentColor"
         textAnchor={x > cx ? "start" : "end"}
         dominantBaseline="central"
-        fontSize={isMobile ? "8px" : "10px"}
+        fontSize={isMobile ? "10px" : "12px"}
         fontWeight="500"
       >
-        {`${name} (${percentage}%)`}
+        {`${percentage}%`}
       </text>
     );
   };
