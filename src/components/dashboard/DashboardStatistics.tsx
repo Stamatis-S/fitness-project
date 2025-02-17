@@ -177,20 +177,21 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
         </div>
       </Card>
 
-      <Card className="p-4 sm:p-6">
+      <Card className="p-4 sm:p-6 col-span-full lg:col-span-1">
         <h2 className="text-xl font-semibold mb-4">Max Weight Per Exercise</h2>
-        <div className={`${isMobile ? 'h-[600px]' : 'h-[400px]'} overflow-x-auto`}>
-          <div className={`${isMobile ? 'min-w-[340px]' : 'w-full'} h-full`}>
+        <div className="h-[600px] sm:h-[500px] -mx-4 sm:mx-0">
+          <div className="h-full w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={maxWeightData}
                 layout="vertical"
                 margin={{
-                  left: isMobile ? 140 : 160,
-                  right: 20,
-                  top: 10,
+                  left: isMobile ? 100 : 160,
+                  right: isMobile ? 10 : 20,
+                  top: 5,
                   bottom: 20,
                 }}
+                barCategoryGap={isMobile ? 5 : 8}
               >
                 <CartesianGrid 
                   strokeDasharray="3 3" 
@@ -204,21 +205,45 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                   label={{ 
                     value: 'Weight (kg)', 
                     position: 'insideBottom',
-                    offset: -10
+                    offset: -10,
+                    fontSize: isMobile ? 10 : 12
                   }}
-                  tick={{ fontSize: isMobile ? 10 : 12 }}
+                  tick={{ 
+                    fontSize: isMobile ? 10 : 12,
+                    fill: 'currentColor'
+                  }}
                 />
                 <YAxis 
                   type="category" 
                   dataKey="exercise" 
-                  width={isMobile ? 130 : 150}
+                  width={isMobile ? 90 : 150}
                   tick={{ 
                     fontSize: isMobile ? 10 : 12,
-                    width: isMobile ? 120 : 140
+                    fill: 'currentColor',
+                    width: isMobile ? 85 : 140,
+                    lineHeight: isMobile ? 12 : 16
                   }}
                   tickFormatter={(value) => {
-                    const maxLength = isMobile ? 15 : 20;
-                    return value.length > maxLength ? value.substring(0, maxLength) + '...' : value;
+                    const words = value.split(' ');
+                    const maxLength = isMobile ? 12 : 20;
+                    let result = '';
+                    let currentLine = '';
+                    
+                    for (const word of words) {
+                      if ((currentLine + word).length > maxLength) {
+                        result += (result ? '\n' : '') + currentLine;
+                        currentLine = word + ' ';
+                      } else {
+                        currentLine += word + ' ';
+                      }
+                    }
+                    result += (result ? '\n' : '') + currentLine.trim();
+                    
+                    const lines = result.split('\n');
+                    if (lines.length > 2) {
+                      return lines.slice(0, 2).join('\n') + '...';
+                    }
+                    return result;
                   }}
                 />
                 <Tooltip 
@@ -229,7 +254,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                   dataKey="maxWeight"
                   name="Max Weight"
                   minPointSize={2}
-                  barSize={isMobile ? 20 : 24}
+                  barSize={isMobile ? 16 : 24}
                 >
                   {maxWeightData.map((entry, index) => (
                     <Cell 
