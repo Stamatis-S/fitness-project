@@ -1,3 +1,4 @@
+
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { TrendingUp, AlertCircle } from "lucide-react";
