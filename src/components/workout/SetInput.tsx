@@ -2,7 +2,6 @@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Input } from "@/components/ui/input";
 import { Trash2, Weight, Repeat, Plus, Minus } from "lucide-react";
 import { UseFieldArrayRemove } from "react-hook-form";
 import { ExerciseFormData } from "./types";
@@ -17,30 +16,28 @@ interface SetInputProps {
 
 export function SetInput({ index, onRemove }: SetInputProps) {
   const { setValue, watch } = useFormContext<ExerciseFormData>();
-  const currentWeight = watch(`sets.${index}.weight`);
-  const currentReps = watch(`sets.${index}.reps`);
+  const currentWeight = watch(`sets.${index}.weight`) || 0;
+  const currentReps = watch(`sets.${index}.reps`) || 0;
 
   const handleWeightIncrement = useCallback((increment: number) => {
-    try {
-      console.log('handleWeightIncrement called with increment:', increment);
-      const newValue = Math.max(0, (currentWeight || 0) + increment);
-      console.log('New weight value after increment:', newValue);
-      setValue(`sets.${index}.weight`, Number(newValue.toFixed(1)));
-    } catch (error) {
-      console.error('Error in handleWeightIncrement:', error);
-    }
+    const newValue = Math.max(0, currentWeight + increment);
+    setValue(`sets.${index}.weight`, Number(newValue.toFixed(1)));
   }, [currentWeight, index, setValue]);
 
   const handleRepsIncrement = useCallback((increment: number) => {
-    try {
-      console.log('handleRepsIncrement called with increment:', increment);
-      const newValue = Math.max(0, (currentReps || 0) + increment);
-      console.log('New reps value after increment:', newValue);
-      setValue(`sets.${index}.reps`, Math.floor(newValue));
-    } catch (error) {
-      console.error('Error in handleRepsIncrement:', error);
-    }
+    const newValue = Math.max(0, currentReps + increment);
+    setValue(`sets.${index}.reps`, Math.floor(newValue));
   }, [currentReps, index, setValue]);
+
+  const handleSliderChange = useCallback((field: 'weight' | 'reps', values: number[]) => {
+    if (values.length === 0) return;
+    const value = values[0];
+    if (field === 'weight') {
+      setValue(`sets.${index}.weight`, Number(value.toFixed(1)));
+    } else {
+      setValue(`sets.${index}.reps`, Math.floor(value));
+    }
+  }, [index, setValue]);
 
   return (
     <motion.div
@@ -70,15 +67,13 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         <div className="space-y-6">
           <Label className="flex items-center gap-2 text-lg">
             <Weight className="h-5 w-5 text-primary" />
-            Weight: {currentWeight?.toFixed(1) || "0.0"} KG
+            Weight: {currentWeight.toFixed(1)} KG
           </Label>
           <div className="px-2">
             <Slider
-              value={[currentWeight || 0]}
-              onValueChange={(values) => {
-                console.log('Slider value changed:', values);
-                setValue(`sets.${index}.weight`, Number(values[0].toFixed(1)));
-              }}
+              defaultValue={[currentWeight]}
+              value={[currentWeight]}
+              onValueChange={(values) => handleSliderChange('weight', values)}
               max={200}
               step={0.5}
               className="py-4"
@@ -95,7 +90,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               <Minus className="h-4 w-4" />
             </Button>
             <div className="h-12 px-4 flex items-center justify-center text-lg font-medium border rounded-md bg-background min-w-[100px]">
-              {currentWeight?.toFixed(1) || "0.0"} KG
+              {currentWeight.toFixed(1)} KG
             </div>
             <Button
               type="button"
@@ -112,12 +107,13 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         <div className="space-y-6">
           <Label className="flex items-center gap-2 text-lg">
             <Repeat className="h-5 w-5 text-primary" />
-            Repetitions: {currentReps || 0}
+            Repetitions: {currentReps}
           </Label>
           <div className="px-2">
             <Slider
-              value={[currentReps || 0]}
-              onValueChange={(values) => setValue(`sets.${index}.reps`, Math.floor(values[0]))}
+              defaultValue={[currentReps]}
+              value={[currentReps]}
+              onValueChange={(values) => handleSliderChange('reps', values)}
               max={30}
               step={1}
               className="py-4"
@@ -134,7 +130,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               <Minus className="h-4 w-4" />
             </Button>
             <div className="h-12 px-4 flex items-center justify-center text-lg font-medium border rounded-md bg-background min-w-[100px]">
-              {currentReps || 0} reps
+              {currentReps} reps
             </div>
             <Button
               type="button"
