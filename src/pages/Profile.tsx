@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Edit2, Check } from "lucide-react";
+import { ChevronLeft, Edit2, Check, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, isValid } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -23,32 +24,33 @@ export default function Profile() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState("");
+  const [isRecalculating, setIsRecalculating] = useState(false);
+
+  const fetchProfile = async () => {
+    try {
+      const { error: calcError } = await supabase.rpc(
+        'calculate_fitness_score',
+        { user_id_param: session?.user.id }
+      );
+
+      if (calcError) throw calcError;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('username, fitness_score, fitness_level, last_score_update')
+        .eq('id', session?.user.id)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+      setNewUsername(data.username || "");
+    } catch (error) {
+      toast.error("Error loading profile");
+      console.error("Error:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { error: calcError } = await supabase.rpc(
-          'calculate_fitness_score',
-          { user_id_param: session?.user.id }
-        );
-
-        if (calcError) throw calcError;
-
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('username, fitness_score, fitness_level, last_score_update')
-          .eq('id', session?.user.id)
-          .single();
-
-        if (error) throw error;
-        setProfile(data);
-        setNewUsername(data.username || "");
-      } catch (error) {
-        toast.error("Error loading profile");
-        console.error("Error:", error);
-      }
-    };
-
     if (session?.user.id) {
       fetchProfile();
     }
@@ -72,12 +74,33 @@ export default function Profile() {
     }
   };
 
+  const handleRecalculateScore = async () => {
+    setIsRecalculating(true);
+    try {
+      const { error: calcError } = await supabase.rpc(
+        'calculate_fitness_score',
+        { user_id_param: session?.user.id }
+      );
+
+      if (calcError) throw calcError;
+      
+      await fetchProfile();
+      toast.success("Fitness score recalculated!");
+    } catch (error) {
+      toast.error("Error recalculating fitness score");
+      console.error("Error:", error);
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
   const getProgressValue = (score: number) => {
-    if (score >= 5001) return 100;
-    if (score >= 3501) return 80;
-    if (score >= 2001) return 60;
-    if (score >= 1001) return 40;
-    return Math.max((score / 1000) * 20, 0);
+    // Updated thresholds to match new scoring system
+    if (score >= 3000) return 100;
+    if (score >= 2000) return 80;
+    if (score >= 1200) return 60;
+    if (score >= 600) return 40;
+    return Math.max((score / 600) * 20, 0);
   };
 
   const getLevelColor = (level: string) => {
@@ -171,7 +194,19 @@ export default function Profile() {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-2xl font-semibold">Fitness Level</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Fitness Level</h2>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleRecalculateScore}
+                disabled={isRecalculating}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRecalculating ? 'animate-spin' : ''}`} />
+                Recalculate Score
+              </Button>
+            </div>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className={`text-2xl font-bold ${getLevelColor(profile.fitness_level)}`}>
@@ -196,23 +231,23 @@ export default function Profile() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="space-y-1">
                 <p className="font-medium text-[#EAB308]">Beginner</p>
-                <p className="text-sm text-muted-foreground">0 - 1,000</p>
+                <p className="text-sm text-muted-foreground">0 - 599</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#22C55E]">Intermediate</p>
-                <p className="text-sm text-muted-foreground">1,001 - 2,000</p>
+                <p className="text-sm text-muted-foreground">600 - 1,199</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#4488EF]">Advanced</p>
-                <p className="text-sm text-muted-foreground">2,001 - 3,500</p>
+                <p className="text-sm text-muted-foreground">1,200 - 1,999</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#A855F7]">Elite</p>
-                <p className="text-sm text-muted-foreground">3,501 - 5,000</p>
+                <p className="text-sm text-muted-foreground">2,000 - 2,999</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#FF0000] dark:text-[#FF4444]">Monster</p>
-                <p className="text-sm text-muted-foreground">5,001+</p>
+                <p className="text-sm text-muted-foreground">3,000+</p>
               </div>
             </div>
           </div>
