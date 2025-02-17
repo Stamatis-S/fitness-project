@@ -1,4 +1,3 @@
-
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { TrendingUp, AlertCircle } from "lucide-react";
@@ -12,6 +11,9 @@ interface WorkoutInsightsProps {
 export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
   const insights = useMemo(() => {
     if (!logs?.length) return null;
+
+    // Get distinct workout dates
+    const workoutDates = [...new Set(logs.map(log => log.workout_date))].sort();
 
     // Find missing workout categories
     const lastMonth = new Date();
@@ -58,7 +60,8 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
     return {
       missingCategories,
       improvements: significantImprovements,
-      lastWorkoutDate: logs[logs.length - 1]?.workout_date
+      lastWorkoutDate: logs[logs.length - 1]?.workout_date,
+      workoutDates
     };
   }, [logs]);
 
@@ -66,7 +69,10 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <WorkoutCycleCard lastWorkoutDate={insights.lastWorkoutDate} />
+      <WorkoutCycleCard 
+        lastWorkoutDate={insights.lastWorkoutDate}
+        workoutDates={insights.workoutDates}
+      />
 
       {insights.missingCategories.length > 0 && (
         <Card className="p-4">
