@@ -18,7 +18,24 @@
       type="module" 
       crossorigin="anonymous"
       onerror="console.error('Failed to load GPT Engineer script:', event)"
+      defer
     ></script>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Add fallback error handler -->
+    <script>
+      window.addEventListener('error', function(event) {
+        if (event.filename === '' && event.lineno === 0 && event.colno === 0) {
+          console.error('Caught cross-origin error:', {
+            message: event.message,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            isMobile: /Mobi|Android/i.test(navigator.userAgent),
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight
+          });
+        }
+      }, true);
+    </script>
   </body>
 </html>
