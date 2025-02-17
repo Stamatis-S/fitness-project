@@ -8,17 +8,20 @@ import { DateSelector } from "@/components/workout/DateSelector";
 import { CategorySelector } from "@/components/workout/CategorySelector";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, ArrowLeft, Save } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ExerciseFormData } from "@/components/workout/types";
 import { useAuth } from "@/components/AuthProvider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnimatePresence, motion } from "framer-motion";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import type { ExerciseCategory } from "@/lib/constants";
 
 export function ExerciseEntryForm() {
   const { session } = useAuth();
+  const [step, setStep] = useState<'category' | 'exercise' | 'sets'>('category');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
+  
   const methods = useForm<ExerciseFormData>({
     defaultValues: {
       date: (() => {
@@ -73,21 +76,13 @@ export function ExerciseEntryForm() {
     try {
       const isCustomExercise = data.exercise === "custom";
       
-      // Format date as YYYY-MM-DD using the date's local components
       const year = data.date.getFullYear();
       const month = data.date.getMonth();
       const day = data.date.getDate();
       
-      // Create date string in YYYY-MM-DD format
       const dateString = new Date(Date.UTC(year, month, day, 12))
         .toISOString()
         .split('T')[0];
-      
-      console.log('Saving Exercise Date:', {
-        originalDate: data.date.toISOString(),
-        dateComponents: { year, month, day },
-        dateString: dateString,
-      });
       
       const exerciseSets = data.sets.map((set, index) => ({
         workout_date: dateString,
@@ -120,10 +115,28 @@ export function ExerciseEntryForm() {
         exercise: "",
         sets: [{ weight: 0, reps: 0 }]
       });
+      setStep('category');
       setSelectedCategory(null);
     } catch (error) {
       console.error("Error logging exercise:", error);
       toast.error("Failed to log exercise");
+    }
+  };
+
+  const handleBack = () => {
+    if (step === 'sets') {
+      setStep('exercise');
+    } else if (step === 'exercise') {
+      setStep('category');
+      setSelectedCategory(null);
+    }
+  };
+
+  const handleNext = () => {
+    if (step === 'category' && selectedCategory) {
+      setStep('exercise');
+    } else if (step === 'exercise' && methods.watch('exercise')) {
+      setStep('sets');
     }
   };
 
@@ -141,72 +154,105 @@ export function ExerciseEntryForm() {
             />
           </motion.div>
           
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <CategorySelector 
-              onCategoryChange={setSelectedCategory}
-              selectedCategory={selectedCategory}
-            />
-          </motion.div>
-          
-          <AnimatePresence>
-            {selectedCategory && (
+          <Tabs value={step} className="space-y-6">
+            <div className="relative">
+              {step !== 'category' && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-0 top-0 z-10"
+                  onClick={handleBack}
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              )}
+            </div>
+
+            <TabsContent value="category" className="m-0">
               <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
               >
-                <ScrollArea className="h-[300px] rounded-md border p-4">
-                  <ExerciseSelector 
-                    category={selectedCategory}
-                    value={methods.watch("exercise")}
-                    onValueChange={(value) => methods.setValue("exercise", value)}
-                    customExercise={methods.watch("customExercise")}
-                    onCustomExerciseChange={(value) => methods.setValue("customExercise", value)}
-                  />
-                </ScrollArea>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="space-y-4">
-            <AnimatePresence>
-              {fields.map((field, index) => (
-                <SetInput
-                  key={field.id}
-                  index={index}
-                  onRemove={remove}
+                <CategorySelector 
+                  onCategoryChange={(category) => {
+                    setSelectedCategory(category);
+                    handleNext();
+                  }}
+                  selectedCategory={selectedCategory}
                 />
-              ))}
-            </AnimatePresence>
-            
-            <motion.div
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-            >
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full h-12"
-                onClick={() => append({ weight: 0, reps: 0 })}
-              >
-                <PlusCircle className="h-5 w-5 mr-2" />
-                Add Set
-              </Button>
-            </motion.div>
-          </div>
+              </motion.div>
+            </TabsContent>
 
-          <motion.div
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-          >
-            <Button type="submit" className="w-full h-12 text-lg">
-              Log Exercise
-            </Button>
-          </motion.div>
+            <TabsContent value="exercise" className="m-0">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                {selectedCategory && (
+                  <ScrollArea className="h-[400px] rounded-md border p-4">
+                    <ExerciseSelector 
+                      category={selectedCategory}
+                      value={methods.watch("exercise")}
+                      onValueChange={(value) => {
+                        methods.setValue("exercise", value);
+                        handleNext();
+                      }}
+                      customExercise={methods.watch("customExercise")}
+                      onCustomExerciseChange={(value) => methods.setValue("customExercise", value)}
+                    />
+                  </ScrollArea>
+                )}
+              </motion.div>
+            </TabsContent>
+
+            <TabsContent value="sets" className="m-0">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <div className="space-y-4">
+                  <AnimatePresence>
+                    {fields.map((field, index) => (
+                      <SetInput
+                        key={field.id}
+                        index={index}
+                        onRemove={remove}
+                      />
+                    ))}
+                  </AnimatePresence>
+                  
+                  <motion.div
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-12"
+                      onClick={() => append({ weight: 0, reps: 0 })}
+                    >
+                      <PlusCircle className="h-5 w-5 mr-2" />
+                      Add Set
+                    </Button>
+                  </motion.div>
+
+                  <motion.div
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    <Button type="submit" className="w-full h-12 text-lg">
+                      <Save className="h-5 w-5 mr-2" />
+                      Save Exercise
+                    </Button>
+                  </motion.div>
+                </div>
+              </motion.div>
+            </TabsContent>
+          </Tabs>
         </form>
       </FormProvider>
     </Card>
