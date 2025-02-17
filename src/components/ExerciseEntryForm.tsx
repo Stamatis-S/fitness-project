@@ -167,21 +167,21 @@ export function ExerciseEntryForm() {
                 {step === 'sets' && 'Add Sets'}
               </h2>
             </motion.div>
-            {step !== 'category' && <div className="w-[73px]" />} {/* Spacer for alignment */}
+            {step !== 'category' && <div className="w-[73px]" />}
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <DateSelector 
-              date={methods.watch("date")} 
-              onDateChange={(date) => methods.setValue("date", date)} 
-            />
-          </motion.div>
           
-          <Tabs value={step} className="space-y-6">
-            <TabsContent value="category" className="m-0">
+          <Tabs value={step} className="space-y-4">
+            <TabsContent value="category" className="m-0 space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <DateSelector 
+                  date={methods.watch("date")} 
+                  onDateChange={(date) => methods.setValue("date", date)} 
+                />
+              </motion.div>
+
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -190,7 +190,7 @@ export function ExerciseEntryForm() {
                 <CategorySelector 
                   onCategoryChange={(category) => {
                     setSelectedCategory(category);
-                    setStep('exercise'); // Immediately move to exercise selection
+                    setStep('exercise');
                   }}
                   selectedCategory={selectedCategory}
                 />
@@ -204,7 +204,7 @@ export function ExerciseEntryForm() {
                 exit={{ opacity: 0, x: -20 }}
               >
                 {selectedCategory && (
-                  <ScrollArea className="h-[400px] rounded-md border p-4">
+                  <div className="px-2">
                     <ExerciseSelector 
                       category={selectedCategory}
                       value={methods.watch("exercise")}
@@ -215,7 +215,7 @@ export function ExerciseEntryForm() {
                       customExercise={methods.watch("customExercise")}
                       onCustomExerciseChange={(value) => methods.setValue("customExercise", value)}
                     />
-                  </ScrollArea>
+                  </div>
                 )}
               </motion.div>
             </TabsContent>
@@ -225,8 +225,9 @@ export function ExerciseEntryForm() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
+                className="flex flex-col h-[calc(100vh-20rem)]"
               >
-                <div className="space-y-4">
+                <div className="flex-1 overflow-y-auto pb-4 space-y-3">
                   <AnimatePresence>
                     {fields.map((field, index) => (
                       <SetInput
@@ -236,7 +237,9 @@ export function ExerciseEntryForm() {
                       />
                     ))}
                   </AnimatePresence>
-                  
+                </div>
+                
+                <div className="space-y-3 pt-2 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                   <motion.div
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}

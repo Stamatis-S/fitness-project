@@ -52,33 +52,30 @@ export function ExerciseSelector({
   );
 
   return (
-    <div className="flex flex-col h-full max-h-[calc(100vh-300px)] space-y-4">
-      <div className="flex flex-col space-y-2">
-        <Label>Exercise Type</Label>
-        <div className="grid grid-cols-2 gap-4">
-          <Button
-            type="button"
-            variant={useCustomExercise ? "outline" : "default"}
-            className="h-12 rounded-xl"
-            onClick={() => {
-              setUseCustomExercise(false);
-              onValueChange("");
-            }}
-          >
-            Select from list
-          </Button>
-          <Button
-            type="button"
-            variant={useCustomExercise ? "default" : "outline"}
-            className="h-12 rounded-xl"
-            onClick={() => {
-              setUseCustomExercise(true);
-              onValueChange("custom");
-            }}
-          >
-            Custom exercise
-          </Button>
-        </div>
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <Button
+          type="button"
+          variant={useCustomExercise ? "outline" : "default"}
+          className="h-12 rounded-xl"
+          onClick={() => {
+            setUseCustomExercise(false);
+            onValueChange("");
+          }}
+        >
+          Select from list
+        </Button>
+        <Button
+          type="button"
+          variant={useCustomExercise ? "default" : "outline"}
+          className="h-12 rounded-xl"
+          onClick={() => {
+            setUseCustomExercise(true);
+            onValueChange("custom");
+          }}
+        >
+          Custom exercise
+        </Button>
       </div>
 
       <AnimatePresence mode="wait">
@@ -104,9 +101,9 @@ export function ExerciseSelector({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="flex flex-col space-y-4 flex-1 overflow-hidden"
+            className="space-y-4"
           >
-            <div className="relative flex-shrink-0">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 placeholder="Search exercises..."
@@ -116,32 +113,35 @@ export function ExerciseSelector({
               />
             </div>
 
-            <div className="flex-1 overflow-y-auto px-1">
+            <div className="grid grid-cols-2 gap-3">
               {isLoading ? (
-                <div className="text-center py-4">Loading exercises...</div>
+                <div className="col-span-2 text-center py-4">Loading exercises...</div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <>
                   {filteredExercises.map((exercise) => (
-                    <Button
+                    <motion.button
                       key={exercise.id}
-                      type="button"
-                      variant="outline"
-                      size="lg"
-                      className={cn(
-                        "h-auto py-3 px-4 text-base text-left justify-start whitespace-normal",
-                        value === exercise.id.toString() && "bg-primary text-primary-foreground"
-                      )}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => onValueChange(exercise.id.toString())}
+                      className={cn(
+                        "px-4 py-3 rounded-full text-sm font-medium",
+                        "transition-all duration-200 shadow-sm hover:shadow-md",
+                        "border-2 text-center break-words",
+                        value === exercise.id.toString()
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                      )}
                     >
                       {exercise.name}
-                    </Button>
+                    </motion.button>
                   ))}
                   {!isLoading && filteredExercises.length === 0 && (
-                    <div className="col-span-full text-center py-4 text-muted-foreground">
+                    <div className="col-span-2 text-center py-4 text-muted-foreground">
                       No exercises found
                     </div>
                   )}
-                </div>
+                </>
               )}
             </div>
           </motion.div>
