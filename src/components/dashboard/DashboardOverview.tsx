@@ -47,27 +47,19 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
         return { exercises: ['No exercises recorded'], sets: 0, percentChange: 0 };
       }
 
-      const maxSets = Math.max(
-        ...Array.from(exerciseCounts.values()).map(v => v.thisWeek.sets)
-      );
+      const [mostUsedExercise, data] = Array.from(exerciseCounts.entries())
+        .reduce((max, current) => {
+          return current[1].thisWeek.sets > max[1].thisWeek.sets ? current : max;
+        });
 
-      const mostUsedExercises = Array.from(exerciseCounts.entries())
-        .filter(([_, data]) => data.thisWeek.sets === maxSets)
-        .map(([exercise, data]) => ({
-          name: exercise,
-          sets: data.thisWeek.sets,
-          lastWeekSets: data.lastWeek.sets
-        }));
-
-      const avgPercentChange = mostUsedExercises.reduce((sum, { sets, lastWeekSets }) => {
-        const change = lastWeekSets ? ((sets - lastWeekSets) / lastWeekSets) * 100 : 100;
-        return sum + change;
-      }, 0) / mostUsedExercises.length;
+      const percentChange = data.lastWeek.sets 
+        ? ((data.thisWeek.sets - data.lastWeek.sets) / data.lastWeek.sets) * 100 
+        : 100;
 
       return {
-        exercises: mostUsedExercises.map(e => e.name),
-        sets: maxSets,
-        percentChange: avgPercentChange
+        exercises: [mostUsedExercise],
+        sets: data.thisWeek.sets,
+        percentChange
       };
     };
 
