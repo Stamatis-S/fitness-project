@@ -12,11 +12,14 @@ import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics"
 import { PageTransition } from "@/components/PageTransition";
 import { Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { Database } from "@/integrations/supabase/types";
+
+type ExerciseCategory = Database['public']['Enums']['exercise_category'];
 
 export interface WorkoutLog {
   id: number;
   workout_date: string;
-  category: string;
+  category: ExerciseCategory;
   exercise_id: number | null;
   custom_exercise: string | null;
   exercises?: {
