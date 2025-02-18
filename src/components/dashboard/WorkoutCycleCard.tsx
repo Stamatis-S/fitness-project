@@ -41,7 +41,7 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
   const [isComplete, setIsComplete] = useState(false);
 
   // Query current cycle
-  const { data: currentCycle, refetch: refetchCycle } = useQuery<WorkoutCycle | null>({
+  const { data: currentCycle, refetch: refetchCycle } = useQuery({
     queryKey: ['workout_cycle'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -176,57 +176,55 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
     : CYCLE_DAYS;
 
   return (
-    <Card className="p-4">
-      <div className="flex flex-col space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h3 className="font-semibold">Workout Cycle</h3>
-            {currentCycle?.start_date ? (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  Cycle started on: {format(new Date(currentCycle.start_date), 'MMM d, yyyy')}
-                </p>
-                {currentCycle.is_active && (
-                  <p className="text-sm">
-                    {daysLeft} workout days left to complete cycle
-                  </p>
-                )}
-              </>
-            ) : (
+    <Card className="flex flex-col gap-3 p-4">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h3 className="font-semibold">Workout Cycle</h3>
+          {currentCycle?.start_date ? (
+            <>
               <p className="text-sm text-muted-foreground">
-                Set your first workout day
+                Cycle started on: {format(new Date(currentCycle.start_date), 'MMM d, yyyy')}
               </p>
-            )}
-          </div>
-          
-          {(!currentCycle?.is_active || !currentCycle) && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="ml-auto">
-                  <CalendarIcon className="h-4 w-4 mr-2" />
-                  Set First Day
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="end">
-                <Calendar
-                  mode="single"
-                  selected={currentCycle?.start_date ? new Date(currentCycle.start_date) : undefined}
-                  onSelect={handleDateSelect}
-                  disabled={(date) => isAfter(date, new Date())}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+              {currentCycle.is_active && (
+                <p className="text-sm">
+                  {daysLeft} workout days left to complete cycle
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Set your first workout day
+            </p>
           )}
         </div>
-
-        {currentCycle?.is_active && (
-          <Progress
-            value={progress}
-            className="h-2"
-          />
+        
+        {(!currentCycle?.is_active || !currentCycle) && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                <CalendarIcon className="h-4 w-4 mr-2" />
+                Set First Day
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="single"
+                selected={currentCycle?.start_date ? new Date(currentCycle.start_date) : undefined}
+                onSelect={handleDateSelect}
+                disabled={(date) => isAfter(date, new Date())}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         )}
       </div>
+
+      {currentCycle?.is_active && (
+        <Progress
+          value={progress}
+          className="h-2"
+        />
+      )}
     </Card>
   );
 }

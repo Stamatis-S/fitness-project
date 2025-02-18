@@ -1,9 +1,11 @@
+
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/pages/Dashboard";
-import { format, differenceInDays } from "date-fns";
-import { Activity, Award, Calendar } from "lucide-react";
+import { format } from "date-fns";
+import { Activity, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { WorkoutCycleCard } from "./WorkoutCycleCard";
 
 interface WorkoutInsightsProps {
   logs: WorkoutLog[];
@@ -22,33 +24,9 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
     return entries.reduce((a, b) => (a[1] > b[1] ? a : b))[0] as WorkoutLog['category'];
   };
 
-  const getLongestStreak = () => {
-    if (logs.length === 0) return 0;
-
-    const sortedDates = [...new Set(logs.map(log => log.workout_date))]
-      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-
-    let longestStreak = 1;
-    let currentStreak = 1;
-
-    for (let i = 1; i < sortedDates.length; i++) {
-      const prevDate = new Date(sortedDates[i - 1]);
-      const currDate = new Date(sortedDates[i]);
-      const diff = differenceInDays(currDate, prevDate);
-
-      if (diff === 1) {
-        currentStreak++;
-        longestStreak = Math.max(longestStreak, currentStreak);
-      } else {
-        currentStreak = 1;
-      }
-    }
-
-    return longestStreak;
-  };
-
   const mostTrainedCategory = getMostTrainedCategory();
-  const longestStreak = getLongestStreak();
+  const workoutDates = [...new Set(logs.map(log => log.workout_date))];
+  const lastWorkoutDate = workoutDates.length > 0 ? workoutDates[0] : null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -57,14 +35,10 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <Card className="flex flex-col gap-3 p-4">
-          <div className="flex items-center space-x-4">
-            <Calendar className="h-5 w-5 text-blue-500" />
-            <h3 className="text-lg font-semibold">Longest Workout Streak</h3>
-          </div>
-          <div className="text-3xl font-bold">{longestStreak} days</div>
-          <p className="text-sm text-muted-foreground">Keep pushing!</p>
-        </Card>
+        <WorkoutCycleCard 
+          lastWorkoutDate={lastWorkoutDate} 
+          workoutDates={workoutDates} 
+        />
       </motion.div>
 
       {mostTrainedCategory && (
