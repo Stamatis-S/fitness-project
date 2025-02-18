@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { Dumbbell, Target, TrendingUp, TrendingDown, Activity } from "lucide-react";
@@ -21,66 +20,63 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
       new Date(log.workout_date) >= twoWeeksAgo && new Date(log.workout_date) < oneWeekAgo
     );
 
-    // Aggregate all sets for each exercise across all time
-    const totalExerciseSets = workoutLogs.reduce((acc, log) => {
+    // Count total occurrences of each exercise (each row is one set)
+    const exerciseTotals = workoutLogs.reduce((acc, log) => {
       const exerciseName = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
-      acc[exerciseName] = (acc[exerciseName] || 0) + 1;
+      acc[exerciseName] = (acc[exerciseName] || 0) + 1; // Each log entry represents one set
       return acc;
     }, {} as Record<string, number>);
 
-    // Create a map for weekly comparisons
-    const exerciseCounts = new Map<string, { 
-      allTime: number,
-      thisWeek: { sets: number, totalWeight: number, totalReps: number },
-      lastWeek: { sets: number, totalWeight: number, totalReps: number }
+    // Create exercise stats map for weekly comparisons
+    const exerciseStats = new Map<string, {
+      totalSets: number,
+      thisWeekSets: number,
+      lastWeekSets: number
     }>();
-    
-    // Initialize the map with all-time totals
-    Object.entries(totalExerciseSets).forEach(([exercise, total]) => {
-      exerciseCounts.set(exercise, {
-        allTime: total,
-        thisWeek: { sets: 0, totalWeight: 0, totalReps: 0 },
-        lastWeek: { sets: 0, totalWeight: 0, totalReps: 0 }
+
+    // Initialize map with total sets
+    Object.entries(exerciseTotals).forEach(([exercise, total]) => {
+      exerciseStats.set(exercise, {
+        totalSets: total,
+        thisWeekSets: 0,
+        lastWeekSets: 0
       });
     });
-    
-    // Add weekly data
-    const countExercise = (log: WorkoutLog, weekType: 'thisWeek' | 'lastWeek') => {
-      const exerciseName = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
-      const current = exerciseCounts.get(exerciseName) || {
-        allTime: 1,
-        thisWeek: { sets: 0, totalWeight: 0, totalReps: 0 },
-        lastWeek: { sets: 0, totalWeight: 0, totalReps: 0 }
-      };
-      
-      current[weekType].sets += 1;
-      current[weekType].totalWeight += log.weight_kg || 0;
-      current[weekType].totalReps += log.reps || 0;
-      
-      exerciseCounts.set(exerciseName, current);
-    };
 
-    thisWeekLogs.forEach(log => countExercise(log, 'thisWeek'));
-    lastWeekLogs.forEach(log => countExercise(log, 'lastWeek'));
+    // Count weekly sets
+    thisWeekLogs.forEach(log => {
+      const exerciseName = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
+      const stats = exerciseStats.get(exerciseName) || { totalSets: 0, thisWeekSets: 0, lastWeekSets: 0 };
+      stats.thisWeekSets += 1;
+      exerciseStats.set(exerciseName, stats);
+    });
+
+    lastWeekLogs.forEach(log => {
+      const exerciseName = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
+      const stats = exerciseStats.get(exerciseName) || { totalSets: 0, thisWeekSets: 0, lastWeekSets: 0 };
+      stats.lastWeekSets += 1;
+      exerciseStats.set(exerciseName, stats);
+    });
 
     const getMostUsed = () => {
-      if (exerciseCounts.size === 0) {
+      if (exerciseStats.size === 0) {
         return { exercises: ['No exercises recorded'], sets: 0, percentChange: 0 };
       }
 
-      // Find exercise with highest total sets (all time)
-      const [mostUsedExercise, data] = Array.from(exerciseCounts.entries())
+      // Find exercise with the highest total sets
+      const [mostUsedExercise, stats] = Array.from(exerciseStats.entries())
         .reduce((max, current) => {
-          return current[1].allTime > max[1].allTime ? current : max;
+          return current[1].totalSets > max[1].totalSets ? current : max;
         });
 
-      const percentChange = data.lastWeek.sets 
-        ? ((data.thisWeek.sets - data.lastWeek.sets) / data.lastWeek.sets) * 100 
-        : data.thisWeek.sets > 0 ? 100 : 0;
+      // Calculate week-over-week percentage change
+      const percentChange = stats.lastWeekSets > 0
+        ? ((stats.thisWeekSets - stats.lastWeekSets) / stats.lastWeekSets) * 100
+        : stats.thisWeekSets > 0 ? 100 : 0;
 
       return {
         exercises: [mostUsedExercise],
-        sets: data.allTime, // Show all-time total sets
+        sets: stats.totalSets,
         percentChange
       };
     };
