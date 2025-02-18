@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { Dumbbell, Target, TrendingUp, TrendingDown, Activity } from "lucide-react";
@@ -20,43 +21,44 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
       new Date(log.workout_date) >= twoWeeksAgo && new Date(log.workout_date) < oneWeekAgo
     );
 
-    // Count total occurrences of each exercise (each row is one set)
-    const exerciseTotals = workoutLogs.reduce((acc, log) => {
+    // Group logs by exercise and date to count unique sets properly
+    const exerciseStats = workoutLogs.reduce((stats, log) => {
       const exerciseName = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
-      acc[exerciseName] = (acc[exerciseName] || 0) + 1; // Each log entry represents one set
-      return acc;
-    }, {} as Record<string, number>);
-
-    // Create exercise stats map for weekly comparisons
-    const exerciseStats = new Map<string, {
+      const dateKey = log.workout_date;
+      
+      if (!stats.has(exerciseName)) {
+        stats.set(exerciseName, {
+          totalSets: 0,
+          thisWeekSets: 0,
+          lastWeekSets: 0,
+          dailySets: new Map()
+        });
+      }
+      
+      const exerciseData = stats.get(exerciseName)!;
+      
+      // Count this occurrence as a set
+      exerciseData.totalSets += 1;
+      
+      // Track daily sets
+      const dailyCount = exerciseData.dailySets.get(dateKey) || 0;
+      exerciseData.dailySets.set(dateKey, dailyCount + 1);
+      
+      // Update weekly counts
+      const logDate = new Date(log.workout_date);
+      if (logDate >= oneWeekAgo) {
+        exerciseData.thisWeekSets += 1;
+      } else if (logDate >= twoWeeksAgo && logDate < oneWeekAgo) {
+        exerciseData.lastWeekSets += 1;
+      }
+      
+      return stats;
+    }, new Map<string, {
       totalSets: number,
       thisWeekSets: number,
-      lastWeekSets: number
-    }>();
-
-    // Initialize map with total sets
-    Object.entries(exerciseTotals).forEach(([exercise, total]) => {
-      exerciseStats.set(exercise, {
-        totalSets: total,
-        thisWeekSets: 0,
-        lastWeekSets: 0
-      });
-    });
-
-    // Count weekly sets
-    thisWeekLogs.forEach(log => {
-      const exerciseName = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
-      const stats = exerciseStats.get(exerciseName) || { totalSets: 0, thisWeekSets: 0, lastWeekSets: 0 };
-      stats.thisWeekSets += 1;
-      exerciseStats.set(exerciseName, stats);
-    });
-
-    lastWeekLogs.forEach(log => {
-      const exerciseName = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
-      const stats = exerciseStats.get(exerciseName) || { totalSets: 0, thisWeekSets: 0, lastWeekSets: 0 };
-      stats.lastWeekSets += 1;
-      exerciseStats.set(exerciseName, stats);
-    });
+      lastWeekSets: number,
+      dailySets: Map<string, number>
+    }>());
 
     const getMostUsed = () => {
       if (exerciseStats.size === 0) {
