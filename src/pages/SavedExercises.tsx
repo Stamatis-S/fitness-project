@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -40,7 +41,8 @@ export default function SavedExercises() {
             name
           )
         `)
-        .order('workout_date', { ascending: false });
+        .order('workout_date', { ascending: false })  // Changed to descending order
+        .order('created_at', { ascending: false });   // Secondary sort by creation time
 
       if (error) {
         toast.error("Failed to load workout logs");

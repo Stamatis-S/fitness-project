@@ -1,102 +1,104 @@
-
-import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
-import { TrendingUp, AlertCircle } from "lucide-react";
 import type { WorkoutLog } from "@/pages/Dashboard";
-import { WorkoutCycleCard } from "./WorkoutCycleCard";
+import { format, differenceInDays } from "date-fns";
+import { Activity, Award, Calendar } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface WorkoutInsightsProps {
   logs: WorkoutLog[];
 }
 
 export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
-  const insights = useMemo(() => {
-    if (!logs?.length) return null;
+  const getMostTrainedCategory = () => {
+    const categoryCounts = logs.reduce((acc, log) => {
+      acc[log.category] = (acc[log.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
-    // Get distinct workout dates
-    const workoutDates = [...new Set(logs.map(log => log.workout_date))].sort();
+    const entries = Object.entries(categoryCounts);
+    if (entries.length === 0) return null;
 
-    // Find missing workout categories
-    const lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
-    const recentCategories = new Set(
-      logs
-        .filter(log => new Date(log.workout_date) >= lastMonth)
-        .map(log => log.category)
-    );
-    const allCategories = ["ΣΤΗΘΟΣ", "ΠΛΑΤΗ", "ΔΙΚΕΦΑΛΑ", "ΤΡΙΚΕΦΑΛΑ", "ΩΜΟΙ", "ΠΟΔΙΑ", "ΚΟΡΜΟΣ"];
-    const missingCategories = allCategories.filter(cat => !recentCategories.has(cat));
+    return entries.reduce((a, b) => (a[1] > b[1] ? a : b))[0] as WorkoutLog['category'];
+  };
 
-    // Calculate improvements
-    const improvements = new Map<string, number>();
-    const monthAgo = new Date();
-    monthAgo.setMonth(monthAgo.getMonth() - 1);
-    
-    logs.forEach(log => {
-      const exercise = log.custom_exercise || log.exercises?.name;
-      if (!exercise || !log.weight_kg) return;
+  const getLongestStreak = () => {
+    if (logs.length === 0) return 0;
 
-      const date = new Date(log.workout_date);
-      const key = `${exercise}_${date >= monthAgo ? 'recent' : 'old'}`;
-      const currentMax = improvements.get(key) || 0;
-      improvements.set(key, Math.max(currentMax, log.weight_kg));
-    });
+    const sortedDates = [...new Set(logs.map(log => log.workout_date))]
+      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
-    const exerciseImprovements = Array.from(improvements.entries())
-      .reduce((acc, [key, value]) => {
-        const [exercise, period] = key.split('_');
-        if (!acc[exercise]) acc[exercise] = {};
-        acc[exercise][period] = value;
-        return acc;
-      }, {} as Record<string, { recent?: number; old?: number }>);
+    let longestStreak = 1;
+    let currentStreak = 1;
 
-    const significantImprovements = Object.entries(exerciseImprovements)
-      .filter(([_, values]) => values.recent && values.old && values.recent > values.old)
-      .map(([exercise, values]) => ({
-        exercise,
-        improvement: ((values.recent! - values.old!) / values.old! * 100).toFixed(1)
-      }))
-      .sort((a, b) => parseFloat(b.improvement) - parseFloat(a.improvement));
+    for (let i = 1; i < sortedDates.length; i++) {
+      const prevDate = new Date(sortedDates[i - 1]);
+      const currDate = new Date(sortedDates[i]);
+      const diff = differenceInDays(currDate, prevDate);
 
-    return {
-      missingCategories,
-      improvements: significantImprovements,
-      lastWorkoutDate: logs[logs.length - 1]?.workout_date,
-      workoutDates
-    };
-  }, [logs]);
+      if (diff === 1) {
+        currentStreak++;
+        longestStreak = Math.max(longestStreak, currentStreak);
+      } else {
+        currentStreak = 1;
+      }
+    }
 
-  if (!insights) return null;
+    return longestStreak;
+  };
+
+  const mostTrainedCategory = getMostTrainedCategory();
+  const longestStreak = getLongestStreak();
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <WorkoutCycleCard 
-        lastWorkoutDate={insights.lastWorkoutDate}
-        workoutDates={insights.workoutDates}
-      />
-
-      {insights.missingCategories.length > 0 && (
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="h-8 w-8 text-yellow-500" />
-            <div>
-              <h3 className="font-semibold">Workout Suggestion</h3>
-              <p>You haven't trained {insights.missingCategories[0]} in a while!</p>
-            </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className="flex flex-col gap-3 p-4">
+          <div className="flex items-center space-x-4">
+            <Calendar className="h-5 w-5 text-blue-500" />
+            <h3 className="text-lg font-semibold">Longest Workout Streak</h3>
           </div>
+          <div className="text-3xl font-bold">{longestStreak} days</div>
+          <p className="text-sm text-muted-foreground">Keep pushing!</p>
         </Card>
+      </motion.div>
+
+      {mostTrainedCategory && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <Card className="flex flex-col gap-3 p-4">
+            <div className="flex items-center space-x-4">
+              <Activity className="h-5 w-5 text-green-500" />
+              <h3 className="text-lg font-semibold">Most Trained Category</h3>
+            </div>
+            <div className="text-2xl font-bold">{mostTrainedCategory}</div>
+            <p className="text-sm text-muted-foreground">Focus on other categories too!</p>
+          </Card>
+        </motion.div>
       )}
 
-      {insights.improvements[0] && (
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <TrendingUp className="h-8 w-8 text-blue-500" />
-            <div>
-              <h3 className="font-semibold">Most Improved</h3>
-              <p>{insights.improvements[0].exercise} improved by {insights.improvements[0].improvement}% this month!</p>
+      {logs.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+          <Card className="flex flex-col gap-3 p-4">
+            <div className="flex items-center space-x-4">
+              <Award className="h-5 w-5 text-yellow-500" />
+              <h3 className="text-lg font-semibold">Total Workouts</h3>
             </div>
-          </div>
-        </Card>
+            <div className="text-3xl font-bold">{logs.length}</div>
+            <p className="text-sm text-muted-foreground">You're doing great!</p>
+          </Card>
+        </motion.div>
       )}
     </div>
   );

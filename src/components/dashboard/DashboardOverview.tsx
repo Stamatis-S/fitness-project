@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { Dumbbell, Target, TrendingUp, TrendingDown, Activity } from "lucide-react";
@@ -11,7 +10,6 @@ interface DashboardOverviewProps {
 }
 
 export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
-  // Calculate key metrics with weekly comparison
   const calculateMetrics = () => {
     const now = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -22,49 +20,47 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
       new Date(log.workout_date) >= twoWeeksAgo && new Date(log.workout_date) < oneWeekAgo
     );
 
-    // Create a map to count total sets for each exercise
-    const exerciseSets = new Map<string, { thisWeek: number, lastWeek: number }>();
+    const exerciseCounts = new Map<string, { 
+      thisWeek: { sets: number, totalWeight: number, totalReps: number },
+      lastWeek: { sets: number, totalWeight: number, totalReps: number }
+    }>();
     
-    // Count this week's sets
-    thisWeekLogs.forEach(log => {
+    const countExercise = (log: WorkoutLog, weekType: 'thisWeek' | 'lastWeek') => {
       const exerciseName = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
-      const current = exerciseSets.get(exerciseName) || { thisWeek: 0, lastWeek: 0 };
-      exerciseSets.set(exerciseName, {
-        ...current,
-        thisWeek: current.thisWeek + 1
-      });
-    });
+      const current = exerciseCounts.get(exerciseName) || {
+        thisWeek: { sets: 0, totalWeight: 0, totalReps: 0 },
+        lastWeek: { sets: 0, totalWeight: 0, totalReps: 0 }
+      };
+      
+      current[weekType].sets += 1;
+      current[weekType].totalWeight += log.weight_kg || 0;
+      current[weekType].totalReps += log.reps || 0;
+      
+      exerciseCounts.set(exerciseName, current);
+    };
 
-    // Count last week's sets
-    lastWeekLogs.forEach(log => {
-      const exerciseName = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
-      const current = exerciseSets.get(exerciseName) || { thisWeek: 0, lastWeek: 0 };
-      exerciseSets.set(exerciseName, {
-        ...current,
-        lastWeek: current.lastWeek + 1
-      });
-    });
+    thisWeekLogs.forEach(log => countExercise(log, 'thisWeek'));
+    lastWeekLogs.forEach(log => countExercise(log, 'lastWeek'));
 
     const getMostUsed = () => {
-      if (exerciseSets.size === 0) {
+      if (exerciseCounts.size === 0) {
         return { exercises: ['No exercises recorded'], sets: 0, percentChange: 0 };
       }
 
-      // Find the highest number of sets
-      const maxSets = Math.max(...Array.from(exerciseSets.values()).map(v => v.thisWeek));
-      
-      // Get all exercises with the maximum number of sets
-      const mostUsedExercises = Array.from(exerciseSets.entries())
-        .filter(([_, { thisWeek }]) => thisWeek === maxSets)
-        .map(([exercise, { thisWeek, lastWeek }]) => ({
+      const maxSets = Math.max(
+        ...Array.from(exerciseCounts.values()).map(v => v.thisWeek.sets)
+      );
+
+      const mostUsedExercises = Array.from(exerciseCounts.entries())
+        .filter(([_, data]) => data.thisWeek.sets === maxSets)
+        .map(([exercise, data]) => ({
           name: exercise,
-          thisWeek,
-          lastWeek
+          sets: data.thisWeek.sets,
+          lastWeekSets: data.lastWeek.sets
         }));
 
-      // Calculate average percent change for all top exercises
-      const avgPercentChange = mostUsedExercises.reduce((sum, { thisWeek, lastWeek }) => {
-        const change = lastWeek ? ((thisWeek - lastWeek) / lastWeek) * 100 : 100;
+      const avgPercentChange = mostUsedExercises.reduce((sum, { sets, lastWeekSets }) => {
+        const change = lastWeekSets ? ((sets - lastWeekSets) / lastWeekSets) * 100 : 100;
         return sum + change;
       }, 0) / mostUsedExercises.length;
 
