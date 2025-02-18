@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,11 +95,23 @@ export default function Profile() {
   };
 
   const getProgressValue = (score: number) => {
-    if (score > 6000) return 100;
-    if (score > 4500) return 80;
-    if (score > 3000) return 60;
-    if (score > 1500) return 40;
-    return Math.max((score / 1500) * 30, 20);
+    // Updated progress calculation based on new thresholds
+    const levelThresholds = {
+      monster: 6000,
+      elite: 4500,
+      advanced: 3000,
+      intermediate: 1500,
+      beginner: 0
+    };
+
+    if (score >= levelThresholds.monster) return 100;
+    if (score >= levelThresholds.elite) 
+      return 80 + ((score - levelThresholds.elite) / (levelThresholds.monster - levelThresholds.elite)) * 20;
+    if (score >= levelThresholds.advanced) 
+      return 60 + ((score - levelThresholds.advanced) / (levelThresholds.elite - levelThresholds.advanced)) * 20;
+    if (score >= levelThresholds.intermediate) 
+      return 40 + ((score - levelThresholds.intermediate) / (levelThresholds.advanced - levelThresholds.intermediate)) * 20;
+    return Math.max((score / levelThresholds.intermediate) * 40, 5);
   };
 
   const getLevelColor = (level: string) => {
