@@ -47,7 +47,7 @@ export default function Dashboard() {
             name
           )
         `)
-        .order('workout_date', { ascending: true });
+        .order('workout_date', { ascending: false });
 
       if (error) {
         toast.error("Failed to load workout logs");
