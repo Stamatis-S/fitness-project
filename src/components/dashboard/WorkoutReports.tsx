@@ -7,6 +7,7 @@ import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { calculateStrengthProgress, generateWorkoutSummary } from "./utils/reportCalculations";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WorkoutReportsProps {
   workoutLogs: WorkoutLog[];
@@ -18,15 +19,11 @@ export function WorkoutReports({ workoutLogs }: WorkoutReportsProps) {
   const handleEmailReport = async () => {
     setIsGenerating(true);
     try {
-      const response = await fetch("/api/send-workout-report", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ workoutLogs }),
+      const { error } = await supabase.functions.invoke('send-workout-report', {
+        body: { workoutLogs }
       });
 
-      if (!response.ok) throw new Error("Failed to send report");
+      if (error) throw error;
       
       toast.success("Workout report has been sent to your email!");
     } catch (error) {
