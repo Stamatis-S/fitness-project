@@ -1,14 +1,12 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { Resend } from 'npm:resend@3.2.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const resend = new Resend(Deno.env.get('RESEND_API_KEY'))
 const supabaseUrl = Deno.env.get('SUPABASE_URL')
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
@@ -89,16 +87,20 @@ serve(async (req) => {
       `
     }
 
-    // Send email - using the user's email as both from and to address for testing
-    const { error: emailError } = await resend.emails.send({
-      from: `${user.email}`,  // Using the user's email as the from address
-      to: [user.email],
-      subject: 'Your Weekly Workout Report',
-      html: generateReportContent(workoutLogs),
-    })
+    // Send email using Supabase Auth
+    const { error: emailError } = await supabase.auth.admin.sendEmail(
+      user.email,
+      {
+        subject: 'Your Weekly Workout Report',
+        template_name: 'workout-report',
+        template_data: {
+          content: generateReportContent(workoutLogs),
+        },
+      }
+    )
 
     if (emailError) {
-      console.error('Resend error:', emailError)
+      console.error('Email error:', emailError)
       throw emailError
     }
 
@@ -114,10 +116,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error('Error sending report:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: "To send emails to other addresses, please verify a domain at resend.com/domains"
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         status: 400, 
         headers: { 
