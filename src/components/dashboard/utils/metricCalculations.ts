@@ -1,4 +1,3 @@
-
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 
 export function calculateExerciseStats(workoutLogs: WorkoutLog[]) {
@@ -11,7 +10,6 @@ export function calculateExerciseStats(workoutLogs: WorkoutLog[]) {
     new Date(log.workout_date) >= twoWeeksAgo && new Date(log.workout_date) < oneWeekAgo
   );
 
-  // Group logs by exercise and date to count unique sets properly
   const exerciseStats = workoutLogs.reduce((stats, log) => {
     const exerciseName = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
     const dateKey = log.workout_date;
@@ -110,4 +108,59 @@ export function getTotalVolume(thisWeekLogs: WorkoutLog[], lastWeekLogs: Workout
     : thisWeekVolume > 0 ? 100 : 0;
 
   return { volume: thisWeekVolume, percentChange };
+}
+
+export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
+  const now = new Date();
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  
+  const recentLogs = workoutLogs.filter(log => new Date(log.workout_date) >= oneWeekAgo);
+  const historicalLogs = workoutLogs.filter(log => new Date(log.workout_date) < oneWeekAgo);
+  
+  const records: { exercise: string; achievement: string; type: 'new' | 'matched' }[] = [];
+  
+  recentLogs.forEach(recentLog => {
+    const exerciseName = recentLog.custom_exercise || recentLog.exercises?.name;
+    if (!exerciseName || !recentLog.weight_kg) return;
+    
+    const exerciseHistory = historicalLogs.filter(log => 
+      (log.custom_exercise || log.exercises?.name) === exerciseName
+    );
+    
+    const previousWeightPR = Math.max(...exerciseHistory.map(log => log.weight_kg || 0));
+    
+    const previousRepsPR = Math.max(
+      ...exerciseHistory
+        .filter(log => log.weight_kg === recentLog.weight_kg)
+        .map(log => log.reps || 0)
+    );
+    
+    if (recentLog.weight_kg > previousWeightPR) {
+      records.push({
+        exercise: exerciseName,
+        achievement: `+${(recentLog.weight_kg - previousWeightPR).toFixed(1)}kg (now ${recentLog.weight_kg}kg)`,
+        type: 'new'
+      });
+    } else if (recentLog.weight_kg === previousWeightPR) {
+      const isNewEntry = !records.some(r => r.exercise === exerciseName);
+      if (isNewEntry) {
+        records.push({
+          exercise: exerciseName,
+          achievement: `Matched PR (${recentLog.weight_kg}kg)`,
+          type: 'matched'
+        });
+      }
+    } else if (recentLog.reps && recentLog.reps > previousRepsPR && previousRepsPR > 0) {
+      const isNewEntry = !records.some(r => r.exercise === exerciseName);
+      if (isNewEntry) {
+        records.push({
+          exercise: exerciseName,
+          achievement: `+${recentLog.reps - previousRepsPR} reps at ${recentLog.weight_kg}kg`,
+          type: 'new'
+        });
+      }
+    }
+  });
+  
+  return records;
 }
