@@ -38,70 +38,118 @@ serve(async (req) => {
       throw new Error('Invalid user token')
     }
 
-    // Get request body
+    // Get request body with workout logs
     const { workoutLogs } = await req.json()
 
-    // Generate report content
-    const generateReportContent = (logs: any[]) => {
+    // Format workout data for email
+    const formatWorkoutData = (logs: any[]) => {
       const now = new Date()
       const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
       
-      const recentLogs = logs.filter((log: any) => new Date(log.workout_date) >= oneWeekAgo)
+      // Filter for recent logs
+      const recentLogs = logs.filter(log => new Date(log.workout_date) >= oneWeekAgo)
       
-      // Calculate total volume
-      const totalVolume = recentLogs.reduce((sum: number, log: any) => 
+      // Calculate totals
+      const totalVolume = recentLogs.reduce((sum, log) => 
         sum + ((log.weight_kg || 0) * (log.reps || 0)), 0)
+      const totalSets = recentLogs.length
       
-      // Group exercises
-      const exerciseGroups = recentLogs.reduce((groups: any, log: any) => {
-        const name = log.custom_exercise || log.exercises?.name || 'Unknown'
-        if (!groups[name]) groups[name] = []
-        groups[name].push(log)
+      // Group by category
+      const categoryGroups = recentLogs.reduce((groups: any, log) => {
+        if (!groups[log.category]) {
+          groups[log.category] = []
+        }
+        groups[log.category].push(log)
         return groups
       }, {})
 
-      // Generate exercise summaries
-      const exerciseSummaries = Object.entries(exerciseGroups).map(([name, logs]: [string, any[]]) => {
-        const maxWeight = Math.max(...logs.map(log => log.weight_kg || 0))
-        const totalSets = logs.length
-        return `${name}: ${totalSets} sets, max weight: ${maxWeight}kg`
+      // Generate category summaries
+      const categorySummaries = Object.entries(categoryGroups).map(([category, logs]: [string, any[]]) => {
+        const exercises = logs.reduce((acc: any, log) => {
+          const name = log.custom_exercise || log.exercises?.name || 'Unknown'
+          if (!acc[name]) {
+            acc[name] = {
+              sets: 0,
+              maxWeight: 0,
+              totalVolume: 0
+            }
+          }
+          acc[name].sets++
+          acc[name].maxWeight = Math.max(acc[name].maxWeight, log.weight_kg || 0)
+          acc[name].totalVolume += (log.weight_kg || 0) * (log.reps || 0)
+          return acc
+        }, {})
+
+        return {
+          category,
+          exercises: Object.entries(exercises).map(([name, stats]: [string, any]) => ({
+            name,
+            ...stats
+          }))
+        }
       })
 
-      return `
-        <h2>Weekly Workout Report</h2>
-        <p>Here's your workout summary for the past week:</p>
-        
-        <h3>Overview</h3>
-        <ul>
-          <li>Total Volume: ${Math.round(totalVolume).toLocaleString()}kg</li>
-          <li>Total Sets: ${recentLogs.length}</li>
-          <li>Unique Exercises: ${Object.keys(exerciseGroups).length}</li>
-        </ul>
-
-        <h3>Exercise Details</h3>
-        <ul>
-          ${exerciseSummaries.map(summary => `<li>${summary}</li>`).join('\n')}
-        </ul>
-
-        <p>Keep up the great work! 💪</p>
-      `
+      return { totalVolume, totalSets, categorySummaries }
     }
 
+    const stats = formatWorkoutData(workoutLogs)
+
+    // Generate HTML email content
+    const emailContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #2563eb;">Weekly Workout Report</h1>
+        <p>Here's your workout summary for the past week:</p>
+        
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h2 style="margin-top: 0;">Overall Stats</h2>
+          <ul style="list-style: none; padding: 0;">
+            <li>📊 Total Volume: ${Math.round(stats.totalVolume).toLocaleString()}kg</li>
+            <li>🎯 Total Sets: ${stats.totalSets}</li>
+          </ul>
+        </div>
+
+        ${stats.categorySummaries.map(cat => `
+          <div style="margin: 20px 0;">
+            <h3 style="color: #4b5563;">${cat.category}</h3>
+            ${cat.exercises.map(ex => `
+              <div style="margin-left: 20px; margin-bottom: 10px;">
+                <strong>${ex.name}</strong>
+                <ul style="margin: 5px 0;">
+                  <li>Sets: ${ex.sets}</li>
+                  <li>Max Weight: ${ex.maxWeight}kg</li>
+                  <li>Total Volume: ${Math.round(ex.totalVolume).toLocaleString()}kg</li>
+                </ul>
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+
+        <p style="margin-top: 30px;">Keep pushing your limits! 💪</p>
+      </div>
+    `
+
     // Send email using Supabase Auth
-    const { error: emailError } = await supabase.auth.admin.sendEmail(
+    const { error: emailError } = await supabase.auth.admin.createEmailTemplate({
+      name: 'workout-report',
+      subject: '🏋️‍♂️ Your Weekly Workout Report',
+      html_template: emailContent,
+    })
+
+    if (emailError) {
+      console.error('Template error:', emailError)
+      throw emailError
+    }
+
+    const { error: sendError } = await supabase.auth.admin.sendEmail(
       user.email,
       {
-        subject: 'Your Weekly Workout Report',
         template_name: 'workout-report',
-        template_data: {
-          content: generateReportContent(workoutLogs),
-        },
       }
     )
 
-    if (emailError) {
-      console.error('Email error:', emailError)
-      throw emailError
+    if (sendError) {
+      console.error('Send error:', sendError)
+      throw sendError
     }
 
     return new Response(
