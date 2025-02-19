@@ -129,27 +129,15 @@ serve(async (req) => {
     `
 
     // Send email using Supabase Auth
-    const { error: emailError } = await supabase.auth.admin.createEmailTemplate({
-      name: 'workout-report',
+    const { error: emailError } = await supabase.auth.admin.sendEmail({
+      email: user.email,
       subject: '🏋️‍♂️ Your Weekly Workout Report',
-      html_template: emailContent,
+      html: emailContent,
     })
 
     if (emailError) {
-      console.error('Template error:', emailError)
+      console.error('Send error:', emailError)
       throw emailError
-    }
-
-    const { error: sendError } = await supabase.auth.admin.sendEmail(
-      user.email,
-      {
-        template_name: 'workout-report',
-      }
-    )
-
-    if (sendError) {
-      console.error('Send error:', sendError)
-      throw sendError
     }
 
     return new Response(
