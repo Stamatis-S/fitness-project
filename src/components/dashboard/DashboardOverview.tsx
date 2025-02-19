@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { MostUsedExercise } from "./metrics/MostUsedExercise";
 import { MaxWeightMetric } from "./metrics/MaxWeightMetric";
 import { WeeklyVolume } from "./metrics/WeeklyVolume";
+import { WorkoutReports } from "./WorkoutReports";
 import { calculateExerciseStats, getMostUsedExercise, getMaxWeight, getTotalVolume } from "./utils/metricCalculations";
 
 interface DashboardOverviewProps {
@@ -35,6 +36,8 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
           </div>
         </Card>
       </motion.div>
+
+      <WorkoutReports workoutLogs={workoutLogs} />
     </div>
   );
 }
