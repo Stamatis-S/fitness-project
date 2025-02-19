@@ -4,19 +4,35 @@ import { useTheme } from "@/components/ThemeProvider";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { PageTransition } from "@/components/PageTransition";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Sun, 
   Moon,
+  LogOut,
 } from "lucide-react";
+import { toast } from "sonner";
 
 const Index = () => {
   const { theme, setTheme } = useTheme();
   const { session } = useAuth();
+  const navigate = useNavigate();
 
   if (!session) {
     console.log('No active session, redirecting to auth');
     return null;
   }
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Logged out successfully");
+      navigate("/auth");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast.error("Failed to log out");
+    }
+  };
 
   return (
     <PageTransition>
@@ -30,11 +46,20 @@ const Index = () => {
                 Log your workout details
               </span>
             </h1>
-            <div className="flex-1 flex justify-end">
+            <div className="flex-1 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleLogout}
+                title="Logout"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+                title={theme === "light" ? "Dark mode" : "Light mode"}
               >
                 {theme === "light" ? (
                   <Moon className="h-5 w-5" />
