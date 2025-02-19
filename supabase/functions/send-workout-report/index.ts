@@ -10,9 +10,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -20,19 +17,23 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client
-    const supabase = createClient(
-      supabaseUrl!,
-      supabaseServiceKey!,
-    )
+    const { workoutLogs } = await req.json()
+    
+    if (!workoutLogs || !Array.isArray(workoutLogs)) {
+      throw new Error('Invalid workout logs data')
+    }
 
-    // Get authorization header
+    // Get the authenticated user from the request headers
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       throw new Error('No authorization header')
     }
 
-    // Get user from auth header
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
+
     const { data: { user }, error: userError } = await supabase.auth.getUser(
       authHeader.replace('Bearer ', '')
     )
@@ -41,93 +42,44 @@ serve(async (req) => {
       throw new Error('Invalid user token')
     }
 
-    // Get request body with workout logs
-    const { workoutLogs } = await req.json()
+    // Calculate workout stats
+    const now = new Date()
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const recentLogs = workoutLogs.filter(log => 
+      new Date(log.workout_date) >= oneWeekAgo
+    )
 
-    // Format workout data for email
-    const formatWorkoutData = (logs: any[]) => {
-      const now = new Date()
-      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-      
-      // Filter for recent logs
-      const recentLogs = logs.filter(log => new Date(log.workout_date) >= oneWeekAgo)
-      
-      // Calculate totals
-      const totalVolume = recentLogs.reduce((sum, log) => 
-        sum + ((log.weight_kg || 0) * (log.reps || 0)), 0)
-      const totalSets = recentLogs.length
-      
-      // Group by category
-      const categoryGroups = recentLogs.reduce((groups: any, log) => {
-        if (!groups[log.category]) {
-          groups[log.category] = []
-        }
-        groups[log.category].push(log)
-        return groups
-      }, {})
+    const totalWorkouts = recentLogs.length
+    const totalVolume = recentLogs.reduce((sum, log) => 
+      sum + ((log.weight_kg || 0) * (log.reps || 0)), 0
+    )
+    const maxWeight = Math.max(...recentLogs.map(log => log.weight_kg || 0))
 
-      // Generate category summaries
-      const categorySummaries = Object.entries(categoryGroups).map(([category, logs]: [string, any[]]) => {
-        const exercises = logs.reduce((acc: any, log) => {
-          const name = log.custom_exercise || log.exercises?.name || 'Unknown'
-          if (!acc[name]) {
-            acc[name] = {
-              sets: 0,
-              maxWeight: 0,
-              totalVolume: 0
-            }
-          }
-          acc[name].sets++
-          acc[name].maxWeight = Math.max(acc[name].maxWeight, log.weight_kg || 0)
-          acc[name].totalVolume += (log.weight_kg || 0) * (log.reps || 0)
-          return acc
-        }, {})
-
-        return {
-          category,
-          exercises: Object.entries(exercises).map(([name, stats]: [string, any]) => ({
-            name,
-            ...stats
-          }))
-        }
-      })
-
-      return { totalVolume, totalSets, categorySummaries }
-    }
-
-    const stats = formatWorkoutData(workoutLogs)
-
-    // Generate HTML email content
-    const emailContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #2563eb;">Weekly Workout Report</h1>
-        <p>Here's your workout summary for the past week:</p>
-        
-        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h2 style="margin-top: 0;">Overall Stats</h2>
-          <ul style="list-style: none; padding: 0;">
-            <li>📊 Total Volume: ${Math.round(stats.totalVolume).toLocaleString()}kg</li>
-            <li>🎯 Total Sets: ${stats.totalSets}</li>
-          </ul>
-        </div>
-
-        ${stats.categorySummaries.map(cat => `
-          <div style="margin: 20px 0;">
-            <h3 style="color: #4b5563;">${cat.category}</h3>
-            ${cat.exercises.map(ex => `
-              <div style="margin-left: 20px; margin-bottom: 10px;">
-                <strong>${ex.name}</strong>
-                <ul style="margin: 5px 0;">
-                  <li>Sets: ${ex.sets}</li>
-                  <li>Max Weight: ${ex.maxWeight}kg</li>
-                  <li>Total Volume: ${Math.round(ex.totalVolume).toLocaleString()}kg</li>
-                </ul>
-              </div>
-            `).join('')}
+    // Create email HTML with a more engaging design
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h2 style="color: #2563eb; margin-top: 0;">Your Weekly Workout Report</h2>
+          <p style="color: #4b5563;">Hey ${user.email},</p>
+          <p style="color: #4b5563;">Here's your workout summary for the week:</p>
+          
+          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #1f2937;">Total Workouts:</strong>
+              <span style="color: #4b5563; margin-left: 10px;">${totalWorkouts}</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+              <strong style="color: #1f2937;">Total Volume:</strong>
+              <span style="color: #4b5563; margin-left: 10px;">${Math.round(totalVolume).toLocaleString()} kg</span>
+            </div>
+            <div>
+              <strong style="color: #1f2937;">Strongest Lift:</strong>
+              <span style="color: #4b5563; margin-left: 10px;">${maxWeight} kg</span>
+            </div>
           </div>
-        `).join('')}
 
-        <p style="margin-top: 30px;">Keep pushing your limits! 💪</p>
+          <p style="color: #4b5563; margin-top: 30px;">Keep pushing your limits! 💪</p>
+        </div>
       </div>
     `
 
@@ -136,13 +88,13 @@ serve(async (req) => {
       from: "Workout Tracker <onboarding@resend.dev>",
       to: [user.email],
       subject: "🏋️‍♂️ Your Weekly Workout Report",
-      html: emailContent,
+      html: emailHtml,
     })
 
     console.log("Email sent successfully:", emailResponse)
 
     return new Response(
-      JSON.stringify({ message: 'Report sent successfully' }),
+      JSON.stringify({ message: 'Workout report sent successfully!' }),
       { 
         headers: { 
           'Content-Type': 'application/json',
@@ -151,7 +103,7 @@ serve(async (req) => {
       }
     )
   } catch (error: any) {
-    console.error('Error sending report:', error)
+    console.error('Error sending workout report:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
