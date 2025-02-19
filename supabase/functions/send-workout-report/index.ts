@@ -89,15 +89,16 @@ serve(async (req) => {
       `
     }
 
-    // Send email
+    // Send email - using the user's email as both from and to address for testing
     const { error: emailError } = await resend.emails.send({
-      from: 'Workout Tracker <onboarding@resend.dev>',
+      from: `${user.email}`,  // Using the user's email as the from address
       to: [user.email],
       subject: 'Your Weekly Workout Report',
       html: generateReportContent(workoutLogs),
     })
 
     if (emailError) {
+      console.error('Resend error:', emailError)
       throw emailError
     }
 
@@ -110,10 +111,13 @@ serve(async (req) => {
         } 
       }
     )
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error sending report:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: "To send emails to other addresses, please verify a domain at resend.com/domains"
+      }),
       { 
         status: 400, 
         headers: { 
