@@ -1,3 +1,4 @@
+
 import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { ExerciseFormData } from "@/components/workout/types";
@@ -20,7 +21,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     setValue(`sets.${index}.reps`, (reps || 0) + amount);
   };
 
-  const commonButtonStyle = "bg-[#333333] hover:bg-[#444444] text-white";
+  const commonButtonStyle = "bg-white/10 hover:bg-white/20 text-white font-medium rounded-full";
 
   return (
     <div className="flex items-center space-x-4">
