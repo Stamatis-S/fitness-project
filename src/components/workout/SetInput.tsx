@@ -1,3 +1,4 @@
+
 import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -92,8 +93,8 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     setValue(`sets.${index}.reps`, (reps || 0) + amount);
   };
 
-  const commonButtonStyle = "h-10 w-10 flex items-center justify-center rounded-full bg-[#222222] hover:bg-[#333333]";
-  const quickButtonStyle = "h-10 px-4 rounded-full bg-[#222222] hover:bg-[#333333] text-white font-medium text-sm";
+  const commonButtonStyle = "h-8 w-8 flex items-center justify-center rounded-full bg-[#222222] hover:bg-[#333333]";
+  const quickButtonStyle = "h-8 px-3 rounded-full bg-[#222222] hover:bg-[#333333] text-white font-medium text-sm whitespace-nowrap";
 
   const defaultWeightButtons = [5, 10];
   const defaultRepButtons = [8, 10];
@@ -107,8 +108,8 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     : defaultRepButtons;
 
   return (
-    <div className="space-y-6 bg-[#111111] rounded-xl p-4 touch-none select-none">
-      <div className="flex items-center justify-between">
+    <div className="bg-[#111111] rounded-xl p-4 touch-none select-none">
+      <div className="flex items-center justify-between mb-4">
         <div className="text-red-500 text-lg font-medium">
           Set {index + 1}
         </div>
@@ -144,13 +145,15 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         )}
       </div>
       
-      <div className="space-y-6">
-        <div>
-          <div className="flex items-center gap-2 mb-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Weight Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
             <Weight className="h-5 w-5 text-red-500" />
-            <span className="text-white text-lg">Weight: {weight || 0} KG</span>
+            <span className="text-white text-base">Weight: {weight || 0} KG</span>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          
+          <div className="flex gap-2">
             {weightButtons.map((amount, i) => (
               <Button
                 key={i}
@@ -163,7 +166,8 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               </Button>
             ))}
           </div>
-          <div className="flex items-center gap-2 mt-3">
+
+          <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="outline"
@@ -191,12 +195,14 @@ export function SetInput({ index, onRemove }: SetInputProps) {
           </div>
         </div>
 
-        <div>
-          <div className="flex items-center gap-2 mb-3">
+        {/* Reps Section */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
             <RotateCw className="h-5 w-5 text-red-500" />
-            <span className="text-white text-lg">Reps: {reps || 0}</span>
+            <span className="text-white text-base">Reps: {reps || 0}</span>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          
+          <div className="flex gap-2">
             {repButtons.map((amount, i) => (
               <Button
                 key={i}
@@ -209,7 +215,8 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               </Button>
             ))}
           </div>
-          <div className="flex items-center gap-2 mt-3">
+
+          <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="outline"
