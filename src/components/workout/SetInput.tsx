@@ -87,7 +87,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
 
   const handleWeightChange = (amount: number) => {
     const currentWeight = weight || 0;
-    const newWeight = Math.round((currentWeight + amount) * 2) / 2; // Ensures 0.5 step increments
+    const newWeight = Math.round((currentWeight + amount) * 2) / 2;
     setValue(`sets.${index}.weight`, Math.max(0, newWeight));
   };
 
@@ -95,7 +95,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     setValue(`sets.${index}.reps`, (reps || 0) + amount);
   };
 
-  const quickButtonStyle = "h-9 px-4 rounded-full bg-[#222222] hover:bg-[#333333] text-white font-medium text-sm whitespace-nowrap";
+  const quickButtonStyle = "h-9 px-4 rounded-full bg-[#222222] hover:bg-[#333333] text-white font-medium text-xs whitespace-nowrap";
   const controlButtonStyle = "h-10 w-10 flex items-center justify-center rounded-full bg-[#222222] hover:bg-[#333333]";
 
   const defaultWeightButtons = [5, 10, 15, 20];
@@ -112,7 +112,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   return (
     <div className="bg-[#111111] rounded-xl p-4">
       <div className="flex items-center justify-between mb-6">
-        <div className="text-red-500 text-xl font-semibold">
+        <div className="text-red-500 text-base font-semibold">
           Set {index + 1}
         </div>
         {index > 0 && (
@@ -151,8 +151,8 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         {/* Weight Section */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <Weight className="h-5 w-5 text-red-500" />
-            <span className="text-white text-lg font-medium">Weight: {weight || 0} KG</span>
+            <Weight className="h-4 w-4 text-red-500" />
+            <span className="text-white text-sm font-medium">Weight: {weight || 0} KG</span>
           </div>
           
           <div className="grid grid-cols-2 gap-2 mb-4">
@@ -176,7 +176,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               className={controlButtonStyle}
               onClick={() => handleWeightChange(-0.5)}
             >
-              <Minus className="h-5 w-5" />
+              <Minus className="h-4 w-4" />
             </Button>
             <Slider
               value={[weight || 0]}
@@ -192,7 +192,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               className={controlButtonStyle}
               onClick={() => handleWeightChange(0.5)}
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -200,8 +200,8 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         {/* Reps Section */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <RotateCw className="h-5 w-5 text-red-500" />
-            <span className="text-white text-lg font-medium">Reps: {reps || 0}</span>
+            <RotateCw className="h-4 w-4 text-red-500" />
+            <span className="text-white text-sm font-medium">Reps: {reps || 0}</span>
           </div>
           
           <div className="grid grid-cols-3 gap-2 mb-4">
@@ -225,7 +225,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               className={controlButtonStyle}
               onClick={() => handleRepsChange(-1)}
             >
-              <Minus className="h-5 w-5" />
+              <Minus className="h-4 w-4" />
             </Button>
             <Slider
               value={[reps || 0]}
@@ -241,7 +241,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               className={controlButtonStyle}
               onClick={() => handleRepsChange(1)}
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-4 w-4" />
             </Button>
           </div>
         </div>
