@@ -17,7 +17,6 @@ export default function Auth() {
   const navigate = useNavigate();
   const { session } = useAuth();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (session) {
       navigate("/");
@@ -49,18 +48,10 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted p-4">
       <Card className="w-full max-w-md p-6 space-y-6 animate-fade-up">
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-primary mb-2">Gym Buddy</h1>
-          <h2 className="text-2xl font-bold">
-            {isSignUp ? "Create an Account" : "Welcome Back"}
-          </h2>
-          <p className="text-gray-500">
-            {isSignUp
-              ? "Sign up to start tracking your workouts"
-              : "Log in to continue tracking your progress"}
-          </p>
+          <h1 className="text-4xl font-bold text-primary">Fitness Project</h1>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-4">

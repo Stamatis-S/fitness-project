@@ -10,8 +10,15 @@ import {
   Sun, 
   Moon,
   LogOut,
+  Palette,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Index = () => {
   const { theme, setTheme } = useTheme();
@@ -40,12 +47,11 @@ const Index = () => {
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex-1" />
-            <h1 className="text-4xl font-bold text-center flex-1">
-              Add Exercise
-              <span className="block text-lg font-medium text-muted-foreground mt-1">
-                Log your workout details
-              </span>
-            </h1>
+            <div className="flex-1 text-center">
+              <h1 className="text-3xl md:text-4xl font-bold text-primary">
+                Fitness Project
+              </h1>
+            </div>
             <div className="flex-1 flex justify-end gap-2">
               <Button
                 variant="outline"
@@ -55,18 +61,37 @@ const Index = () => {
               >
                 <LogOut className="h-5 w-5" />
               </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                title={theme === "light" ? "Switch to Grey mode" : "Switch to Light mode"}
-              >
-                {theme === "light" ? (
-                  <Moon className="h-5 w-5" />
-                ) : (
-                  <Sun className="h-5 w-5" />
-                )}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    title="Change theme"
+                  >
+                    {theme === "light" ? (
+                      <Sun className="h-5 w-5" />
+                    ) : theme === "dark" ? (
+                      <Moon className="h-5 w-5" />
+                    ) : (
+                      <Palette className="h-5 w-5" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setTheme("light")}>
+                    <Sun className="mr-2 h-4 w-4" />
+                    Light
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("dark")}>
+                    <Moon className="mr-2 h-4 w-4" />
+                    Dark
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("brand")}>
+                    <Palette className="mr-2 h-4 w-4" />
+                    Brand
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
