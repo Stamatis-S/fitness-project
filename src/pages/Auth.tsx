@@ -47,6 +47,10 @@ export default function Auth() {
     }
   };
 
+  const toggleSignUp = () => {
+    setIsSignUp(!isSignUp);
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-start pt-8 md:pt-16 bg-gradient-to-b from-background to-muted p-4">
       <div className="w-full max-w-md mb-4">
@@ -100,8 +104,9 @@ export default function Auth() {
 
         <div className="text-center pb-1">
           <Button
+            type="button"
             variant="link"
-            onClick={() => setIsSignUp(!isSignUp)}
+            onClick={toggleSignUp}
             className="text-sm text-primary hover:text-primary/80"
           >
             {isSignUp
