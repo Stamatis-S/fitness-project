@@ -53,11 +53,11 @@ export function ExerciseSelector({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <Button
           type="button"
           variant={useCustomExercise ? "outline" : "default"}
-          className="h-12 rounded-xl"
+          className="h-10 rounded-xl text-sm"
           onClick={() => {
             setUseCustomExercise(false);
             onValueChange("");
@@ -68,7 +68,7 @@ export function ExerciseSelector({
         <Button
           type="button"
           variant={useCustomExercise ? "default" : "outline"}
-          className="h-12 rounded-xl"
+          className="h-10 rounded-xl text-sm"
           onClick={() => {
             setUseCustomExercise(true);
             onValueChange("custom");
@@ -92,7 +92,7 @@ export function ExerciseSelector({
               placeholder="Enter exercise name"
               value={customExercise}
               onChange={(e) => onCustomExerciseChange(e.target.value)}
-              className="h-12 text-base"
+              className="h-10 text-sm"
             />
           </motion.div>
         ) : (
@@ -101,21 +101,21 @@ export function ExerciseSelector({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="space-y-4"
+            className="space-y-3"
           >
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search exercises..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-12 pl-10 pr-4"
+                className="h-10 pl-9 pr-4 text-sm"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {isLoading ? (
-                <div className="col-span-2 text-center py-4">Loading exercises...</div>
+                <div className="col-span-full text-center py-4">Loading exercises...</div>
               ) : (
                 <>
                   {filteredExercises.map((exercise) => (
@@ -125,19 +125,19 @@ export function ExerciseSelector({
                       whileTap={{ scale: 0.98 }}
                       onClick={() => onValueChange(exercise.id.toString())}
                       className={cn(
-                        "px-4 py-3 rounded-full text-sm font-medium",
+                        "px-3 py-2 rounded-lg text-sm font-medium",
                         "transition-all duration-200 shadow-sm hover:shadow-md",
-                        "border-2 text-center break-words",
+                        "text-center break-words min-h-[40px] flex items-center justify-center",
                         value === exercise.id.toString()
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted/50 hover:bg-muted"
                       )}
                     >
                       {exercise.name}
                     </motion.button>
                   ))}
                   {!isLoading && filteredExercises.length === 0 && (
-                    <div className="col-span-2 text-center py-4 text-muted-foreground">
+                    <div className="col-span-full text-center py-4 text-muted-foreground">
                       No exercises found
                     </div>
                   )}
