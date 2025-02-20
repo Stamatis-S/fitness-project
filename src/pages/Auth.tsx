@@ -48,24 +48,24 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-muted p-4">
+    <div className="min-h-screen flex flex-col items-center justify-start pt-8 md:pt-16 bg-gradient-to-b from-background to-muted p-4">
       <div className="w-full max-w-md mb-4">
         <img 
           src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
           alt="Fitness Project Logo"
-          className="w-48 md:w-56 mx-auto"
+          className="w-40 md:w-48 mx-auto"
         />
       </div>
       
-      <Card className="w-full max-w-md p-4 space-y-4 animate-fade-up">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl md:text-3xl font-bold text-primary">
+      <Card className="w-full max-w-md p-3 space-y-3 animate-fade-up">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-primary">
             Fitness Project
           </h1>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-3">
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
@@ -77,7 +77,7 @@ export default function Auth() {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
@@ -98,11 +98,11 @@ export default function Auth() {
           </Button>
         </form>
 
-        <div className="text-center">
+        <div className="text-center pb-1">
           <Button
             variant="link"
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm"
+            className="text-sm text-primary hover:text-primary/80"
           >
             {isSignUp
               ? "Already have an account? Log in"
