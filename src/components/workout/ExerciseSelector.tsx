@@ -11,6 +11,7 @@ import { Search, Plus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
+import { useAuth } from "@/components/AuthProvider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,6 +50,7 @@ export function ExerciseSelector({
   const [newCustomExercise, setNewCustomExercise] = useState("");
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
+  const { session } = useAuth();
 
   // Fetch standard exercises
   const { data: standardExercises = [], isLoading: isLoadingStandard } = useQuery({
@@ -89,11 +91,16 @@ export function ExerciseSelector({
   // Mutation for adding custom exercises
   const addCustomExercise = useMutation({
     mutationFn: async (name: string) => {
+      if (!session?.user?.id) {
+        throw new Error("User must be logged in to add custom exercises");
+      }
+
       const { data, error } = await supabase
         .from('custom_exercises')
         .insert({
           name: name.toUpperCase().trim(),
-          category
+          category,
+          user_id: session.user.id
         })
         .select('id, name, category')
         .single();
