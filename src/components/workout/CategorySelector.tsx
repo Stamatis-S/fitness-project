@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import type { ExerciseCategory } from "@/lib/constants";
 import {
   Dumbbell,
-  Running,
   Heart,
   Weight,
   Trophy,
@@ -24,41 +23,47 @@ const categories: Array<{
   description: string;
 }> = [
   {
-    label: "Strength",
-    value: "strength",
+    label: "Στήθος",
+    value: "ΣΤΗΘΟΣ",
     icon: Dumbbell,
-    description: "Weight training exercises",
+    description: "Ασκήσεις στήθους",
   },
   {
-    label: "Cardio",
-    value: "cardio",
-    icon: Running,
-    description: "Cardiovascular exercises",
-  },
-  {
-    label: "Flexibility",
-    value: "flexibility",
-    icon: Heart,
-    description: "Stretching and mobility",
-  },
-  {
-    label: "Powerlifting",
-    value: "powerlifting",
+    label: "Πλάτη",
+    value: "ΠΛΑΤΗ",
     icon: Weight,
-    description: "Competition lifts",
+    description: "Ασκήσεις πλάτης",
   },
   {
-    label: "Olympic",
-    value: "olympic",
+    label: "Δικέφαλα",
+    value: "ΔΙΚΕΦΑΛΑ",
     icon: Trophy,
-    description: "Olympic weightlifting",
+    description: "Ασκήσεις δικεφάλων",
   },
   {
-    label: "Calisthenics",
-    value: "calisthenics",
+    label: "Τρικέφαλα",
+    value: "ΤΡΙΚΕΦΑΛΑ",
     icon: Hammer,
-    description: "Bodyweight exercises",
+    description: "Ασκήσεις τρικεφάλων",
   },
+  {
+    label: "Ώμοι",
+    value: "ΩΜΟΙ",
+    icon: Dumbbell,
+    description: "Ασκήσεις ώμων",
+  },
+  {
+    label: "Πόδια",
+    value: "ΠΟΔΙΑ",
+    icon: Heart,
+    description: "Ασκήσεις ποδιών",
+  },
+  {
+    label: "Κορμός",
+    value: "ΚΟΡΜΟΣ",
+    icon: Weight,
+    description: "Ασκήσεις κορμού",
+  }
 ];
 
 export function CategorySelector({

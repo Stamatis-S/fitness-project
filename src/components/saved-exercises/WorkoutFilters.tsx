@@ -7,7 +7,7 @@ import { EXERCISE_CATEGORIES, CATEGORY_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-interface WorkoutFiltersProps {
+export interface WorkoutFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   categoryFilter: string;

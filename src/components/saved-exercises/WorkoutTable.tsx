@@ -16,7 +16,7 @@ import { Card } from "@/components/ui/card";
 
 interface WorkoutTableProps {
   logs: WorkoutLog[];
-  onDelete: (id: number) => void;
+  onDelete?: (id: number) => void;
 }
 
 export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
