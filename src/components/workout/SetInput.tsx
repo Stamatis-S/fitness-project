@@ -24,7 +24,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   };
 
   const commonButtonStyle = "h-10 w-10 flex items-center justify-center rounded-full bg-[#222222] hover:bg-[#333333]";
-  const quickButtonStyle = "h-12 w-24 rounded-full bg-[#222222] hover:bg-[#333333] text-white font-medium";
+  const quickButtonStyle = "h-12 w-24 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-medium backdrop-blur-sm border border-white/10";
 
   return (
     <div className="space-y-6 bg-[#111111] rounded-lg p-4">
