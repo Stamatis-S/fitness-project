@@ -126,7 +126,7 @@ export type Database = {
           id: number
           reps: number | null
           set_number: number
-          user_id: string | null
+          user_id: string
           weight_kg: number | null
           workout_date: string
         }
@@ -138,7 +138,7 @@ export type Database = {
           id?: number
           reps?: number | null
           set_number: number
-          user_id?: string | null
+          user_id: string
           weight_kg?: number | null
           workout_date?: string
         }
@@ -150,7 +150,7 @@ export type Database = {
           id?: number
           reps?: number | null
           set_number?: number
-          user_id?: string | null
+          user_id?: string
           weight_kg?: number | null
           workout_date?: string
         }
