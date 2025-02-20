@@ -10,7 +10,6 @@ import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { ProgressTracking } from "@/components/dashboard/ProgressTracking";
 import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics";
 import { PageTransition } from "@/components/PageTransition";
-import { Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -60,13 +59,13 @@ export default function Dashboard() {
   return (
     <PageTransition>
       <div className="min-h-screen p-3 md:p-6 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <h1 className="text-2xl font-bold">My Dashboard</h1>
+        <div className="max-w-7xl mx-auto space-y-2 md:space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-xl md:text-2xl font-bold">My Dashboard</h1>
             <Button
               onClick={() => navigate("/")}
               variant="outline"
-              size="sm"
+              size={isMobile ? "sm" : "default"}
               className="shrink-0"
             >
               New Workout
@@ -74,12 +73,14 @@ export default function Dashboard() {
           </div>
 
           {workoutLogs && (
-            <div className="grid gap-4">
-              <WorkoutInsights logs={workoutLogs} />
+            <div className="grid gap-2 md:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+                <WorkoutInsights logs={workoutLogs} />
+              </div>
 
               <div className="bg-card rounded-lg shadow-sm">
                 <Tabs defaultValue="overview" className="w-full">
-                  <div className={`${isMobile ? 'sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-2 px-2 rounded-t-lg' : 'px-4 pt-4'}`}>
+                  <div className={`${isMobile ? 'sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-1.5 px-2 rounded-t-lg' : 'px-4 pt-4'}`}>
                     <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3 gap-1' : 'grid-cols-3'}`}>
                       <TabsTrigger value="overview" className={isMobile ? 'text-sm py-1.5' : ''}>Overview</TabsTrigger>
                       <TabsTrigger value="progress" className={isMobile ? 'text-sm py-1.5' : ''}>Progress</TabsTrigger>
@@ -87,16 +88,16 @@ export default function Dashboard() {
                     </TabsList>
                   </div>
 
-                  <div className="p-4">
-                    <TabsContent value="overview" className="m-0 space-y-4">
+                  <div className="p-2 md:p-4">
+                    <TabsContent value="overview" className="m-0 space-y-2 md:space-y-4">
                       {workoutLogs && <DashboardOverview workoutLogs={workoutLogs} />}
                     </TabsContent>
 
-                    <TabsContent value="progress" className="m-0 space-y-4">
+                    <TabsContent value="progress" className="m-0 space-y-2 md:space-y-4">
                       {workoutLogs && <ProgressTracking workoutLogs={workoutLogs} />}
                     </TabsContent>
 
-                    <TabsContent value="statistics" className="m-0 space-y-4">
+                    <TabsContent value="statistics" className="m-0 space-y-2 md:space-y-4">
                       {workoutLogs && <DashboardStatistics workoutLogs={workoutLogs} />}
                     </TabsContent>
                   </div>
@@ -105,17 +106,6 @@ export default function Dashboard() {
             </div>
           )}
         </div>
-
-        {/* Mobile Add Button */}
-        {isMobile && (
-          <Button
-            onClick={() => navigate("/")}
-            className="fixed bottom-20 right-4 h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-shadow"
-            size="icon"
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
-        )}
       </div>
     </PageTransition>
   );
