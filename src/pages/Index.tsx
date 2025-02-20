@@ -43,7 +43,7 @@ const Index = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen p-4 md:p-8 bg-gradient-to-b from-background to-muted">
+      <div className="min-h-screen p-4 md:p-8 pb-24 bg-gradient-to-b from-background to-muted">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex-1" />
