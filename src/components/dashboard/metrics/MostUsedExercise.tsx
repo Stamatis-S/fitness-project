@@ -1,15 +1,13 @@
 
-import { Target, TrendingUp, TrendingDown } from "lucide-react";
+import { Target } from "lucide-react";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 
 interface MostUsedExerciseProps {
   exercises: string[];
   sets: number;
-  percentChange: number;
 }
 
-export function MostUsedExercise({ exercises, sets, percentChange }: MostUsedExerciseProps) {
+export function MostUsedExercise({ exercises, sets }: MostUsedExerciseProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 text-muted-foreground">
@@ -26,7 +24,7 @@ export function MostUsedExercise({ exercises, sets, percentChange }: MostUsedExe
             </p>
           ))}
         </div>
-        <div className="flex items-center gap-2 mt-2">
+        <div className="mt-2">
           <span className="text-lg">{sets} total sets</span>
         </div>
       </div>

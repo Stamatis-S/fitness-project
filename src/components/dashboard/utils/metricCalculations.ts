@@ -48,52 +48,44 @@ export function calculateExerciseStats(workoutLogs: WorkoutLog[]) {
 
 export function getMostUsedExercise(exerciseStats: Map<string, any>) {
   if (exerciseStats.size === 0) {
-    return { exercises: ['No exercises recorded'], sets: 0, percentChange: 0 };
+    return { exercises: ['No exercises recorded'], sets: 0 };
   }
 
-  const [mostUsedExercise, stats] = Array.from(exerciseStats.entries())
-    .reduce((max, current) => {
-      return current[1].totalSets > max[1].totalSets ? current : max;
-    });
+  const sortedExercises = Array.from(exerciseStats.entries())
+    .sort((a, b) => b[1].totalSets - a[1].totalSets);
 
-  const percentChange = stats.lastWeekSets > 0
-    ? ((stats.thisWeekSets - stats.lastWeekSets) / stats.lastWeekSets) * 100
-    : stats.thisWeekSets > 0 ? 100 : 0;
+  const mostUsedExercise = sortedExercises[0];
 
   return {
-    exercises: [mostUsedExercise],
-    sets: stats.totalSets,
-    percentChange
+    exercises: [mostUsedExercise[0]],
+    sets: mostUsedExercise[1].totalSets
   };
 }
 
 export function getMaxWeight(thisWeekLogs: WorkoutLog[], lastWeekLogs: WorkoutLog[]) {
-  const maxWeightMap = new Map<string, number>();
+  const exerciseMaxWeights = new Map<string, number>();
   
-  thisWeekLogs.forEach(log => {
+  [...thisWeekLogs, ...lastWeekLogs].forEach(log => {
     const exerciseName = log.custom_exercise || log.exercises?.name;
     if (!exerciseName || !log.weight_kg) return;
     
-    const currentMax = maxWeightMap.get(exerciseName) || 0;
-    maxWeightMap.set(exerciseName, Math.max(currentMax, log.weight_kg));
+    const currentMax = exerciseMaxWeights.get(exerciseName) || 0;
+    exerciseMaxWeights.set(exerciseName, Math.max(currentMax, log.weight_kg));
   });
 
-  if (maxWeightMap.size === 0) {
-    return { exercise: 'No exercises recorded', weight: 0, percentChange: 0 };
+  if (exerciseMaxWeights.size === 0) {
+    return { topExercises: [{ exercise: 'No exercises recorded', weight: 0 }] };
   }
 
-  const [exercise, weight] = Array.from(maxWeightMap.entries())
-    .sort(([, a], [, b]) => b - a)[0];
+  const topExercises = Array.from(exerciseMaxWeights.entries())
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([exercise, weight]) => ({
+      exercise,
+      weight
+    }));
 
-  const lastWeekMaxWeight = Math.max(...lastWeekLogs
-    .filter(log => (log.custom_exercise || log.exercises?.name) === exercise)
-    .map(log => log.weight_kg || 0));
-
-  const percentChange = lastWeekMaxWeight 
-    ? ((weight - lastWeekMaxWeight) / lastWeekMaxWeight) * 100 
-    : weight > 0 ? 100 : 0;
-
-  return { exercise, weight, percentChange };
+  return { topExercises };
 }
 
 export function getTotalVolume(thisWeekLogs: WorkoutLog[], lastWeekLogs: WorkoutLog[]) {
