@@ -227,17 +227,26 @@ export function ExerciseEntryForm() {
                 exit={{ opacity: 0, x: -20 }}
                 className="flex flex-col h-[calc(100vh-20rem)]"
               >
-                <div className="flex-1 overflow-y-auto pb-4 space-y-3">
-                  <AnimatePresence>
-                    {fields.map((field, index) => (
-                      <SetInput
-                        key={field.id}
-                        index={index}
-                        onRemove={remove}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </div>
+                <ScrollArea className="flex-1 -mx-2 px-2 pb-4">
+                  <div className="space-y-3">
+                    <AnimatePresence>
+                      {fields.map((field, index) => (
+                        <motion.div
+                          key={field.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                        >
+                          <SetInput
+                            key={field.id}
+                            index={index}
+                            onRemove={remove}
+                          />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                </ScrollArea>
                 
                 <div className="space-y-3 pt-2 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                   <motion.div
