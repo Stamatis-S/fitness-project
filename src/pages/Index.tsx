@@ -1,27 +1,14 @@
 
 import { ExerciseEntryForm } from "@/components/ExerciseEntryForm";
-import { useTheme } from "@/components/ThemeProvider";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { PageTransition } from "@/components/PageTransition";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Sun, 
-  Moon,
-  LogOut,
-  Palette,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import { toast } from "sonner";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const Index = () => {
-  const { theme, setTheme } = useTheme();
   const { session } = useAuth();
   const navigate = useNavigate();
 
@@ -60,40 +47,10 @@ const Index = () => {
                 size="icon"
                 onClick={handleLogout}
                 title="Logout"
+                className="bg-[#333333] hover:bg-[#444444]"
               >
                 <LogOut className="h-5 w-5" />
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    title="Change theme"
-                  >
-                    {theme === "light" ? (
-                      <Sun className="h-5 w-5" />
-                    ) : theme === "dark" ? (
-                      <Moon className="h-5 w-5" />
-                    ) : (
-                      <Palette className="h-5 w-5" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setTheme("light")}>
-                    <Sun className="mr-2 h-4 w-4" />
-                    Light
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme("dark")}>
-                    <Moon className="mr-2 h-4 w-4" />
-                    Dark
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme("brand")}>
-                    <Palette className="mr-2 h-4 w-4" />
-                    Brand
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 
-type Theme = "light" | "dark" | "brand"
+type Theme = "brand"
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -14,7 +14,7 @@ type ThemeProviderState = {
 }
 
 const initialState: ThemeProviderState = {
-  theme: "light",
+  theme: "brand",
   setTheme: () => null,
 }
 
@@ -22,26 +22,20 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
 export function ThemeProvider({
   children,
-  defaultTheme = "light",
+  defaultTheme = "brand",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem("theme") as Theme) || defaultTheme
-  )
+  const [theme] = useState<Theme>("brand")
 
   useEffect(() => {
     const root = window.document.documentElement
-
-    root.classList.remove("light", "dark", "brand")
-    root.classList.add(theme)
-  }, [theme])
+    root.classList.remove("light", "dark")
+    root.classList.add("brand")
+  }, [])
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem("theme", theme)
-      setTheme(theme)
-    },
+    setTheme: () => {},
   }
 
   return (
