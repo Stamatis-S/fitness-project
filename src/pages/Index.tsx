@@ -48,9 +48,11 @@ const Index = () => {
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex-1" />
             <div className="flex-1 text-center">
-              <h1 className="text-3xl md:text-4xl font-bold text-primary">
-                Fitness Project
-              </h1>
+              <img 
+                src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
+                alt="Fitness Project Logo"
+                className="w-48 md:w-56 mx-auto"
+              />
             </div>
             <div className="flex-1 flex justify-end gap-2">
               <Button
