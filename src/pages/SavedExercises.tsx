@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -18,6 +17,7 @@ import {
 } from "@/components/ui/pagination";
 import { WorkoutFilters } from "@/components/saved-exercises/WorkoutFilters";
 import { WorkoutTable } from "@/components/saved-exercises/WorkoutTable";
+import { useAuth } from "@/components/AuthProvider";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 
 const ITEMS_PER_PAGE = 10;
@@ -28,10 +28,16 @@ export default function SavedExercises() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const { session } = useAuth();
 
   const { data: workoutLogs, refetch } = useQuery({
-    queryKey: ['workout_logs'],
+    queryKey: ['workout_logs', session?.user.id],
     queryFn: async () => {
+      if (!session?.user.id) {
+        navigate('/auth');
+        throw new Error('Not authenticated');
+      }
+
       const { data: logs, error } = await supabase
         .from('workout_logs')
         .select(`
@@ -41,8 +47,9 @@ export default function SavedExercises() {
             name
           )
         `)
-        .order('workout_date', { ascending: false })  // Changed to descending order
-        .order('created_at', { ascending: false });   // Secondary sort by creation time
+        .eq('user_id', session.user.id)
+        .order('workout_date', { ascending: false })
+        .order('created_at', { ascending: false });
 
       if (error) {
         toast.error("Failed to load workout logs");
@@ -50,14 +57,21 @@ export default function SavedExercises() {
       }
       return logs as WorkoutLog[] || [];
     },
+    enabled: !!session?.user.id,
   });
 
   const handleDelete = async (id: number) => {
     try {
+      if (!session?.user.id) {
+        toast.error("You must be logged in to delete exercises");
+        return;
+      }
+
       const { error } = await supabase
         .from('workout_logs')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', session.user.id);
 
       if (error) throw error;
       toast.success("Exercise deleted successfully");
@@ -67,6 +81,11 @@ export default function SavedExercises() {
       console.error("Error deleting exercise:", error);
     }
   };
+
+  if (!session) {
+    navigate('/auth');
+    return null;
+  }
 
   const filterLogs = (logs: WorkoutLog[] | undefined) => {
     if (!logs) return [];
