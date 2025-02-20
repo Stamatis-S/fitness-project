@@ -20,7 +20,7 @@ export default function SavedExercises() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
 
-  const { data: workoutLogs } = useQuery({
+  const { data: workoutLogs, refetch } = useQuery({
     queryKey: ['workout_logs', session?.user.id],
     queryFn: async () => {
       if (!session?.user.id) {
@@ -48,6 +48,26 @@ export default function SavedExercises() {
     },
     enabled: !!session?.user.id,
   });
+
+  const handleDelete = async (id: number) => {
+    if (!session?.user.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('workout_logs')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', session.user.id);
+
+      if (error) throw error;
+
+      toast.success("Exercise deleted successfully");
+      refetch(); // Refresh the data after deletion
+    } catch (error: any) {
+      toast.error("Failed to delete exercise");
+      console.error("Delete error:", error);
+    }
+  };
 
   if (!session) {
     navigate('/auth');
@@ -97,7 +117,7 @@ export default function SavedExercises() {
           </Card>
 
           <Card className="overflow-hidden bg-[#333333]">
-            <WorkoutTable logs={filteredLogs || []} />
+            <WorkoutTable logs={filteredLogs || []} onDelete={handleDelete} />
           </Card>
         </div>
       </div>
