@@ -32,39 +32,14 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         Set {index + 1}
       </div>
       
-      <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-4">
+        {/* Weight Section */}
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Weight className="h-5 w-5 text-red-500" />
             <span className="text-white">Weight: {weight || 0} KG</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              className={commonButtonStyle}
-              onClick={() => handleWeightChange(-5)}
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <Slider
-              value={[weight || 0]}
-              min={0}
-              max={200}
-              step={1}
-              onValueChange={([value]) => setValue(`sets.${index}.weight`, value)}
-              className="flex-1"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              className={commonButtonStyle}
-              onClick={() => handleWeightChange(5)}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex gap-2 mt-2">
+          <div className="flex gap-2">
             <Button
               type="button"
               variant="outline"
@@ -84,38 +59,13 @@ export function SetInput({ index, onRemove }: SetInputProps) {
           </div>
         </div>
 
+        {/* Reps Section */}
         <div>
           <div className="flex items-center gap-2 mb-2">
             <RotateCw className="h-5 w-5 text-red-500" />
             <span className="text-white">Reps: {reps || 0}</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              className={commonButtonStyle}
-              onClick={() => handleRepsChange(-1)}
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <Slider
-              value={[reps || 0]}
-              min={0}
-              max={50}
-              step={1}
-              onValueChange={([value]) => setValue(`sets.${index}.reps`, value)}
-              className="flex-1"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              className={commonButtonStyle}
-              onClick={() => handleRepsChange(1)}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex gap-2 mt-2">
+          <div className="flex gap-2">
             <Button
               type="button"
               variant="outline"
@@ -133,6 +83,63 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               -1 Rep
             </Button>
           </div>
+        </div>
+      </div>
+
+      {/* Sliders Section */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className={commonButtonStyle}
+            onClick={() => handleWeightChange(-5)}
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
+          <Slider
+            value={[weight || 0]}
+            min={0}
+            max={200}
+            step={1}
+            onValueChange={([value]) => setValue(`sets.${index}.weight`, value)}
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className={commonButtonStyle}
+            onClick={() => handleWeightChange(5)}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className={commonButtonStyle}
+            onClick={() => handleRepsChange(-1)}
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
+          <Slider
+            value={[reps || 0]}
+            min={0}
+            max={50}
+            step={1}
+            onValueChange={([value]) => setValue(`sets.${index}.reps`, value)}
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className={commonButtonStyle}
+            onClick={() => handleRepsChange(1)}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
