@@ -27,11 +27,12 @@ interface WorkoutStats {
 export function LeaderboardStats() {
   const { session } = useAuth();
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<WorkoutStats[]>({
     queryKey: ['leaderboard-stats'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc('get_user_workout_stats');
+        .from('get_user_workout_stats')
+        .select();
 
       if (error) throw error;
       return data as WorkoutStats[];

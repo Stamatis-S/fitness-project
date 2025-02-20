@@ -182,6 +182,17 @@ export type Database = {
         }
         Returns: number
       }
+      get_user_workout_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          username: string
+          total_workouts: number
+          max_weight: number
+          total_volume: number
+          favorite_category: string
+        }[]
+      }
     }
     Enums: {
       exercise_category:
