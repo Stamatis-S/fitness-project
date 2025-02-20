@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { ProgressTracking } from "@/components/dashboard/ProgressTracking";
 import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics";
 import { PageTransition } from "@/components/PageTransition";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/components/AuthProvider";
 import type { Database } from "@/integrations/supabase/types";
 
 type ExerciseCategory = Database['public']['Enums']['exercise_category'];
@@ -28,15 +28,22 @@ export interface WorkoutLog {
   set_number: number;
   weight_kg: number;
   reps: number;
+  user_id: string;
 }
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { session } = useAuth();
 
   const { data: workoutLogs } = useQuery({
-    queryKey: ['workout_logs'],
+    queryKey: ['workout_logs', session?.user.id],
     queryFn: async () => {
+      if (!session?.user.id) {
+        navigate('/auth');
+        throw new Error('Not authenticated');
+      }
+
       const { data, error } = await supabase
         .from('workout_logs')
         .select(`
@@ -54,7 +61,13 @@ export default function Dashboard() {
       }
       return data as WorkoutLog[];
     },
+    enabled: !!session?.user.id,
   });
+
+  if (!session) {
+    navigate('/auth');
+    return null;
+  }
 
   return (
     <PageTransition>
