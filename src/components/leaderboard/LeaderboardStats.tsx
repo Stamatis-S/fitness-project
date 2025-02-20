@@ -31,11 +31,10 @@ export function LeaderboardStats() {
     queryKey: ['leaderboard-stats'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('get_user_workout_stats')
-        .select();
+        .rpc('get_user_workout_stats');
 
       if (error) throw error;
-      return data as WorkoutStats[];
+      return data;
     },
   });
 

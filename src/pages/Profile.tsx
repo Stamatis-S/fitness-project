@@ -10,6 +10,7 @@ import { ChevronLeft, Edit2, Check, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, isValid } from "date-fns";
 import { Input } from "@/components/ui/input";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProfileData {
   username: string | null;
@@ -21,6 +22,7 @@ interface ProfileData {
 export default function Profile() {
   const { session } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState("");
@@ -67,6 +69,11 @@ export default function Profile() {
 
       setProfile(prev => prev ? { ...prev, username: newUsername } : null);
       setIsEditingUsername(false);
+      
+      // Invalidate all queries that might use the username
+      await queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+      await queryClient.invalidateQueries({ queryKey: ['leaderboard-stats'] });
+      
       toast.success("Username updated successfully!");
     } catch (error) {
       toast.error("Error updating username");
@@ -85,6 +92,11 @@ export default function Profile() {
       if (calcError) throw calcError;
       
       await fetchProfile();
+      
+      // Invalidate leaderboard queries to reflect new score
+      await queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+      await queryClient.invalidateQueries({ queryKey: ['leaderboard-stats'] });
+      
       toast.success("Fitness score recalculated!");
     } catch (error) {
       toast.error("Error recalculating fitness score");
