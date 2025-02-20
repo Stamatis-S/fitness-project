@@ -3,10 +3,21 @@ import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { ExerciseFormData } from "@/components/workout/types";
-import { Weight, RotateCw, Minus, Plus } from "lucide-react";
+import { Weight, RotateCw, Minus, Plus, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface SetInputProps {
   index: number;
@@ -73,8 +84,8 @@ export function SetInput({ index, onRemove }: SetInputProps) {
       return { weights, reps };
     },
     enabled: !!session?.user.id && !!selectedExercise,
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const handleWeightChange = (amount: number) => {
@@ -86,9 +97,8 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   };
 
   const commonButtonStyle = "h-10 w-10 flex items-center justify-center rounded-full bg-[#222222] hover:bg-[#333333]";
-  const quickButtonStyle = "h-10 w-24 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-medium backdrop-blur-sm border border-white/10 text-sm";
+  const quickButtonStyle = "h-10 w-20 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-medium backdrop-blur-sm border border-white/10 text-sm";
 
-  // Default values if no history exists
   const defaultWeightButtons = [5, 10];
   const defaultRepButtons = [8, 10];
 
@@ -101,9 +111,41 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     : defaultRepButtons;
 
   return (
-    <div className="space-y-6 bg-[#111111] rounded-lg p-4">
-      <div className="text-red-500 text-lg font-medium">
-        Set {index + 1}
+    <div className="space-y-6 bg-[#111111] rounded-lg p-4 touch-none select-none">
+      <div className="flex items-center justify-between">
+        <div className="text-red-500 text-lg font-medium">
+          Set {index + 1}
+        </div>
+        {index > 0 && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-red-500/20 hover:text-red-500"
+              >
+                <Trash2 className="h-5 w-5" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Set {index + 1}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete this set.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={() => onRemove(index)}
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
       
       <div className="grid grid-cols-2 gap-6">
