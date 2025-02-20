@@ -227,8 +227,8 @@ export function ExerciseEntryForm() {
                 exit={{ opacity: 0, x: -20 }}
                 className="flex flex-col h-[calc(100vh-20rem)]"
               >
-                <ScrollArea className="flex-1 -mx-2 px-2 pb-4">
-                  <div className="space-y-3">
+                <ScrollArea className="flex-1 -mx-2 px-2 pb-4 overflow-hidden">
+                  <div className="space-y-3 touch-pan-y">
                     <AnimatePresence>
                       {fields.map((field, index) => (
                         <motion.div
