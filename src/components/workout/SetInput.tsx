@@ -59,7 +59,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         }
       });
 
-      // Get top 2 most frequent values (reduced from 3)
+      // Get top 2 most frequent values
       const weights = Object.entries(weightCounts)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 2)
@@ -74,7 +74,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     },
     enabled: !!session?.user.id && !!selectedExercise,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes (previously cacheTime)
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   const handleWeightChange = (amount: number) => {
@@ -86,9 +86,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   };
 
   const commonButtonStyle = "h-10 w-10 flex items-center justify-center rounded-full bg-[#222222] hover:bg-[#333333]";
-  const quickButtonStyle = "h-10 w-20 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-medium backdrop-blur-sm border border-white/10 text-sm";
+  const quickButtonStyle = "h-10 w-24 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-medium backdrop-blur-sm border border-white/10 text-sm";
 
-  // Default values if no history exists (reduced to 2 values)
+  // Default values if no history exists
   const defaultWeightButtons = [5, 10];
   const defaultRepButtons = [8, 10];
 
@@ -106,14 +106,14 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         Set {index + 1}
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-6">
         {/* Weight Section */}
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Weight className="h-5 w-5 text-red-500" />
             <span className="text-white">Weight: {weight || 0} KG</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3 justify-between">
             {weightButtons.map((amount, i) => (
               <Button
                 key={i}
@@ -134,7 +134,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             <RotateCw className="h-5 w-5 text-red-500" />
             <span className="text-white">Reps: {reps || 0}</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3 justify-between">
             {repButtons.map((amount, i) => (
               <Button
                 key={i}
