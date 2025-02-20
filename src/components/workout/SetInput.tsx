@@ -86,7 +86,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   });
 
   const handleWeightChange = (amount: number) => {
-    setValue(`sets.${index}.weight`, (weight || 0) + amount);
+    const currentWeight = weight || 0;
+    const newWeight = Math.round((currentWeight + amount) * 2) / 2; // Ensures 0.5 step increments
+    setValue(`sets.${index}.weight`, Math.max(0, newWeight));
   };
 
   const handleRepsChange = (amount: number) => {
@@ -172,7 +174,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               type="button"
               variant="outline"
               className={controlButtonStyle}
-              onClick={() => handleWeightChange(-5)}
+              onClick={() => handleWeightChange(-0.5)}
             >
               <Minus className="h-5 w-5" />
             </Button>
@@ -180,7 +182,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               value={[weight || 0]}
               min={0}
               max={200}
-              step={1}
+              step={0.5}
               onValueChange={([value]) => setValue(`sets.${index}.weight`, value)}
               className="flex-1"
             />
@@ -188,7 +190,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               type="button"
               variant="outline"
               className={controlButtonStyle}
-              onClick={() => handleWeightChange(5)}
+              onClick={() => handleWeightChange(0.5)}
             >
               <Plus className="h-5 w-5" />
             </Button>
