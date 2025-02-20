@@ -59,15 +59,15 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         }
       });
 
-      // Get top 3 most frequent values
+      // Get top 2 most frequent values (reduced from 3)
       const weights = Object.entries(weightCounts)
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 3)
+        .slice(0, 2)
         .map(([weight]) => Number(weight));
 
       const reps = Object.entries(repsCounts)
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 3)
+        .slice(0, 2)
         .map(([reps]) => Number(reps));
 
       return { weights, reps };
@@ -88,9 +88,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   const commonButtonStyle = "h-10 w-10 flex items-center justify-center rounded-full bg-[#222222] hover:bg-[#333333]";
   const quickButtonStyle = "h-10 w-20 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-medium backdrop-blur-sm border border-white/10 text-sm";
 
-  // Default values if no history exists
-  const defaultWeightButtons = [5, 10, 15];
-  const defaultRepButtons = [8, 10, 12];
+  // Default values if no history exists (reduced to 2 values)
+  const defaultWeightButtons = [5, 10];
+  const defaultRepButtons = [8, 10];
 
   const weightButtons = frequentValues?.weights.length 
     ? frequentValues.weights
@@ -113,7 +113,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             <Weight className="h-5 w-5 text-red-500" />
             <span className="text-white">Weight: {weight || 0} KG</span>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2">
             {weightButtons.map((amount, i) => (
               <Button
                 key={i}
@@ -134,7 +134,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             <RotateCw className="h-5 w-5 text-red-500" />
             <span className="text-white">Reps: {reps || 0}</span>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2">
             {repButtons.map((amount, i) => (
               <Button
                 key={i}
