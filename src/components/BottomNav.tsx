@@ -1,5 +1,5 @@
 
-import { Home, BarChart2, Bookmark, User } from "lucide-react";
+import { Home, BarChart2, Bookmark, User, Trophy } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ export function BottomNav() {
     { icon: Home, label: "Home", path: "/" },
     { icon: BarChart2, label: "Dashboard", path: "/dashboard" },
     { icon: Bookmark, label: "Saved", path: "/saved-exercises" },
+    { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
     { icon: User, label: "Profile", path: "/profile" },
   ];
 
