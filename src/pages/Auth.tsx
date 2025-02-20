@@ -49,7 +49,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-muted p-4">
-      <div className="w-full max-w-md mb-8">
+      <div className="w-full max-w-md mb-4">
         <img 
           src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
           alt="Fitness Project Logo"
@@ -57,14 +57,14 @@ export default function Auth() {
         />
       </div>
       
-      <Card className="w-full max-w-md p-6 space-y-6 animate-fade-up">
+      <Card className="w-full max-w-md p-4 space-y-4 animate-fade-up">
         <div className="text-center space-y-2">
           <h1 className="text-2xl md:text-3xl font-bold text-primary">
             Fitness Project
           </h1>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-4">
+        <form onSubmit={handleAuth} className="space-y-3">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
