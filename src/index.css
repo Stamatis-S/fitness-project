@@ -97,6 +97,12 @@
          dark:shadow-[6px_6px_12px_#1a1b1e,-6px_-6px_12px_#252529];
 }
 
+.category-button {
+  @apply transition-all duration-50 hover:scale-105 active:scale-95
+         shadow-lg hover:shadow-xl bg-opacity-90 dark:bg-opacity-90
+         bg-card hover:bg-card/80 text-card-foreground;
+}
+
 .animate-fade-up {
   animation: fadeUp 0.5s ease-out forwards;
 }
@@ -110,9 +116,4 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.category-button {
-  @apply transition-all duration-50 hover:scale-105 active:scale-95
-         shadow-lg hover:shadow-xl;
 }

@@ -73,7 +73,7 @@ export default function Dashboard() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen p-3 md:p-6 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen p-3 md:p-6 pb-24 bg-gradient-to-b from-background to-muted">
         <div className="max-w-7xl mx-auto space-y-2 md:space-y-4">
           <div className="flex items-center justify-between gap-2">
             <h1 className="text-xl md:text-2xl font-bold">My Dashboard</h1>

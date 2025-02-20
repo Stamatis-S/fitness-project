@@ -1,37 +1,96 @@
 
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
-import { EXERCISE_CATEGORIES, type ExerciseCategory, CATEGORY_COLORS } from "@/lib/constants";
+import type { ExerciseCategory } from "@/lib/constants";
+import {
+  Dumbbell,
+  Running,
+  Heart,
+  Weight,
+  Trophy,
+  Hammer,
+} from "lucide-react";
 
 interface CategorySelectorProps {
   onCategoryChange: (category: ExerciseCategory) => void;
-  selectedCategory?: ExerciseCategory | null;
+  selectedCategory: ExerciseCategory | null;
 }
 
-export function CategorySelector({ onCategoryChange, selectedCategory }: CategorySelectorProps) {
+const categories: Array<{
+  label: string;
+  value: ExerciseCategory;
+  icon: typeof Dumbbell;
+  description: string;
+}> = [
+  {
+    label: "Strength",
+    value: "strength",
+    icon: Dumbbell,
+    description: "Weight training exercises",
+  },
+  {
+    label: "Cardio",
+    value: "cardio",
+    icon: Running,
+    description: "Cardiovascular exercises",
+  },
+  {
+    label: "Flexibility",
+    value: "flexibility",
+    icon: Heart,
+    description: "Stretching and mobility",
+  },
+  {
+    label: "Powerlifting",
+    value: "powerlifting",
+    icon: Weight,
+    description: "Competition lifts",
+  },
+  {
+    label: "Olympic",
+    value: "olympic",
+    icon: Trophy,
+    description: "Olympic weightlifting",
+  },
+  {
+    label: "Calisthenics",
+    value: "calisthenics",
+    icon: Hammer,
+    description: "Bodyweight exercises",
+  },
+];
+
+export function CategorySelector({
+  onCategoryChange,
+  selectedCategory,
+}: CategorySelectorProps) {
   return (
-    <div className="space-y-3">
-      <Label className="text-base">Select Exercise Category</Label>
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-        {Object.entries(EXERCISE_CATEGORIES).map(([name]) => (
-          <motion.button
-            key={name}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onCategoryChange(name as ExerciseCategory)}
-            className={cn(
-              "px-3 py-2 rounded-lg text-white font-medium text-sm",
-              "transition-all duration-200 shadow-sm hover:shadow-md",
-              "flex items-center justify-center text-center min-h-[40px]",
-              selectedCategory === name ? "ring-2 ring-white ring-offset-2 ring-offset-background" : ""
-            )}
-            style={{ backgroundColor: CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS] }}
+    <ScrollArea className="w-full">
+      <div className="flex flex-wrap gap-4 px-1 pb-1">
+        {categories.map(({ label, value, icon: Icon, description }) => (
+          <motion.div
+            key={value}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex-1 min-w-[150px]"
           >
-            {name}
-          </motion.button>
+            <Button
+              variant="outline"
+              size="lg"
+              className={`category-button w-full h-auto py-4 px-4 flex-col items-center justify-center gap-2 ${
+                selectedCategory === value ? "ring-2 ring-primary" : ""
+              }`}
+              onClick={() => onCategoryChange(value)}
+            >
+              <Icon className="h-8 w-8 mb-2" />
+              <span className="font-semibold">{label}</span>
+              <span className="text-xs text-muted-foreground">{description}</span>
+            </Button>
+          </motion.div>
         ))}
       </div>
-    </div>
+    </ScrollArea>
   );
 }
