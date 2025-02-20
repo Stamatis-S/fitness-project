@@ -96,7 +96,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   };
 
   const quickButtonStyle = "h-9 px-4 rounded-full bg-[#222222] hover:bg-[#333333] text-white font-medium text-xs whitespace-nowrap";
-  const controlButtonStyle = "h-10 w-10 flex items-center justify-center rounded-full bg-[#222222] hover:bg-[#333333]";
+  const controlButtonStyle = "h-8 w-8 flex items-center justify-center rounded-full bg-[#222222] hover:bg-[#333333]";
 
   const defaultWeightButtons = [5, 10, 15, 20];
   const defaultRepButtons = [8, 10, 12];
@@ -147,7 +147,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         )}
       </div>
       
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-4">
         {/* Weight Section */}
         <div>
           <div className="flex items-center gap-2 mb-4">
@@ -169,7 +169,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="outline"
@@ -184,7 +184,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               max={200}
               step={0.5}
               onValueChange={([value]) => setValue(`sets.${index}.weight`, value)}
-              className="flex-1"
+              className="flex-1 mx-1"
             />
             <Button
               type="button"
@@ -218,7 +218,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="outline"
@@ -233,7 +233,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
               max={50}
               step={1}
               onValueChange={([value]) => setValue(`sets.${index}.reps`, value)}
-              className="flex-1"
+              className="flex-1 mx-1"
             />
             <Button
               type="button"
