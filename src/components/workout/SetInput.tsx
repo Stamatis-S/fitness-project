@@ -18,63 +18,63 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   const { register, watch, setValue } = useFormContext<ExerciseFormData>();
   const weight = watch(`sets.${index}.weight`);
   const reps = watch(`sets.${index}.reps`);
+  const selectedExercise = watch('exercise');
+  const customExercise = watch('customExercise');
 
-  const { data: frequentValues } = useQuery({
-    queryKey: ['frequent-workout-values', session?.user.id],
+  const { data: frequentValues, isLoading } = useQuery({
+    queryKey: ['frequent-workout-values', session?.user.id, selectedExercise, customExercise],
     queryFn: async () => {
       if (!session?.user.id) return { weights: [], reps: [] };
 
-      const { data: weightData, error: weightError } = await supabase
+      const query = supabase
         .from('workout_logs')
-        .select('weight_kg')
+        .select('weight_kg, reps')
         .eq('user_id', session.user.id)
-        .not('weight_kg', 'is', null)
-        .order('created_at', { ascending: false })
-        .limit(50);
+        .order('created_at', { ascending: false });
 
-      const { data: repsData, error: repsError } = await supabase
-        .from('workout_logs')
-        .select('reps')
-        .eq('user_id', session.user.id)
-        .not('reps', 'is', null)
-        .order('created_at', { ascending: false })
-        .limit(50);
+      // Add exercise-specific filters
+      if (selectedExercise === 'custom' && customExercise) {
+        query.eq('custom_exercise', customExercise);
+      } else if (selectedExercise && selectedExercise !== 'custom') {
+        query.eq('exercise_id', parseInt(selectedExercise));
+      }
 
-      if (weightError || repsError) {
-        console.error('Error fetching frequent values:', weightError || repsError);
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching frequent values:', error);
         return { weights: [], reps: [] };
       }
 
-      // Get frequent weights
-      const weightCounts = weightData.reduce((acc, { weight_kg }) => {
-        if (weight_kg) {
-          acc[weight_kg] = (acc[weight_kg] || 0) + 1;
-        }
-        return acc;
-      }, {} as Record<number, number>);
+      // Count frequency of weights and reps
+      const weightCounts: Record<number, number> = {};
+      const repsCounts: Record<number, number> = {};
 
-      // Get frequent reps
-      const repsCounts = repsData.reduce((acc, { reps }) => {
-        if (reps) {
-          acc[reps] = (acc[reps] || 0) + 1;
+      data.forEach(log => {
+        if (log.weight_kg) {
+          weightCounts[log.weight_kg] = (weightCounts[log.weight_kg] || 0) + 1;
         }
-        return acc;
-      }, {} as Record<number, number>);
+        if (log.reps) {
+          repsCounts[log.reps] = (repsCounts[log.reps] || 0) + 1;
+        }
+      });
 
-      // Get top 2 most frequent values
+      // Get top 3 most frequent values
       const weights = Object.entries(weightCounts)
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 2)
+        .slice(0, 3)
         .map(([weight]) => Number(weight));
 
       const reps = Object.entries(repsCounts)
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 2)
+        .slice(0, 3)
         .map(([reps]) => Number(reps));
 
       return { weights, reps };
     },
-    enabled: !!session?.user.id,
+    enabled: !!session?.user.id && !!selectedExercise,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    cacheTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   const handleWeightChange = (amount: number) => {
@@ -88,8 +88,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   const commonButtonStyle = "h-10 w-10 flex items-center justify-center rounded-full bg-[#222222] hover:bg-[#333333]";
   const quickButtonStyle = "h-10 w-20 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white font-medium backdrop-blur-sm border border-white/10 text-sm";
 
-  const defaultWeightButtons = [5, -5];
-  const defaultRepButtons = [1, -1];
+  // Default values if no history exists
+  const defaultWeightButtons = [5, 10, 15];
+  const defaultRepButtons = [8, 10, 12];
 
   const weightButtons = frequentValues?.weights.length 
     ? frequentValues.weights
@@ -112,7 +113,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             <Weight className="h-5 w-5 text-red-500" />
             <span className="text-white">Weight: {weight || 0} KG</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {weightButtons.map((amount, i) => (
               <Button
                 key={i}
@@ -133,7 +134,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             <RotateCw className="h-5 w-5 text-red-500" />
             <span className="text-white">Reps: {reps || 0}</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {repButtons.map((amount, i) => (
               <Button
                 key={i}
