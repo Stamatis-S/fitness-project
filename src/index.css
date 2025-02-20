@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -51,7 +52,7 @@
  
 @layer base {
   * {
-    @apply border-border transition-colors duration-200;
+    @apply border-border transition-colors duration-50;
   }
   body {
     @apply bg-background text-foreground;
@@ -64,7 +65,7 @@
 }
 
 .glass-button {
-  @apply relative overflow-hidden transition-all duration-300 active:scale-95
+  @apply relative overflow-hidden transition-all duration-50 active:scale-95
     before:absolute before:inset-0 before:bg-white/20 before:opacity-0 
     hover:before:opacity-100 before:transition-opacity;
 }
@@ -90,6 +91,6 @@
 }
 
 .category-button {
-  @apply transition-all duration-300 hover:scale-105 active:scale-95
+  @apply transition-all duration-50 hover:scale-105 active:scale-95
          shadow-lg hover:shadow-xl;
 }
