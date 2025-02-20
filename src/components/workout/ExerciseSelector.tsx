@@ -78,7 +78,9 @@ export function ExerciseSelector({
       
       if (error) throw error;
       return (data || []).map(exercise => ({
-        ...exercise,
+        id: exercise.id,
+        name: exercise.name,
+        category: exercise.category,
         isCustom: true
       })) as Exercise[];
     }
@@ -91,7 +93,7 @@ export function ExerciseSelector({
         .from('custom_exercises')
         .insert({
           name: name.toUpperCase().trim(),
-          category,
+          category
         })
         .select('id, name, category')
         .single();
