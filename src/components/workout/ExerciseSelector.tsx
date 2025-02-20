@@ -54,17 +54,10 @@ export function ExerciseSelector({
   const { data: standardExercises = [], isLoading: isLoadingStandard } = useQuery({
     queryKey: ['exercises', category],
     queryFn: async () => {
-      type ExerciseRow = {
-        id: number;
-        name: string;
-        category: ExerciseCategory;
-      };
-
       const { data, error } = await supabase
         .from('exercises')
         .select('id, name, category')
-        .eq('category', category)
-        .returns<ExerciseRow[]>();
+        .eq('category', category);
       
       if (error) throw error;
       return (data || []).map(exercise => ({
@@ -78,24 +71,14 @@ export function ExerciseSelector({
   const { data: customExercises = [], isLoading: isLoadingCustom } = useQuery({
     queryKey: ['custom_exercises', category],
     queryFn: async () => {
-      type CustomExerciseRow = {
-        id: number;
-        name: string;
-        category: ExerciseCategory;
-        user_id: string;
-      };
-
       const { data, error } = await supabase
         .from('custom_exercises')
-        .select('id, name, category, user_id')
-        .eq('category', category)
-        .returns<CustomExerciseRow[]>();
+        .select('id, name, category')
+        .eq('category', category);
       
       if (error) throw error;
       return (data || []).map(exercise => ({
-        id: exercise.id,
-        name: exercise.name,
-        category: exercise.category,
+        ...exercise,
         isCustom: true
       })) as Exercise[];
     }
@@ -104,22 +87,14 @@ export function ExerciseSelector({
   // Mutation for adding custom exercises
   const addCustomExercise = useMutation({
     mutationFn: async (name: string) => {
-      type CustomExerciseRow = {
-        id: number;
-        name: string;
-        category: ExerciseCategory;
-        user_id: string;
-      };
-
       const { data, error } = await supabase
         .from('custom_exercises')
-        .insert([{ 
+        .insert({
           name: name.toUpperCase().trim(),
-          category
-        }])
-        .select('id, name, category, user_id')
-        .single()
-        .returns<CustomExerciseRow>();
+          category,
+        })
+        .select('id, name, category')
+        .single();
 
       if (error) throw error;
       return data;
