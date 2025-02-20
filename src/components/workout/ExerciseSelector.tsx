@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,13 +27,7 @@ interface Exercise {
   id: number;
   name: string;
   category: ExerciseCategory;
-}
-
-interface CustomExercise {
-  id: number;
-  name: string;
-  category: ExerciseCategory;
-  user_id: string;
+  isCustom?: boolean;
 }
 
 interface ExerciseSelectorProps {
@@ -56,30 +50,37 @@ export function ExerciseSelector({
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
 
-  // Fetch both standard and custom exercises
-  const { data: exercises = [], isLoading: isLoadingStandard } = useQuery({
+  // Fetch standard exercises
+  const { data: standardExercises = [], isLoading: isLoadingStandard } = useQuery({
     queryKey: ['exercises', category],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('exercises')
-        .select('*')
+        .select('id, name, category')
         .eq('category', category);
       
       if (error) throw error;
-      return data as Exercise[];
+      return (data || []).map(exercise => ({
+        ...exercise,
+        isCustom: false
+      })) as Exercise[];
     }
   });
 
+  // Fetch custom exercises
   const { data: customExercises = [], isLoading: isLoadingCustom } = useQuery({
     queryKey: ['custom_exercises', category],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: customData, error: customError } = await supabase
         .from('custom_exercises')
-        .select('*')
+        .select('id, name, category')
         .eq('category', category);
       
-      if (error) throw error;
-      return data as CustomExercise[];
+      if (customError) throw customError;
+      return (customData || []).map(exercise => ({
+        ...exercise,
+        isCustom: true
+      })) as Exercise[];
     }
   });
 
@@ -93,7 +94,7 @@ export function ExerciseSelector({
           name: capitalizedName,
           category
         }])
-        .select()
+        .select('id, name, category')
         .single();
 
       if (error) throw error;
@@ -132,15 +133,7 @@ export function ExerciseSelector({
   });
 
   // Combine and filter exercises
-  const allExercises = [
-    ...exercises,
-    ...customExercises.map(ex => ({
-      id: ex.id,
-      name: ex.name,
-      category: ex.category,
-      isCustom: true
-    }))
-  ].filter(exercise =>
+  const allExercises = [...standardExercises, ...customExercises].filter(exercise =>
     exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
