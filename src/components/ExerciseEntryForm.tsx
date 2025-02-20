@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { ExerciseSelector } from "@/components/workout/ExerciseSelector";
-import { SetInput } from "@/components/workout/SetInput";
+import { SetInput } from "@/components/workout/set-input/SetInput";
 import { DateSelector } from "@/components/workout/DateSelector";
 import { CategorySelector } from "@/components/workout/CategorySelector";
 import { Button } from "@/components/ui/button";
