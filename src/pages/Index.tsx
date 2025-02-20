@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   Sun, 
   Moon,
+  Palette,
   LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -31,6 +32,24 @@ const Index = () => {
     } catch (error) {
       console.error("Error logging out:", error);
       toast.error("Failed to log out");
+    }
+  };
+
+  const handleThemeChange = () => {
+    const themeOrder: ("light" | "dark" | "gradient")[] = ["light", "dark", "gradient"];
+    const currentIndex = themeOrder.indexOf(theme as "light" | "dark" | "gradient");
+    const nextIndex = (currentIndex + 1) % themeOrder.length;
+    setTheme(themeOrder[nextIndex]);
+  };
+
+  const getThemeIcon = () => {
+    switch (theme) {
+      case "light":
+        return <Sun className="h-5 w-5" />;
+      case "dark":
+        return <Moon className="h-5 w-5" />;
+      default:
+        return <Palette className="h-5 w-5" />;
     }
   };
 
@@ -58,14 +77,10 @@ const Index = () => {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                title={theme === "light" ? "Dark mode" : "Light mode"}
+                onClick={handleThemeChange}
+                title={`Switch to ${theme === "light" ? "dark" : theme === "dark" ? "gradient" : "light"} mode`}
               >
-                {theme === "light" ? (
-                  <Moon className="h-5 w-5" />
-                ) : (
-                  <Sun className="h-5 w-5" />
-                )}
+                {getThemeIcon()}
               </Button>
             </div>
           </div>
