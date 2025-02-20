@@ -1,127 +1,103 @@
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ComparisonStats } from "./ComparisonStats";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Avatar } from "@/components/ui/avatar";
 
-interface WorkoutStats {
+interface UserStats {
   user_id: string;
   username: string;
   total_workouts: number;
   max_weight: number;
   total_volume: number;
-  favorite_category: string;
+  estimated_calories: number;
+  pr_count: number;
 }
 
 export function LeaderboardStats() {
   const { session } = useAuth();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState("all");
 
-  const { data: stats } = useQuery<WorkoutStats[]>({
-    queryKey: ['leaderboard-stats'],
+  const { data: stats } = useQuery({
+    queryKey: ['comparison-stats', timeRange],
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc('get_user_workout_stats');
+        .rpc('get_user_comparison_stats', { time_range: timeRange });
 
       if (error) throw error;
       return data;
     },
   });
 
-  if (!stats) return null;
+  if (!session?.user?.id || !stats) return null;
 
-  const currentUserStats = stats.find(s => s.user_id === session?.user.id);
-  const maxVolume = Math.max(...stats.map(s => s.total_volume));
-  const maxWorkouts = Math.max(...stats.map(s => s.total_workouts));
-
-  const volumeData = stats.map(stat => ({
-    name: stat.username || 'Anonymous',
-    volume: Math.round(stat.total_volume),
-    isCurrentUser: stat.user_id === session?.user.id,
-  }));
+  const otherUsers = stats.filter(s => s.user_id !== session.user.id);
 
   return (
     <ScrollArea className="h-[calc(100vh-250px)]">
       <div className="space-y-6 p-1">
-        <section className="space-y-4">
-          <h3 className="text-lg font-semibold">Total Volume Comparison</h3>
-          <Card className="p-4">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={volumeData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar
-                  dataKey="volume"
-                  fill="hsl(var(--primary))"
-                  opacity={0.8}
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+        <div className="flex flex-col md:flex-row gap-4">
+          <Card className="flex-1 p-4 space-y-4">
+            <h3 className="text-lg font-semibold">Compare With</h3>
+            <Select
+              value={selectedUserId || ""}
+              onValueChange={setSelectedUserId}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a user to compare" />
+              </SelectTrigger>
+              <SelectContent>
+                {otherUsers.map((user) => (
+                  <SelectItem key={user.user_id} value={user.user_id}>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6" />
+                      {user.username}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Card>
-        </section>
+
+          <Card className="p-4 space-y-4">
+            <h3 className="text-lg font-semibold">Time Range</h3>
+            <Select
+              value={timeRange}
+              onValueChange={setTimeRange}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="week">Last 7 Days</SelectItem>
+                <SelectItem value="month">Last 30 Days</SelectItem>
+                <SelectItem value="all">All Time</SelectItem>
+              </SelectContent>
+            </Select>
+          </Card>
+        </div>
 
         <section className="space-y-4">
-          <h3 className="text-lg font-semibold">Your Stats vs Others</h3>
-          <div className="grid gap-4">
-            {currentUserStats && (
-              <>
-                <Card className="p-4 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Total Workouts</span>
-                    <span className="text-sm font-medium">
-                      {currentUserStats.total_workouts} / {maxWorkouts}
-                    </span>
-                  </div>
-                  <Progress 
-                    value={(currentUserStats.total_workouts / maxWorkouts) * 100} 
-                  />
-                </Card>
-
-                <Card className="p-4 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Max Weight Lifted</span>
-                    <span className="text-sm font-medium">
-                      {currentUserStats.max_weight}kg
-                    </span>
-                  </div>
-                </Card>
-
-                <Card className="p-4 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Total Volume</span>
-                    <span className="text-sm font-medium">
-                      {Math.round(currentUserStats.total_volume).toLocaleString()}kg
-                    </span>
-                  </div>
-                  <Progress 
-                    value={(currentUserStats.total_volume / maxVolume) * 100} 
-                  />
-                </Card>
-
-                <Card className="p-4">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Most Trained Category</span>
-                    <span className="text-sm font-medium">
-                      {currentUserStats.favorite_category}
-                    </span>
-                  </div>
-                </Card>
-              </>
-            )}
-          </div>
+          <h3 className="text-lg font-semibold">
+            {selectedUserId ? "Stats Comparison" : "Your Stats"}
+          </h3>
+          <ComparisonStats
+            userId={session.user.id}
+            comparedUserId={selectedUserId}
+            timeRange={timeRange}
+          />
         </section>
       </div>
     </ScrollArea>

@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      comparison_history: {
+        Row: {
+          comparison_date: string | null
+          id: number
+          stats_a: Json | null
+          stats_b: Json | null
+          time_range: string | null
+          user_id_a: string | null
+          user_id_b: string | null
+        }
+        Insert: {
+          comparison_date?: string | null
+          id?: number
+          stats_a?: Json | null
+          stats_b?: Json | null
+          time_range?: string | null
+          user_id_a?: string | null
+          user_id_b?: string | null
+        }
+        Update: {
+          comparison_date?: string | null
+          id?: number
+          stats_a?: Json | null
+          stats_b?: Json | null
+          time_range?: string | null
+          user_id_a?: string | null
+          user_id_b?: string | null
+        }
+        Relationships: []
+      }
       custom_exercises: {
         Row: {
           category: Database["public"]["Enums"]["exercise_category"]
@@ -205,6 +235,21 @@ export type Database = {
           user_id_param: string
         }
         Returns: number
+      }
+      get_user_comparison_stats: {
+        Args: {
+          time_range?: string
+        }
+        Returns: {
+          user_id: string
+          username: string
+          total_workouts: number
+          total_volume: number
+          max_weight: number
+          estimated_calories: number
+          pr_count: number
+          comparison_date: string
+        }[]
       }
       get_user_workout_stats: {
         Args: Record<PropertyKey, never>
