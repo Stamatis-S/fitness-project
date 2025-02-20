@@ -6,6 +6,8 @@ import { MostUsedExercise } from "./metrics/MostUsedExercise";
 import { MaxWeightMetric } from "./metrics/MaxWeightMetric";
 import { PRTracker } from "./metrics/PRTracker";
 import { WorkoutReports } from "./WorkoutReports";
+import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 import { 
   calculateExerciseStats, 
   getMostUsedExercise, 
@@ -18,6 +20,14 @@ interface DashboardOverviewProps {
 }
 
 export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
+  const { session } = useAuth();
+  const navigate = useNavigate();
+
+  if (!session) {
+    navigate('/auth');
+    return null;
+  }
+
   const { exerciseStats, thisWeekLogs, lastWeekLogs } = calculateExerciseStats(workoutLogs);
   const mostUsed = getMostUsedExercise(exerciseStats);
   const maxWeight = getMaxWeight(thisWeekLogs, lastWeekLogs);

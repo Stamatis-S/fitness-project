@@ -1,9 +1,10 @@
-
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 import {
   Tooltip,
   TooltipContent,
@@ -45,6 +46,13 @@ interface ProgressTrackingProps {
 export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [compareMode, setCompareMode] = useState(false);
+  const { session } = useAuth();
+  const navigate = useNavigate();
+
+  if (!session) {
+    navigate('/auth');
+    return null;
+  }
 
   // Validate workout logs
   if (!Array.isArray(workoutLogs)) {

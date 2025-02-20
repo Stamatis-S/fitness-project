@@ -1,11 +1,12 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { motion } from "framer-motion";
-import { useState } from "react";
 import { calculateStrengthProgress, generateWorkoutSummary } from "./utils/reportCalculations";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,6 +16,13 @@ interface WorkoutReportsProps {
 
 export function WorkoutReports({ workoutLogs }: WorkoutReportsProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const { session } = useAuth();
+  const navigate = useNavigate();
+
+  if (!session) {
+    navigate('/auth');
+    return null;
+  }
 
   const handleEmailReport = async () => {
     setIsGenerating(true);

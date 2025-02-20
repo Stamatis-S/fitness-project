@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format, addDays, isAfter, isBefore, differenceInDays } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
@@ -9,6 +8,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 import {
   Popover,
   PopoverContent,
@@ -38,7 +38,13 @@ const STORAGE_KEY = 'workout_cycle_start_date';
 
 export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycleCardProps) {
   const { session } = useAuth();
+  const navigate = useNavigate();
   const [isComplete, setIsComplete] = useState(false);
+
+  if (!session) {
+    navigate('/auth');
+    return null;
+  }
 
   // Query current cycle
   const { data: currentCycle, refetch: refetchCycle } = useQuery({
