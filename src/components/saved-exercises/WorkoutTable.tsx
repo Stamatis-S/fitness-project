@@ -43,6 +43,12 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
     return format(date, 'PP');
   };
 
+  const handleDelete = (id: number) => {
+    if (onDelete) {
+      onDelete(id);
+    }
+  };
+
   if (isMobile) {
     return (
       <div className="space-y-4">
@@ -55,13 +61,15 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
                   {formatDate(log.workout_date)}
                 </p>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onDelete(log.id)}
-              >
-                <Trash2 className="h-4 w-4 text-red-500" />
-              </Button>
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDelete(log.id)}
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
+              )}
             </div>
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div>
@@ -98,7 +106,7 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
             <TableHead>Set</TableHead>
             <TableHead>Weight (KG)</TableHead>
             <TableHead>Reps</TableHead>
-            <TableHead>Actions</TableHead>
+            {onDelete && <TableHead>Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -110,15 +118,17 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
               <TableCell>{log.set_number}</TableCell>
               <TableCell>{log.weight_kg || '-'}</TableCell>
               <TableCell>{log.reps || '-'}</TableCell>
-              <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onDelete(log.id)}
-                >
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </Button>
-              </TableCell>
+              {onDelete && (
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(log.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
