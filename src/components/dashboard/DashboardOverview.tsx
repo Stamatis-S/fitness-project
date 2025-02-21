@@ -34,21 +34,36 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   const personalRecords = getPersonalRecords(workoutLogs);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 gap-6">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="col-span-full"
       >
-        <Card className="p-6 bg-gradient-to-br from-background to-muted/20">
-          <h2 className="text-2xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+        <Card className="p-4 bg-gradient-to-br from-background to-muted/20">
+          <h2 className="text-xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
             Key Metrics
           </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <MostUsedExercise {...mostUsed} />
-            <MaxWeightMetric {...maxWeight} />
-            <PRTracker records={personalRecords} />
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <MostUsedExercise {...mostUsed} />
+            </div>
+            <div className="space-y-2">
+              <MaxWeightMetric {...maxWeight} />
+            </div>
           </div>
+        </Card>
+      </motion.div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="col-span-full"
+      >
+        <Card className="p-4">
+          <h2 className="text-xl font-bold mb-4">Personal Records</h2>
+          <PRTracker records={personalRecords} />
         </Card>
       </motion.div>
 
