@@ -29,11 +29,12 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
   const lastWorkoutDate = workoutDates.length > 0 ? workoutDates[0] : null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <>
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
+        className="col-span-full md:col-span-2"
       >
         <WorkoutCycleCard 
           lastWorkoutDate={lastWorkoutDate} 
@@ -45,6 +46,7 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: 0.1 }}
+        className="col-span-full md:col-span-1"
       >
         <Card className="h-full">
           <div className="grid grid-cols-2 h-full">
@@ -72,6 +74,6 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
           </div>
         </Card>
       </motion.div>
-    </div>
+    </>
   );
 }
