@@ -112,6 +112,7 @@ export type Database = {
           fitness_score: number | null
           id: string
           last_score_update: string | null
+          role: Database["public"]["Enums"]["user_role"]
           updated_at: string
           username: string | null
         }
@@ -121,6 +122,7 @@ export type Database = {
           fitness_score?: number | null
           id: string
           last_score_update?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           username?: string | null
         }
@@ -130,6 +132,7 @@ export type Database = {
           fitness_score?: number | null
           id?: string
           last_score_update?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           username?: string | null
         }
@@ -272,6 +275,7 @@ export type Database = {
         | "ΩΜΟΙ"
         | "ΠΟΔΙΑ"
         | "ΚΟΡΜΟΣ"
+      user_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
