@@ -98,16 +98,12 @@ export default function Dashboard() {
                       <TabsTrigger value="statistics" className={isMobile ? 'text-sm py-1.5' : ''}>Statistics</TabsTrigger>
                     </TabsList>
                   </div>
-                </Tabs>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
-                <WorkoutInsights logs={workoutLogs} />
-              </div>
-
-              <div className="bg-card rounded-lg shadow-sm">
-                <Tabs defaultValue="overview" className="w-full">
                   <div className="p-2 md:p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 mb-4">
+                      <WorkoutInsights logs={workoutLogs} />
+                    </div>
+
                     <TabsContent value="overview" className="m-0 space-y-2 md:space-y-4">
                       {workoutLogs && <DashboardOverview workoutLogs={workoutLogs} />}
                     </TabsContent>
