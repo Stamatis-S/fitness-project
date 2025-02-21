@@ -11,12 +11,14 @@ import { useNavigate } from "react-router-dom";
 import { format, isValid } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { useQueryClient } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
 
 interface ProfileData {
   username: string | null;
   fitness_score: number;
   fitness_level: string;
   last_score_update: string;
+  role: "admin" | "user";
 }
 
 export default function Profile() {
@@ -39,7 +41,7 @@ export default function Profile() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('username, fitness_score, fitness_level, last_score_update')
+        .select('username, fitness_score, fitness_level, last_score_update, role')
         .eq('id', session?.user.id)
         .single();
 
@@ -181,38 +183,46 @@ export default function Profile() {
         <Card className="p-6 space-y-6 border bg-card text-card-foreground shadow-sm">
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold">Account Information</h2>
-            <p className="text-muted-foreground">
-              Email: {session?.user.email}
-            </p>
-            <div className="flex items-center gap-2">
+            <div className="space-y-2">
               <p className="text-muted-foreground">
-                Username: {!isEditingUsername && (profile.username || 'Not set')}
+                Email: {session?.user.email}
               </p>
-              {isEditingUsername ? (
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                    className="max-w-[200px]"
-                    placeholder="Enter new username"
-                  />
+              <div className="flex items-center gap-2">
+                <p className="text-muted-foreground">
+                  Username: {!isEditingUsername && (profile.username || 'Not set')}
+                </p>
+                {isEditingUsername ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={newUsername}
+                      onChange={(e) => setNewUsername(e.target.value)}
+                      className="max-w-[200px]"
+                      placeholder="Enter new username"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleUpdateUsername}
+                      disabled={!newUsername.trim()}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
                   <Button
                     size="sm"
-                    onClick={handleUpdateUsername}
-                    disabled={!newUsername.trim()}
+                    variant="ghost"
+                    onClick={() => setIsEditingUsername(true)}
                   >
-                    <Check className="h-4 w-4" />
+                    <Edit2 className="h-4 w-4" />
                   </Button>
-                </div>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setIsEditingUsername(true)}
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-              )}
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Role:</span>
+                <Badge variant={profile.role === 'admin' ? 'default' : 'secondary'}>
+                  {profile.role}
+                </Badge>
+              </div>
             </div>
           </div>
 
