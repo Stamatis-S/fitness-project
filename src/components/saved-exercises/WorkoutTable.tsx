@@ -1,5 +1,7 @@
 
 import { format } from "date-fns";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -8,131 +10,129 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
-import { CATEGORY_COLORS } from "@/lib/constants";
-import type { WorkoutLog } from "./types";
+import { WorkoutLog } from "./types";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Card } from "@/components/ui/card";
 
 interface WorkoutTableProps {
   logs: WorkoutLog[];
-  onDelete: (id: number) => void;
-}
-
-interface GroupedLog {
-  id: number;
-  workout_date: string;
-  category: WorkoutLog['category'];
-  exercise_name: string;
-  sets: {
-    id: number;
-    set_number: number;
-    weight_kg: number | null;
-    reps: number | null;
-  }[];
+  onDelete?: (id: number) => void;
 }
 
 export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
-  // Group logs by date and exercise
-  const groupedLogs: GroupedLog[] = logs.reduce((acc: GroupedLog[], log) => {
-    const exerciseName = log.exercises?.name || log.custom_exercise || '';
-    const dateStr = format(new Date(log.workout_date), 'yyyy-MM-dd');
-    
-    const existingGroup = acc.find(g => 
-      g.workout_date === log.workout_date && 
-      g.exercise_name === exerciseName
-    );
+  const isMobile = useIsMobile();
 
-    if (existingGroup) {
-      existingGroup.sets.push({
-        id: log.id,
-        set_number: log.set_number,
-        weight_kg: log.weight_kg,
-        reps: log.reps
-      });
-      // Sort sets by set number
-      existingGroup.sets.sort((a, b) => a.set_number - b.set_number);
-      return acc;
+  const getExerciseName = (log: WorkoutLog) => {
+    if (log.custom_exercise) {
+      return log.custom_exercise;
     }
+    return log.exercises?.name || 'Unknown Exercise';
+  };
 
-    acc.push({
-      id: log.id,
-      workout_date: log.workout_date,
-      category: log.category,
-      exercise_name: exerciseName,
-      sets: [{
-        id: log.id,
-        set_number: log.set_number,
-        weight_kg: log.weight_kg,
-        reps: log.reps
-      }]
+  const formatDate = (dateString: string) => {
+    // Parse the YYYY-MM-DD date string and create a UTC date at noon
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+    
+    console.log('Displaying Date:', {
+      dateString,
+      parsedDate: date.toISOString(),
+      formattedDate: format(date, 'PP'),
     });
+    
+    return format(date, 'PP');
+  };
 
-    return acc;
-  }, []);
+  const handleDelete = (id: number) => {
+    if (onDelete) {
+      onDelete(id);
+    }
+  };
 
-  // Sort grouped logs by date (most recent first)
-  groupedLogs.sort((a, b) => 
-    new Date(b.workout_date).getTime() - new Date(a.workout_date).getTime()
-  );
+  if (isMobile) {
+    return (
+      <div className="space-y-4">
+        {logs.map((log: WorkoutLog) => (
+          <Card key={log.id} className="p-4">
+            <div className="flex justify-between items-start mb-2">
+              <div className="space-y-1">
+                <h3 className="font-medium">{getExerciseName(log)}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {formatDate(log.workout_date)}
+                </p>
+              </div>
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDelete(log.id)}
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-sm">
+              <div>
+                <p className="text-muted-foreground">Category</p>
+                <p>{log.category}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Set</p>
+                <p>{log.set_number}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Weight</p>
+                <p>{log.weight_kg || '-'} kg</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Reps</p>
+                <p>{log.reps || '-'}</p>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Date</TableHead>
-          <TableHead>Category</TableHead>
-          <TableHead>Exercise</TableHead>
-          <TableHead>Sets</TableHead>
-          <TableHead></TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {groupedLogs.map((group) => (
-          <TableRow key={`${group.workout_date}-${group.exercise_name}`}>
-            <TableCell className="font-medium">
-              {format(new Date(group.workout_date), "PP")}
-            </TableCell>
-            <TableCell>
-              <span
-                className="px-2 py-1 rounded-full text-xs font-semibold text-white"
-                style={{ backgroundColor: CATEGORY_COLORS[group.category] }}
-              >
-                {group.category}
-              </span>
-            </TableCell>
-            <TableCell>{group.exercise_name}</TableCell>
-            <TableCell>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                {group.sets.map((set) => (
-                  <div key={set.id} className="flex items-center gap-2 text-sm whitespace-nowrap">
-                    <span>Set {set.set_number}:</span>
-                    <span className="font-medium">
-                      {set.weight_kg !== null ? `${set.weight_kg}kg` : '-'} × {set.reps !== null ? `${set.reps} reps` : '-'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </TableCell>
-            <TableCell>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onDelete(group.id)}
-                className="h-8 w-8 p-0"
-              >
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
-        {groupedLogs.length === 0 && (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
           <TableRow>
-            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-              No exercises found
-            </TableCell>
+            <TableHead>Date</TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead>Exercise</TableHead>
+            <TableHead>Set</TableHead>
+            <TableHead>Weight (KG)</TableHead>
+            <TableHead>Reps</TableHead>
+            {onDelete && <TableHead>Actions</TableHead>}
           </TableRow>
-        )}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {logs.map((log: WorkoutLog) => (
+            <TableRow key={log.id}>
+              <TableCell>{formatDate(log.workout_date)}</TableCell>
+              <TableCell>{log.category}</TableCell>
+              <TableCell>{getExerciseName(log)}</TableCell>
+              <TableCell>{log.set_number}</TableCell>
+              <TableCell>{log.weight_kg || '-'}</TableCell>
+              <TableCell>{log.reps || '-'}</TableCell>
+              {onDelete && (
+                <TableCell>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(log.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </TableCell>
+              )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

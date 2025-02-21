@@ -29,7 +29,7 @@ export function WorkoutFilters({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="glass-card space-y-4 p-4 rounded-lg"
+      className="glass-card space-y-6 p-6 rounded-lg"
     >
       <div className="space-y-4">
         <div className="relative">
@@ -49,102 +49,34 @@ export function WorkoutFilters({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className={cn(
-                "px-3 py-1.5 rounded-full text-sm font-medium glass-button",
+                "px-4 py-2 rounded-full text-sm font-medium glass-button",
                 categoryFilter === "all" ? "bg-primary text-primary-foreground" : "bg-background"
               )}
               onClick={() => onCategoryChange("all")}
             >
-              All
+              All Categories
             </motion.button>
-            <div className="flex flex-wrap gap-2">
-              {/* First row */}
+            {Object.entries(EXERCISE_CATEGORIES).map(([name]) => (
               <motion.button
+                key={name}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "category-button px-3 py-1.5 text-sm font-medium text-white rounded-full",
-                  categoryFilter === "ΣΤΗΘΟΣ" && "ring-2 ring-offset-2 ring-white"
+                  "category-button px-4 py-2 text-sm font-medium text-white rounded-full",
+                  "transition-all duration-300",
+                  categoryFilter === name && "ring-2 ring-offset-2 ring-white"
                 )}
-                style={{ backgroundColor: CATEGORY_COLORS["ΣΤΗΘΟΣ"] }}
-                onClick={() => onCategoryChange("ΣΤΗΘΟΣ")}
+                style={{ 
+                  backgroundColor: CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS],
+                  boxShadow: categoryFilter === name 
+                    ? `0 0 20px ${CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS]}80`
+                    : 'none'
+                }}
+                onClick={() => onCategoryChange(name)}
               >
-                ΣΤΗΘΟΣ
+                {name}
               </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  "category-button px-3 py-1.5 text-sm font-medium text-white rounded-full",
-                  categoryFilter === "ΠΛΑΤΗ" && "ring-2 ring-offset-2 ring-white"
-                )}
-                style={{ backgroundColor: CATEGORY_COLORS["ΠΛΑΤΗ"] }}
-                onClick={() => onCategoryChange("ΠΛΑΤΗ")}
-              >
-                ΠΛΑΤΗ
-              </motion.button>
-              {/* Second row */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  "category-button px-3 py-1.5 text-sm font-medium text-white rounded-full",
-                  categoryFilter === "ΔΙΚΕΦΑΛΑ" && "ring-2 ring-offset-2 ring-white"
-                )}
-                style={{ backgroundColor: CATEGORY_COLORS["ΔΙΚΕΦΑΛΑ"] }}
-                onClick={() => onCategoryChange("ΔΙΚΕΦΑΛΑ")}
-              >
-                ΔΙΚΕΦΑΛΑ
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  "category-button px-3 py-1.5 text-sm font-medium text-white rounded-full",
-                  categoryFilter === "ΩΜΟΙ" && "ring-2 ring-offset-2 ring-white"
-                )}
-                style={{ backgroundColor: CATEGORY_COLORS["ΩΜΟΙ"] }}
-                onClick={() => onCategoryChange("ΩΜΟΙ")}
-              >
-                ΩΜΟΙ
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  "category-button px-3 py-1.5 text-sm font-medium text-white rounded-full",
-                  categoryFilter === "ΠΟΔΙΑ" && "ring-2 ring-offset-2 ring-white"
-                )}
-                style={{ backgroundColor: CATEGORY_COLORS["ΠΟΔΙΑ"] }}
-                onClick={() => onCategoryChange("ΠΟΔΙΑ")}
-              >
-                ΠΟΔΙΑ
-              </motion.button>
-              {/* Third row */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  "category-button px-3 py-1.5 text-sm font-medium text-white rounded-full",
-                  categoryFilter === "ΤΡΙΚΕΦΑΛΑ" && "ring-2 ring-offset-2 ring-white"
-                )}
-                style={{ backgroundColor: CATEGORY_COLORS["ΤΡΙΚΕΦΑΛΑ"] }}
-                onClick={() => onCategoryChange("ΤΡΙΚΕΦΑΛΑ")}
-              >
-                ΤΡΙΚΕΦΑΛΑ
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={cn(
-                  "category-button px-3 py-1.5 text-sm font-medium text-white rounded-full",
-                  categoryFilter === "ΚΟΡΜΟΣ" && "ring-2 ring-offset-2 ring-white"
-                )}
-                style={{ backgroundColor: CATEGORY_COLORS["ΚΟΡΜΟΣ"] }}
-                onClick={() => onCategoryChange("ΚΟΡΜΟΣ")}
-              >
-                ΚΟΡΜΟΣ
-              </motion.button>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -163,7 +95,7 @@ export function WorkoutFilters({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "px-3 py-1.5 rounded-full text-sm font-medium glass-button",
+                  "px-4 py-2 rounded-full text-sm font-medium glass-button",
                   dateFilter === value 
                     ? "bg-primary text-primary-foreground" 
                     : "bg-background"

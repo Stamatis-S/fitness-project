@@ -52,70 +52,41 @@ export function ExerciseSelector({
   const queryClient = useQueryClient();
   const { session } = useAuth();
 
-  if (!session) {
-    console.error("No active session found in ExerciseSelector");
-    return null;
-  }
-
   // Fetch standard exercises
-  const { data: standardExercises = [], isLoading: isLoadingStandard, error: standardError } = useQuery({
+  const { data: standardExercises = [], isLoading: isLoadingStandard } = useQuery({
     queryKey: ['exercises', category],
     queryFn: async () => {
-      console.log('Fetching standard exercises for category:', category);
       const { data, error } = await supabase
         .from('exercises')
         .select('id, name, category')
         .eq('category', category);
       
-      if (error) {
-        console.error('Error fetching standard exercises:', error);
-        throw error;
-      }
-      
-      console.log('Fetched standard exercises:', data);
+      if (error) throw error;
       return (data || []).map(exercise => ({
         ...exercise,
         isCustom: false
       })) as Exercise[];
-    },
-    enabled: !!session
+    }
   });
 
   // Fetch custom exercises
-  const { data: customExercises = [], isLoading: isLoadingCustom, error: customError } = useQuery({
-    queryKey: ['custom_exercises', category, session.user.id],
+  const { data: customExercises = [], isLoading: isLoadingCustom } = useQuery({
+    queryKey: ['custom_exercises', category],
     queryFn: async () => {
-      console.log('Fetching custom exercises for category:', category);
       const { data, error } = await supabase
         .from('custom_exercises')
         .select('id, name, category')
-        .eq('category', category)
-        .eq('user_id', session.user.id);
+        .eq('category', category);
       
-      if (error) {
-        console.error('Error fetching custom exercises:', error);
-        throw error;
-      }
-      
-      console.log('Fetched custom exercises:', data);
+      if (error) throw error;
       return (data || []).map(exercise => ({
-        ...exercise,
+        id: exercise.id,
+        name: exercise.name,
+        category: exercise.category,
         isCustom: true
       })) as Exercise[];
-    },
-    enabled: !!session
+    }
   });
-
-  // Show errors if any
-  if (standardError) {
-    console.error('Standard exercises error:', standardError);
-    toast.error("Failed to load standard exercises");
-  }
-
-  if (customError) {
-    console.error('Custom exercises error:', customError);
-    toast.error("Failed to load custom exercises");
-  }
 
   // Mutation for adding custom exercises
   const addCustomExercise = useMutation({
@@ -174,8 +145,6 @@ export function ExerciseSelector({
     exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  console.log('Combined exercises:', allExercises);
-
   const handleAddCustomExercise = () => {
     if (!newCustomExercise.trim()) {
       toast.error("Please enter an exercise name");
@@ -229,7 +198,7 @@ export function ExerciseSelector({
         )}>
           {(isLoadingStandard || isLoadingCustom) ? (
             <div className="col-span-full text-center py-4">Loading exercises...</div>
-          ) : allExercises.length > 0 ? (
+          ) : (
             <>
               {allExercises.map((exercise) => (
                 <div key={`${exercise.isCustom ? 'custom' : 'standard'}-${exercise.id}`} className="relative group">
@@ -286,14 +255,15 @@ export function ExerciseSelector({
                   )}
                 </div>
               ))}
+              {!isLoadingStandard && !isLoadingCustom && allExercises.length === 0 && (
+                <div className={cn(
+                  "col-span-full text-center py-4 text-muted-foreground",
+                  isMobile && "text-xs"
+                )}>
+                  No exercises found
+                </div>
+              )}
             </>
-          ) : (
-            <div className={cn(
-              "col-span-full text-center py-4 text-muted-foreground",
-              isMobile && "text-xs"
-            )}>
-              No exercises found
-            </div>
           )}
         </div>
       </div>
