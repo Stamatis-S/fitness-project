@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +39,7 @@ export default function Profile() {
         .from('profiles')
         .select('username, fitness_score, fitness_level, last_score_update')
         .eq('id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Profile fetch error:", error);
@@ -59,12 +60,40 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    if (!authLoading && session?.user.id) {
-      fetchProfile();
-    } else if (!authLoading && !session) {
-      navigate('/auth');
-    }
+    let mounted = true;
+
+    const initializeProfile = async () => {
+      try {
+        if (!authLoading && !session) {
+          if (mounted) {
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        if (!authLoading && session?.user.id && mounted) {
+          await fetchProfile();
+        }
+      } catch (error) {
+        console.error("Profile initialization error:", error);
+      }
+    };
+
+    initializeProfile();
+
+    return () => {
+      mounted = false;
+    };
   }, [session?.user.id, authLoading]);
+
+  useEffect(() => {
+    if (!authLoading && !session) {
+      const timer = setTimeout(() => {
+        navigate('/auth');
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [session, authLoading, navigate]);
 
   const handleUpdateUsername = async () => {
     if (!session?.user.id) return;
@@ -125,7 +154,11 @@ export default function Profile() {
   }
 
   if (!session) {
-    return null;
+    return (
+      <div className="min-h-screen p-8 bg-gradient-to-b from-background to-muted flex items-center justify-center">
+        <p>Redirecting to login...</p>
+      </div>
+    );
   }
 
   if (!profile) {
