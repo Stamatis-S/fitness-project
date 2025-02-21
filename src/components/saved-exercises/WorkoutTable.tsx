@@ -46,13 +46,11 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
             </TableCell>
             <TableCell>{log.exercises?.name || log.custom_exercise}</TableCell>
             <TableCell>
-              <div className="flex flex-col gap-1">
-                {log.sets.map((set, index) => (
-                  <div key={index} className="flex items-center gap-2 text-sm">
-                    <span>Set {index + 1}:</span>
-                    <span className="font-medium">{set.weight}kg × {set.reps} reps</span>
-                  </div>
-                ))}
+              <div className="flex items-center gap-2 text-sm">
+                <span>Set {log.set_number}:</span>
+                <span className="font-medium">
+                  {log.weight_kg !== null ? `${log.weight_kg}kg` : '-'} × {log.reps !== null ? `${log.reps} reps` : '-'}
+                </span>
               </div>
             </TableCell>
             <TableCell>
