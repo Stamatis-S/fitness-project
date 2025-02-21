@@ -109,7 +109,7 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
   const recentLogs = workoutLogs.filter(log => new Date(log.workout_date) >= oneWeekAgo);
   const historicalLogs = workoutLogs.filter(log => new Date(log.workout_date) < oneWeekAgo);
   
-  const records: { exercise: string; achievement: string; type: 'new' | 'matched' }[] = [];
+  const records: { exercise: string; achievement: string; type: 'new' | 'matched'; hasHistory: boolean }[] = [];
   
   recentLogs.forEach(recentLog => {
     const exerciseName = recentLog.custom_exercise || recentLog.exercises?.name;
@@ -118,6 +118,8 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
     const exerciseHistory = historicalLogs.filter(log => 
       (log.custom_exercise || log.exercises?.name) === exerciseName
     );
+
+    if (exerciseHistory.length === 0) return;
     
     const previousWeightPR = Math.max(...exerciseHistory.map(log => log.weight_kg || 0));
     
@@ -131,7 +133,8 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
       records.push({
         exercise: exerciseName,
         achievement: `+${(recentLog.weight_kg - previousWeightPR).toFixed(1)}kg (now ${recentLog.weight_kg}kg)`,
-        type: 'new'
+        type: 'new',
+        hasHistory: true
       });
     } else if (recentLog.weight_kg === previousWeightPR) {
       const isNewEntry = !records.some(r => r.exercise === exerciseName);
@@ -139,7 +142,8 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
         records.push({
           exercise: exerciseName,
           achievement: `Matched PR (${recentLog.weight_kg}kg)`,
-          type: 'matched'
+          type: 'matched',
+          hasHistory: true
         });
       }
     } else if (recentLog.reps && recentLog.reps > previousRepsPR && previousRepsPR > 0) {
@@ -148,7 +152,8 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
         records.push({
           exercise: exerciseName,
           achievement: `+${recentLog.reps - previousRepsPR} reps at ${recentLog.weight_kg}kg`,
-          type: 'new'
+          type: 'new',
+          hasHistory: true
         });
       }
     }

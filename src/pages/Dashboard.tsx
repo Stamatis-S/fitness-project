@@ -89,10 +89,6 @@ export default function Dashboard() {
 
           {workoutLogs && (
             <div className="grid gap-2 md:gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
-                <WorkoutInsights logs={workoutLogs} />
-              </div>
-
               <div className="bg-card rounded-lg shadow-sm">
                 <Tabs defaultValue="overview" className="w-full">
                   <div className={`${isMobile ? 'sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-1.5 px-2 rounded-t-lg' : 'px-4 pt-4'}`}>
@@ -117,6 +113,10 @@ export default function Dashboard() {
                     </TabsContent>
                   </div>
                 </Tabs>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+                <WorkoutInsights logs={workoutLogs} />
               </div>
             </div>
           )}

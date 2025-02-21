@@ -59,7 +59,7 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
         className="col-span-full"
       >
         <Card className="p-4">
-          <h2 className="text-xl font-bold mb-4">Personal Records</h2>
+          <h2 className="text-xl font-bold mb-4">Weekly Personal Records</h2>
           <PRTracker records={personalRecords} />
         </Card>
       </motion.div>

@@ -14,6 +14,7 @@ interface PersonalRecord {
   exercise: string;
   achievement: string;
   type: 'new' | 'matched';
+  hasHistory: boolean;
 }
 
 interface PRTrackerProps {
@@ -21,7 +22,8 @@ interface PRTrackerProps {
 }
 
 export function PRTracker({ records }: PRTrackerProps) {
-  const newRecords = records.filter(record => record.type === 'new');
+  // Only show new records that have history
+  const newRecords = records.filter(record => record.type === 'new' && record.hasHistory);
 
   return (
     <div className="space-y-2">
@@ -31,7 +33,6 @@ export function PRTracker({ records }: PRTrackerProps) {
             <TableRow>
               <TableHead className="w-[200px]">Exercise</TableHead>
               <TableHead>Achievement</TableHead>
-              <TableHead className="w-[100px]">Type</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -39,11 +40,6 @@ export function PRTracker({ records }: PRTrackerProps) {
               <TableRow key={index}>
                 <TableCell className="font-medium">{record.exercise}</TableCell>
                 <TableCell>{record.achievement}</TableCell>
-                <TableCell>
-                  <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                    New PR!
-                  </span>
-                </TableCell>
               </TableRow>
             ))}
           </TableBody>
