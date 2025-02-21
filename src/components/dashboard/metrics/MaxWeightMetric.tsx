@@ -1,6 +1,5 @@
 
 import { Dumbbell } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface MaxWeightMetricProps {
   topExercises: Array<{
@@ -11,32 +10,18 @@ interface MaxWeightMetricProps {
 
 export function MaxWeightMetric({ topExercises }: MaxWeightMetricProps) {
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <div className="p-1.5 rounded-lg bg-primary/10">
-          <Dumbbell className="h-4 w-4 text-primary" />
-        </div>
-        <span className="text-sm font-medium">Top Weight Lifted</span>
+    <div className="space-y-3">
+      <div className="flex items-center space-x-4">
+        <Dumbbell className="h-5 w-5 text-primary" />
+        <h3 className="text-lg font-semibold">Top Weight Lifted</h3>
       </div>
-      <div className="pl-8">
-        <div className="space-y-2">
-          {topExercises.map((entry, index) => (
-            <motion.div
-              key={entry.exercise}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="space-y-0.5"
-            >
-              <p className="text-base font-semibold tracking-tight">
-                {entry.exercise}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {entry.weight} kg
-              </p>
-            </motion.div>
-          ))}
-        </div>
+      <div className="space-y-2">
+        {topExercises.map((entry, index) => (
+          <div key={entry.exercise} className="space-y-1">
+            <p className="text-2xl font-bold">{entry.weight} kg</p>
+            <p className="text-sm text-muted-foreground">{entry.exercise}</p>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -40,15 +40,12 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
         animate={{ opacity: 1, y: 0 }}
         className="col-span-full"
       >
-        <Card className="p-4 bg-gradient-to-br from-background to-muted/20">
-          <h2 className="text-xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-            Key Metrics
-          </h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+        <Card className="h-full">
+          <div className="grid grid-cols-2 h-full">
+            <div className="p-4 border-r border-border">
               <MostUsedExercise {...mostUsed} />
             </div>
-            <div className="space-y-2">
+            <div className="p-4">
               <MaxWeightMetric {...maxWeight} />
             </div>
           </div>
