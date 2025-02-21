@@ -13,48 +13,59 @@ interface FitnessStatsProps {
 }
 
 export function FitnessStats({
-  fitnessScore,
-  fitnessLevel,
-  lastScoreUpdate,
-  isRecalculating,
+  fitnessScore = 0,
+  fitnessLevel = 'Beginner',
+  lastScoreUpdate = '',
+  isRecalculating = false,
   onRecalculate,
 }: FitnessStatsProps) {
   const getProgressValue = (score: number) => {
-    const levelThresholds = {
-      monster: 6000,
-      elite: 4500,
-      advanced: 3000,
-      intermediate: 1500,
-      beginner: 0
-    };
+    try {
+      const levelThresholds = {
+        monster: 6000,
+        elite: 4500,
+        advanced: 3000,
+        intermediate: 1500,
+        beginner: 0
+      };
 
-    if (score >= levelThresholds.monster) return 100;
-    if (score >= levelThresholds.elite) 
-      return 80 + ((score - levelThresholds.elite) / (levelThresholds.monster - levelThresholds.elite)) * 20;
-    if (score >= levelThresholds.advanced) 
-      return 60 + ((score - levelThresholds.advanced) / (levelThresholds.elite - levelThresholds.advanced)) * 20;
-    if (score >= levelThresholds.intermediate) 
-      return 40 + ((score - levelThresholds.intermediate) / (levelThresholds.advanced - levelThresholds.intermediate)) * 20;
-    return Math.max((score / levelThresholds.intermediate) * 40, 5);
+      if (score >= levelThresholds.monster) return 100;
+      if (score >= levelThresholds.elite) 
+        return 80 + ((score - levelThresholds.elite) / (levelThresholds.monster - levelThresholds.elite)) * 20;
+      if (score >= levelThresholds.advanced) 
+        return 60 + ((score - levelThresholds.advanced) / (levelThresholds.elite - levelThresholds.advanced)) * 20;
+      if (score >= levelThresholds.intermediate) 
+        return 40 + ((score - levelThresholds.intermediate) / (levelThresholds.advanced - levelThresholds.intermediate)) * 20;
+      return Math.max((score / levelThresholds.intermediate) * 40, 5);
+    } catch (error) {
+      console.error('Error calculating progress value:', error);
+      return 0;
+    }
   };
 
   const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'Monster':
-        return 'text-[#FF0000] dark:text-[#FF4444]';
-      case 'Elite':
-        return 'text-[#A855F7] dark:text-[#A855F7]';
-      case 'Advanced':
-        return 'text-[#4488EF] dark:text-[#4488EF]';
-      case 'Intermediate':
-        return 'text-[#22C55E] dark:text-[#22C55E]';
-      default:
-        return 'text-[#EAB308] dark:text-[#EAB308]';
+    try {
+      switch (level) {
+        case 'Monster':
+          return 'text-[#FF0000] dark:text-[#FF4444]';
+        case 'Elite':
+          return 'text-[#A855F7] dark:text-[#A855F7]';
+        case 'Advanced':
+          return 'text-[#4488EF] dark:text-[#4488EF]';
+        case 'Intermediate':
+          return 'text-[#22C55E] dark:text-[#22C55E]';
+        default:
+          return 'text-[#EAB308] dark:text-[#EAB308]';
+      }
+    } catch (error) {
+      console.error('Error getting level color:', error);
+      return 'text-[#EAB308] dark:text-[#EAB308]';
     }
   };
 
   const formatLastUpdated = (dateString: string) => {
     try {
+      if (!dateString) return 'Never updated';
       const date = new Date(dateString);
       if (!isValid(date)) {
         return 'Never updated';
@@ -66,6 +77,15 @@ export function FitnessStats({
     }
   };
 
+  const handleRecalculate = (e: React.MouseEvent) => {
+    try {
+      e.preventDefault();
+      onRecalculate();
+    } catch (error) {
+      console.error('Error in recalculate handler:', error);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -73,7 +93,7 @@ export function FitnessStats({
         <Button
           size="sm"
           variant="outline"
-          onClick={onRecalculate}
+          onClick={handleRecalculate}
           disabled={isRecalculating}
           className="flex items-center gap-2"
         >
@@ -87,7 +107,7 @@ export function FitnessStats({
             {fitnessLevel}
           </span>
           <span className="text-lg font-semibold">
-            Score: {Math.round(fitnessScore)}
+            Score: {Math.round(fitnessScore || 0)}
           </span>
         </div>
         <Progress 

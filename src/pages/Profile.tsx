@@ -37,17 +37,7 @@ export default function Profile() {
 
     try {
       setIsLoading(true);
-      const { error: calcError } = await supabase.rpc(
-        'calculate_fitness_score',
-        { user_id_param: session.user.id }
-      );
-
-      if (calcError) {
-        console.error("Calculation error:", calcError);
-        toast.error("Error calculating fitness score");
-        return;
-      }
-
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('username, fitness_score, fitness_level, last_score_update')
@@ -75,6 +65,8 @@ export default function Profile() {
   useEffect(() => {
     if (session?.user.id) {
       fetchProfile();
+    } else {
+      setIsLoading(false);
     }
   }, [session?.user.id]);
 
@@ -127,6 +119,12 @@ export default function Profile() {
       setIsRecalculating(false);
     }
   };
+
+  // Handle unauthorized access
+  if (!session) {
+    navigate('/auth');
+    return null;
+  }
 
   if (isLoading) {
     return (
