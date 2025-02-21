@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Edit2, Check, RefreshCw } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { format, isValid } from "date-fns";
-import { Input } from "@/components/ui/input";
 import { useQueryClient } from "@tanstack/react-query";
+import { UserInfo } from "@/components/profile/UserInfo";
+import { FitnessStats } from "@/components/profile/FitnessStats";
+import { LevelRequirements } from "@/components/profile/LevelRequirements";
 
 interface ProfileData {
   username: string | null;
@@ -92,7 +92,6 @@ export default function Profile() {
       setProfile(prev => prev ? { ...prev, username: newUsername } : null);
       setIsEditingUsername(false);
       
-      // Invalidate all queries that might use the username
       await queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
       await queryClient.invalidateQueries({ queryKey: ['leaderboard-stats'] });
       
@@ -117,7 +116,6 @@ export default function Profile() {
       
       await fetchProfile();
       
-      // Invalidate leaderboard queries to reflect new score
       await queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
       await queryClient.invalidateQueries({ queryKey: ['leaderboard-stats'] });
       
@@ -127,54 +125,6 @@ export default function Profile() {
       console.error("Error:", error);
     } finally {
       setIsRecalculating(false);
-    }
-  };
-
-  const getProgressValue = (score: number) => {
-    // Updated progress calculation based on new thresholds
-    const levelThresholds = {
-      monster: 6000,
-      elite: 4500,
-      advanced: 3000,
-      intermediate: 1500,
-      beginner: 0
-    };
-
-    if (score >= levelThresholds.monster) return 100;
-    if (score >= levelThresholds.elite) 
-      return 80 + ((score - levelThresholds.elite) / (levelThresholds.monster - levelThresholds.elite)) * 20;
-    if (score >= levelThresholds.advanced) 
-      return 60 + ((score - levelThresholds.advanced) / (levelThresholds.elite - levelThresholds.advanced)) * 20;
-    if (score >= levelThresholds.intermediate) 
-      return 40 + ((score - levelThresholds.intermediate) / (levelThresholds.advanced - levelThresholds.intermediate)) * 20;
-    return Math.max((score / levelThresholds.intermediate) * 40, 5);
-  };
-
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'Monster':
-        return 'text-[#FF0000] dark:text-[#FF4444]';
-      case 'Elite':
-        return 'text-[#A855F7] dark:text-[#A855F7]';
-      case 'Advanced':
-        return 'text-[#4488EF] dark:text-[#4488EF]';
-      case 'Intermediate':
-        return 'text-[#22C55E] dark:text-[#22C55E]';
-      default:
-        return 'text-[#EAB308] dark:text-[#EAB308]';
-    }
-  };
-
-  const formatLastUpdated = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      if (!isValid(date)) {
-        return 'Never updated';
-      }
-      return format(date, 'PPpp');
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return 'Never updated';
     }
   };
 
@@ -216,101 +166,25 @@ export default function Profile() {
         </div>
         
         <Card className="p-6 space-y-6 border bg-card text-card-foreground shadow-sm">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-semibold">Account Information</h2>
-            <p className="text-muted-foreground">
-              Email: {session?.user.email}
-            </p>
-            <div className="flex items-center gap-2">
-              <p className="text-muted-foreground">
-                Username: {!isEditingUsername && (profile.username || 'Not set')}
-              </p>
-              {isEditingUsername ? (
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                    className="max-w-[200px]"
-                    placeholder="Enter new username"
-                  />
-                  <Button
-                    size="sm"
-                    onClick={handleUpdateUsername}
-                    disabled={!newUsername.trim()}
-                  >
-                    <Check className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setIsEditingUsername(true)}
-                >
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
+          <UserInfo
+            session={session}
+            username={profile.username}
+            isEditingUsername={isEditingUsername}
+            newUsername={newUsername}
+            setIsEditingUsername={setIsEditingUsername}
+            setNewUsername={setNewUsername}
+            onUpdateUsername={handleUpdateUsername}
+          />
 
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Fitness Level</h2>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleRecalculateScore}
-                disabled={isRecalculating}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className={`h-4 w-4 ${isRecalculating ? 'animate-spin' : ''}`} />
-                Recalculate Score
-              </Button>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className={`text-2xl font-bold ${getLevelColor(profile.fitness_level)}`}>
-                  {profile.fitness_level}
-                </span>
-                <span className="text-lg font-semibold">
-                  Score: {Math.round(profile.fitness_score)}
-                </span>
-              </div>
-              <Progress 
-                value={getProgressValue(profile.fitness_score)} 
-                className="h-3"
-              />
-              <p className="text-sm text-muted-foreground">
-                Last updated: {formatLastUpdated(profile.last_score_update)}
-              </p>
-            </div>
-          </div>
+          <FitnessStats
+            fitnessScore={profile.fitness_score}
+            fitnessLevel={profile.fitness_level}
+            lastScoreUpdate={profile.last_score_update}
+            isRecalculating={isRecalculating}
+            onRecalculate={handleRecalculateScore}
+          />
 
-          <div className="space-y-2">
-            <h3 className="text-lg font-medium">Level Requirements</h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="space-y-1">
-                <p className="font-medium text-[#EAB308]">Beginner</p>
-                <p className="text-sm text-muted-foreground">0 - 1,499</p>
-              </div>
-              <div className="space-y-1">
-                <p className="font-medium text-[#22C55E]">Intermediate</p>
-                <p className="text-sm text-muted-foreground">1,500 - 2,999</p>
-              </div>
-              <div className="space-y-1">
-                <p className="font-medium text-[#4488EF]">Advanced</p>
-                <p className="text-sm text-muted-foreground">3,000 - 4,499</p>
-              </div>
-              <div className="space-y-1">
-                <p className="font-medium text-[#A855F7]">Elite</p>
-                <p className="text-sm text-muted-foreground">4,500 - 5,999</p>
-              </div>
-              <div className="space-y-1">
-                <p className="font-medium text-[#FF0000] dark:text-[#FF4444]">Monster</p>
-                <p className="text-sm text-muted-foreground">6,000+</p>
-              </div>
-            </div>
-          </div>
+          <LevelRequirements />
         </Card>
       </div>
     </div>
