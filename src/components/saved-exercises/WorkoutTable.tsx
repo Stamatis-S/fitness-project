@@ -1,6 +1,5 @@
 
 import { format } from "date-fns";
-import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -11,8 +10,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { WorkoutLog } from "./types";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface WorkoutTableProps {
@@ -20,18 +17,7 @@ interface WorkoutTableProps {
   onDelete?: (id: number) => void;
 }
 
-interface GroupedWorkoutLog {
-  date: string;
-  exercises: {
-    name: string;
-    category: string;
-    sets: WorkoutLog[];
-  }[];
-}
-
-export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
-  const isMobile = useIsMobile();
-
+export function WorkoutTable({ logs }: WorkoutTableProps) {
   const getExerciseName = (log: WorkoutLog) => {
     if (log.custom_exercise) {
       return log.custom_exercise;
@@ -45,134 +31,49 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
     return format(date, 'MMM dd, yyyy');
   };
 
-  // Group logs by date and exercise
-  const groupedLogs: GroupedWorkoutLog[] = logs.reduce((acc: GroupedWorkoutLog[], log) => {
-    const dateGroup = acc.find(group => group.date === log.workout_date);
-    const exerciseName = getExerciseName(log);
-
-    if (dateGroup) {
-      const exerciseGroup = dateGroup.exercises.find(ex => ex.name === exerciseName);
-      if (exerciseGroup) {
-        exerciseGroup.sets.push(log);
-        exerciseGroup.sets.sort((a, b) => a.set_number - b.set_number);
-      } else {
-        dateGroup.exercises.push({
-          name: exerciseName,
-          category: log.category,
-          sets: [log],
-        });
-      }
-    } else {
-      acc.push({
-        date: log.workout_date,
-        exercises: [{
-          name: exerciseName,
-          category: log.category,
-          sets: [log],
-        }],
-      });
-    }
-    return acc;
-  }, []);
-
-  // Sort by date descending
-  groupedLogs.sort((a, b) => b.date.localeCompare(a.date));
-
-  if (isMobile) {
-    return (
-      <div className="space-y-6">
-        {groupedLogs.map((dateGroup) => (
-          <div key={dateGroup.date} className="space-y-4">
-            <h3 className="font-semibold text-lg px-4">
-              {formatDate(dateGroup.date)}
-            </h3>
-            {dateGroup.exercises.map((exercise) => (
-              <Card key={`${dateGroup.date}-${exercise.name}`} className="p-4">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">{exercise.name}</h4>
-                      <Badge variant="secondary" className="mt-1">
-                        {exercise.category}
-                      </Badge>
-                    </div>
-                    {onDelete && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDelete(exercise.sets[0].id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {exercise.sets.map((set) => (
-                      <div 
-                        key={set.id}
-                        className="bg-muted px-3 py-1.5 rounded-lg whitespace-nowrap text-sm"
-                      >
-                        Set {set.set_number}: {set.weight_kg}kg × {set.reps}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Exercise</TableHead>
-            <TableHead>Sets</TableHead>
-            {onDelete && <TableHead>Actions</TableHead>}
+          <TableRow className="border-b border-neutral-800">
+            <TableHead className="text-neutral-400">Date</TableHead>
+            <TableHead className="text-neutral-400">Category</TableHead>
+            <TableHead className="text-neutral-400">Exercise</TableHead>
+            <TableHead className="text-neutral-400">Sets</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {groupedLogs.map((dateGroup) => (
-            dateGroup.exercises.map((exercise) => (
-              <TableRow key={`${dateGroup.date}-${exercise.name}`}>
-                <TableCell>{formatDate(dateGroup.date)}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary">
-                    {exercise.category}
-                  </Badge>
-                </TableCell>
-                <TableCell>{exercise.name}</TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-2">
-                    {exercise.sets.map((set) => (
-                      <div 
-                        key={set.id}
-                        className="bg-muted px-3 py-1.5 rounded-lg whitespace-nowrap text-sm"
-                      >
-                        Set {set.set_number}: {set.weight_kg}kg × {set.reps}
-                      </div>
-                    ))}
-                  </div>
-                </TableCell>
-                {onDelete && (
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onDelete(exercise.sets[0].id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))
+          {logs.map((log) => (
+            <TableRow 
+              key={log.id}
+              className="border-b border-neutral-800 hover:bg-neutral-800/50"
+            >
+              <TableCell className="font-medium text-neutral-200">
+                {formatDate(log.workout_date)}
+              </TableCell>
+              <TableCell>
+                <Badge 
+                  className={`
+                    px-3 py-1 rounded-full font-medium
+                    ${log.category === 'ΩΜΟΙ' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : ''}
+                    ${log.category === 'ΠΟΔΙΑ' ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : ''}
+                    ${log.category === 'ΣΤΗΘΟΣ' ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : ''}
+                    ${log.category === 'ΠΛΑΤΗ' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : ''}
+                    ${log.category === 'ΔΙΚΕΦΑΛΑ' ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : ''}
+                    ${log.category === 'ΤΡΙΚΕΦΑΛΑ' ? 'bg-pink-500/20 text-pink-400 hover:bg-pink-500/30' : ''}
+                    ${log.category === 'ΚΟΡΜΟΣ' ? 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30' : ''}
+                  `}
+                >
+                  {log.category}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-neutral-200">
+                {getExerciseName(log)}
+              </TableCell>
+              <TableCell className="text-neutral-200">
+                Set {log.set_number}: {log.weight_kg}kg × {log.reps} reps
+              </TableCell>
+            </TableRow>
           ))}
         </TableBody>
       </Table>
