@@ -8,17 +8,17 @@ interface MostUsedExerciseProps {
 
 export function MostUsedExercise({ exercises, sets }: MostUsedExerciseProps) {
   return (
-    <div className="space-y-3">
-      <div className="flex items-center space-x-4">
-        <Target className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-semibold">Most Used Exercise</h3>
+    <div className="space-y-2">
+      <div className="flex items-center space-x-3">
+        <Target className="h-4 w-4 text-primary" />
+        <h3 className="text-base font-semibold">Most Used Exercise</h3>
       </div>
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {exercises.map((exercise, index) => (
-          <p key={index} className="text-2xl font-bold">{exercise}</p>
+          <p key={index} className="text-lg font-bold">{exercise}</p>
         ))}
       </div>
-      <p className="text-sm text-muted-foreground">{sets} total sets</p>
+      <p className="text-xs text-muted-foreground">{sets} total sets</p>
     </div>
   );
 }
