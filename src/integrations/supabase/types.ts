@@ -112,6 +112,7 @@ export type Database = {
           fitness_score: number | null
           id: string
           last_score_update: string | null
+          role: Database["public"]["Enums"]["user_role"]
           updated_at: string
           username: string | null
         }
@@ -121,6 +122,7 @@ export type Database = {
           fitness_score?: number | null
           id: string
           last_score_update?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           username?: string | null
         }
@@ -130,6 +132,7 @@ export type Database = {
           fitness_score?: number | null
           id?: string
           last_score_update?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           username?: string | null
         }
@@ -236,6 +239,12 @@ export type Database = {
         }
         Returns: number
       }
+      delete_user_data: {
+        Args: {
+          user_id_to_delete: string
+        }
+        Returns: undefined
+      }
       get_user_comparison_stats: {
         Args: {
           time_range?: string
@@ -262,6 +271,10 @@ export type Database = {
           favorite_category: string
         }[]
       }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       exercise_category:
@@ -272,6 +285,7 @@ export type Database = {
         | "ΩΜΟΙ"
         | "ΠΟΔΙΑ"
         | "ΚΟΡΜΟΣ"
+      user_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
