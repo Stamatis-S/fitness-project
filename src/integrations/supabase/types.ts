@@ -239,12 +239,6 @@ export type Database = {
         }
         Returns: number
       }
-      delete_user_data: {
-        Args: {
-          user_id_to_delete: string
-        }
-        Returns: undefined
-      }
       get_user_comparison_stats: {
         Args: {
           time_range?: string
@@ -270,10 +264,6 @@ export type Database = {
           total_volume: number
           favorite_category: string
         }[]
-      }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
       }
     }
     Enums: {
