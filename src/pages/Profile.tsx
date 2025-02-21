@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +19,7 @@ interface ProfileData {
 }
 
 export default function Profile() {
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -30,10 +29,7 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchProfile = async () => {
-    if (!session?.user.id) {
-      navigate('/auth');
-      return;
-    }
+    if (!session?.user.id) return;
 
     try {
       setIsLoading(true);
@@ -63,12 +59,12 @@ export default function Profile() {
   };
 
   useEffect(() => {
-    if (session?.user.id) {
+    if (!authLoading && session?.user.id) {
       fetchProfile();
-    } else {
-      setIsLoading(false);
+    } else if (!authLoading && !session) {
+      navigate('/auth');
     }
-  }, [session?.user.id]);
+  }, [session?.user.id, authLoading]);
 
   const handleUpdateUsername = async () => {
     if (!session?.user.id) return;
@@ -120,18 +116,16 @@ export default function Profile() {
     }
   };
 
-  // Handle unauthorized access
-  if (!session) {
-    navigate('/auth');
-    return null;
-  }
-
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen p-8 bg-gradient-to-b from-background to-muted flex items-center justify-center">
         <p>Loading profile...</p>
       </div>
     );
+  }
+
+  if (!session) {
+    return null;
   }
 
   if (!profile) {
