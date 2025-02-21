@@ -209,7 +209,7 @@ export function ExerciseSelector({
                     className={cn(
                       "w-full px-2 py-1.5 rounded-lg font-medium",
                       "transition-all duration-200",
-                      "text-center break-words bg-[#F1F1F1] dark:bg-slate-800",
+                      "text-center break-words bg-[#333333] dark:bg-slate-800",
                       isMobile ? (
                         "min-h-[32px] text-xs leading-tight"
                       ) : (
@@ -217,7 +217,8 @@ export function ExerciseSelector({
                       ),
                       value === exercise.id.toString()
                         ? "ring-2 ring-primary"
-                        : "hover:bg-[#E5E5E5] dark:hover:bg-slate-700"
+                        : "hover:bg-[#444444] dark:hover:bg-slate-700",
+                      "text-white dark:text-white"
                     )}
                   >
                     {exercise.name}

@@ -41,13 +41,13 @@ export function CategorySelector({
               <Button
                 variant="outline"
                 className={`w-full h-[60px] py-2 px-3 transition-all duration-200 
-                  hover:scale-[1.02] active:scale-[0.98] bg-[#F1F1F1] dark:bg-slate-800
+                  hover:scale-[1.02] active:scale-[0.98] bg-[#333333] dark:bg-slate-800
                   ${selectedCategory === value 
                     ? "ring-2 ring-primary" 
-                    : "hover:bg-[#E5E5E5] dark:hover:bg-slate-700"}`}
+                    : "hover:bg-[#444444] dark:hover:bg-slate-700"}`}
                 onClick={() => onCategoryChange(value)}
               >
-                <span className="font-medium text-base">{label}</span>
+                <span className="font-medium text-base text-white dark:text-white">{label}</span>
               </Button>
             </motion.div>
           );
