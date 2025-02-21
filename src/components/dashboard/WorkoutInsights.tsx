@@ -29,7 +29,7 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
   const lastWorkoutDate = workoutDates.length > 0 ? workoutDates[0] : null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -41,39 +41,37 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
         />
       </motion.div>
 
-      {mostTrainedCategory && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-        >
-          <Card className="flex flex-col gap-3 p-4">
-            <div className="flex items-center space-x-4">
-              <Activity className="h-5 w-5 text-green-500" />
-              <h3 className="text-lg font-semibold">Most Trained Category</h3>
-            </div>
-            <div className="text-2xl font-bold">{mostTrainedCategory}</div>
-            <p className="text-sm text-muted-foreground">Focus on other categories too!</p>
-          </Card>
-        </motion.div>
-      )}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
+        <Card className="h-full">
+          <div className="grid grid-cols-2 h-full">
+            {mostTrainedCategory && (
+              <div className="flex flex-col gap-3 p-4 border-r border-border">
+                <div className="flex items-center space-x-4">
+                  <Activity className="h-5 w-5 text-green-500" />
+                  <h3 className="text-lg font-semibold">Most Trained</h3>
+                </div>
+                <div className="text-2xl font-bold">{mostTrainedCategory}</div>
+                <p className="text-sm text-muted-foreground">Focus on other categories too!</p>
+              </div>
+            )}
 
-      {logs.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-        >
-          <Card className="flex flex-col gap-3 p-4">
-            <div className="flex items-center space-x-4">
-              <Award className="h-5 w-5 text-yellow-500" />
-              <h3 className="text-lg font-semibold">Total Workouts</h3>
-            </div>
-            <div className="text-3xl font-bold">{logs.length}</div>
-            <p className="text-sm text-muted-foreground">You're doing great!</p>
-          </Card>
-        </motion.div>
-      )}
+            {logs.length > 0 && (
+              <div className="flex flex-col gap-3 p-4">
+                <div className="flex items-center space-x-4">
+                  <Award className="h-5 w-5 text-yellow-500" />
+                  <h3 className="text-lg font-semibold">Total Workouts</h3>
+                </div>
+                <div className="text-3xl font-bold">{logs.length}</div>
+                <p className="text-sm text-muted-foreground">You're doing great!</p>
+              </div>
+            )}
+          </div>
+        </Card>
+      </motion.div>
     </div>
   );
 }
