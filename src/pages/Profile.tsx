@@ -27,28 +27,48 @@ export default function Profile() {
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState("");
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchProfile = async () => {
+    if (!session?.user.id) {
+      navigate('/auth');
+      return;
+    }
+
     try {
+      setIsLoading(true);
       const { error: calcError } = await supabase.rpc(
         'calculate_fitness_score',
-        { user_id_param: session?.user.id }
+        { user_id_param: session.user.id }
       );
 
-      if (calcError) throw calcError;
+      if (calcError) {
+        console.error("Calculation error:", calcError);
+        toast.error("Error calculating fitness score");
+        return;
+      }
 
       const { data, error } = await supabase
         .from('profiles')
         .select('username, fitness_score, fitness_level, last_score_update')
-        .eq('id', session?.user.id)
+        .eq('id', session.user.id)
         .single();
 
-      if (error) throw error;
-      setProfile(data);
-      setNewUsername(data.username || "");
+      if (error) {
+        console.error("Profile fetch error:", error);
+        toast.error("Error loading profile");
+        return;
+      }
+
+      if (data) {
+        setProfile(data);
+        setNewUsername(data.username || "");
+      }
     } catch (error) {
-      toast.error("Error loading profile");
       console.error("Error:", error);
+      toast.error("Error loading profile");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -59,11 +79,13 @@ export default function Profile() {
   }, [session?.user.id]);
 
   const handleUpdateUsername = async () => {
+    if (!session?.user.id) return;
+
     try {
       const { error } = await supabase
         .from('profiles')
         .update({ username: newUsername })
-        .eq('id', session?.user.id);
+        .eq('id', session.user.id);
 
       if (error) throw error;
 
@@ -75,18 +97,20 @@ export default function Profile() {
       await queryClient.invalidateQueries({ queryKey: ['leaderboard-stats'] });
       
       toast.success("Username updated successfully!");
-    } catch (error) {
+    } catch (error: any) {
       toast.error("Error updating username");
       console.error("Error:", error);
     }
   };
 
   const handleRecalculateScore = async () => {
+    if (!session?.user.id) return;
+
     setIsRecalculating(true);
     try {
       const { error: calcError } = await supabase.rpc(
         'calculate_fitness_score',
-        { user_id_param: session?.user.id }
+        { user_id_param: session.user.id }
       );
 
       if (calcError) throw calcError;
@@ -98,7 +122,7 @@ export default function Profile() {
       await queryClient.invalidateQueries({ queryKey: ['leaderboard-stats'] });
       
       toast.success("Fitness score recalculated!");
-    } catch (error) {
+    } catch (error: any) {
       toast.error("Error recalculating fitness score");
       console.error("Error:", error);
     } finally {
@@ -154,8 +178,21 @@ export default function Profile() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen p-8 bg-gradient-to-b from-background to-muted flex items-center justify-center">
+        <p>Loading profile...</p>
+      </div>
+    );
+  }
+
   if (!profile) {
-    return <div className="p-8">Loading...</div>;
+    return (
+      <div className="min-h-screen p-8 bg-gradient-to-b from-background to-muted flex flex-col items-center justify-center gap-4">
+        <p>Could not load profile data</p>
+        <Button onClick={() => fetchProfile()}>Retry</Button>
+      </div>
+    );
   }
 
   return (
