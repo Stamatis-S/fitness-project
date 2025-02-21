@@ -1,5 +1,6 @@
 
 import { format } from "date-fns";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -17,7 +18,16 @@ interface WorkoutTableProps {
   onDelete?: (id: number) => void;
 }
 
-export function WorkoutTable({ logs }: WorkoutTableProps) {
+interface GroupedWorkoutLog {
+  date: string;
+  exercises: {
+    name: string;
+    category: string;
+    sets: WorkoutLog[];
+  }[];
+}
+
+export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
   const getExerciseName = (log: WorkoutLog) => {
     if (log.custom_exercise) {
       return log.custom_exercise;
@@ -31,52 +41,98 @@ export function WorkoutTable({ logs }: WorkoutTableProps) {
     return format(date, 'MMM dd, yyyy');
   };
 
+  // Group logs by date and exercise
+  const groupedLogs: GroupedWorkoutLog[] = logs.reduce((acc: GroupedWorkoutLog[], log) => {
+    const dateGroup = acc.find(group => group.date === log.workout_date);
+    const exerciseName = getExerciseName(log);
+
+    if (dateGroup) {
+      const exerciseGroup = dateGroup.exercises.find(ex => ex.name === exerciseName);
+      if (exerciseGroup) {
+        exerciseGroup.sets.push(log);
+        exerciseGroup.sets.sort((a, b) => a.set_number - b.set_number);
+      } else {
+        dateGroup.exercises.push({
+          name: exerciseName,
+          category: log.category,
+          sets: [log],
+        });
+      }
+    } else {
+      acc.push({
+        date: log.workout_date,
+        exercises: [{
+          name: exerciseName,
+          category: log.category,
+          sets: [log],
+        }],
+      });
+    }
+    return acc;
+  }, []);
+
+  // Sort by date descending
+  groupedLogs.sort((a, b) => b.date.localeCompare(a.date));
+
   return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-b border-neutral-800">
-            <TableHead className="text-neutral-400">Date</TableHead>
-            <TableHead className="text-neutral-400">Category</TableHead>
-            <TableHead className="text-neutral-400">Exercise</TableHead>
-            <TableHead className="text-neutral-400">Sets</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {logs.map((log) => (
-            <TableRow 
-              key={log.id}
-              className="border-b border-neutral-800 hover:bg-neutral-800/50"
+    <div className="space-y-6">
+      {groupedLogs.map((dateGroup) => (
+        <div key={dateGroup.date} className="space-y-4">
+          <h3 className="font-semibold text-xl px-4">
+            {formatDate(dateGroup.date)}
+          </h3>
+          {dateGroup.exercises.map((exercise) => (
+            <div 
+              key={`${dateGroup.date}-${exercise.name}`}
+              className="bg-neutral-900/50 rounded-lg p-4 space-y-3"
             >
-              <TableCell className="font-medium text-neutral-200">
-                {formatDate(log.workout_date)}
-              </TableCell>
-              <TableCell>
-                <Badge 
-                  className={`
-                    px-3 py-1 rounded-full font-medium
-                    ${log.category === 'ΩΜΟΙ' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : ''}
-                    ${log.category === 'ΠΟΔΙΑ' ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : ''}
-                    ${log.category === 'ΣΤΗΘΟΣ' ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : ''}
-                    ${log.category === 'ΠΛΑΤΗ' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : ''}
-                    ${log.category === 'ΔΙΚΕΦΑΛΑ' ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : ''}
-                    ${log.category === 'ΤΡΙΚΕΦΑΛΑ' ? 'bg-pink-500/20 text-pink-400 hover:bg-pink-500/30' : ''}
-                    ${log.category === 'ΚΟΡΜΟΣ' ? 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30' : ''}
-                  `}
-                >
-                  {log.category}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-neutral-200">
-                {getExerciseName(log)}
-              </TableCell>
-              <TableCell className="text-neutral-200">
-                Set {log.set_number}: {log.weight_kg}kg × {log.reps} reps
-              </TableCell>
-            </TableRow>
+              <div className="space-y-2">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
+                    <h4 className="text-lg font-medium text-neutral-200">
+                      {exercise.name}
+                    </h4>
+                    <Badge 
+                      className={`
+                        px-3 py-1 rounded-full font-medium
+                        ${exercise.category === 'ΩΜΟΙ' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : ''}
+                        ${exercise.category === 'ΠΟΔΙΑ' ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : ''}
+                        ${exercise.category === 'ΣΤΗΘΟΣ' ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : ''}
+                        ${exercise.category === 'ΠΛΑΤΗ' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : ''}
+                        ${exercise.category === 'ΔΙΚΕΦΑΛΑ' ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : ''}
+                        ${exercise.category === 'ΤΡΙΚΕΦΑΛΑ' ? 'bg-pink-500/20 text-pink-400 hover:bg-pink-500/30' : ''}
+                        ${exercise.category === 'ΚΟΡΜΟΣ' ? 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30' : ''}
+                      `}
+                    >
+                      {exercise.category}
+                    </Badge>
+                  </div>
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onDelete(exercise.sets[0].id)}
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {exercise.sets.map((set) => (
+                  <div 
+                    key={set.id}
+                    className="bg-neutral-800 px-4 py-2 rounded-lg whitespace-nowrap text-neutral-200"
+                  >
+                    Set {set.set_number}: {set.weight_kg}kg × {set.reps}
+                  </div>
+                ))}
+              </div>
+            </div>
           ))}
-        </TableBody>
-      </Table>
+        </div>
+      ))}
     </div>
   );
 }
