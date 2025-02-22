@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Mail } from "lucide-react";
@@ -28,7 +29,10 @@ export function WorkoutReports({ workoutLogs }: WorkoutReportsProps) {
     setIsGenerating(true);
     try {
       const { error } = await supabase.functions.invoke('send-workout-report', {
-        body: { workoutLogs }
+        body: { 
+          workoutLogs,
+          userEmail: session.user.email 
+        }
       });
 
       if (error) throw error;
