@@ -39,7 +39,7 @@ export function PRTracker({ records }: PRTrackerProps) {
             {newRecords.map((record, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium">{record.exercise}</TableCell>
-                <TableCell>{record.achievement}</TableCell>
+                <TableCell className="text-emerald-600 dark:text-emerald-400">{record.achievement}</TableCell>
               </TableRow>
             ))}
           </TableBody>
