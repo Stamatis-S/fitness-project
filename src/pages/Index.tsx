@@ -7,13 +7,23 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 const Index = () => {
-  const { session } = useAuth();
+  const { session, isLoading } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!isLoading && !session) {
+      navigate('/auth');
+    }
+  }, [session, isLoading, navigate]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   if (!session) {
-    console.log('No active session, redirecting to auth');
     return null;
   }
 

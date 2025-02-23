@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -16,12 +16,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setIsLoading(false);
+
+      // Handle initial navigation based on session
+      const publicRoutes = ['/auth'];
+      const isPublicRoute = publicRoutes.includes(location.pathname);
+
+      if (!session && !isPublicRoute) {
+        navigate('/auth');
+      } else if (session && isPublicRoute) {
+        navigate('/');
+      }
     });
 
     // Listen for auth changes
@@ -31,15 +42,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setIsLoading(false);
 
-      // If session is lost, redirect to auth page
       if (!session) {
-        navigate('/auth');
         toast.error("Session expired. Please log in again.");
+        navigate('/auth');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   return (
     <AuthContext.Provider value={{ session, isLoading }}>
