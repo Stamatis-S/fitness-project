@@ -1,7 +1,8 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY")
+const supabaseUrl = Deno.env.get('SUPABASE_URL')
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,11 @@ serve(async (req) => {
   }
 
   try {
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing Supabase environment variables')
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey)
     const { workoutLogs, userEmail } = await req.json()
     
     if (!workoutLogs || !Array.isArray(workoutLogs)) {
@@ -72,33 +78,20 @@ serve(async (req) => {
       </div>
     `
 
-    // Send email using SendGrid
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        personalizations: [{
-          to: [{ email: userEmail }]
-        }],
-        from: { email: 'workout-tracker@yourdomain.com', name: 'Workout Tracker' },
-        subject: '🏋️‍♂️ Your Weekly Workout Report',
-        content: [{
-          type: 'text/html',
-          value: emailHtml
-        }]
-      })
-    });
+    // Send email using Supabase
+    const { error } = await supabase.auth.admin.sendRawEmail({
+      to: userEmail,
+      from: 'noreply@yourdomain.com',
+      subject: '🏋️‍♂️ Your Weekly Workout Report',
+      html: emailHtml,
+    })
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('SendGrid API Error:', errorData);
-      throw new Error('Failed to send email');
+    if (error) {
+      console.error('Error sending email:', error)
+      throw error
     }
 
-    console.log("Email sent successfully via SendGrid");
+    console.log("Email sent successfully via Supabase SMTP")
 
     return new Response(
       JSON.stringify({ message: 'Workout report sent successfully!' }),
@@ -110,7 +103,7 @@ serve(async (req) => {
       }
     )
   } catch (error: any) {
-    console.error('Error sending workout report:', error);
+    console.error('Error sending workout report:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
