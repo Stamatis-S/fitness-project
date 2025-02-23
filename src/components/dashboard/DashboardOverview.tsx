@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { MostUsedExercise } from "./metrics/MostUsedExercise";
 import { MaxWeightMetric } from "./metrics/MaxWeightMetric";
 import { PRTracker } from "./metrics/PRTracker";
-import { WorkoutReports } from "./WorkoutReports";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -63,8 +62,6 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
           <PRTracker records={personalRecords} />
         </Card>
       </motion.div>
-
-      <WorkoutReports workoutLogs={workoutLogs} />
     </div>
   );
 }
