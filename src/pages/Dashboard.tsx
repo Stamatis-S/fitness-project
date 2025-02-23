@@ -12,6 +12,7 @@ import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics"
 import { PageTransition } from "@/components/PageTransition";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/components/AuthProvider";
+import { useEffect } from "react";
 import type { Database } from "@/integrations/supabase/types";
 
 type ExerciseCategory = Database['public']['Enums']['exercise_category'];
@@ -35,13 +36,18 @@ export interface WorkoutLog {
 export default function Dashboard() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { session } = useAuth();
+  const { session, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !session) {
+      navigate('/auth');
+    }
+  }, [session, isLoading, navigate]);
 
   const { data: workoutLogs } = useQuery({
     queryKey: ['workout_logs', session?.user.id],
     queryFn: async () => {
       if (!session?.user.id) {
-        navigate('/auth');
         throw new Error('Not authenticated');
       }
 
@@ -66,8 +72,11 @@ export default function Dashboard() {
     enabled: !!session?.user.id,
   });
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   if (!session) {
-    navigate('/auth');
     return null;
   }
 

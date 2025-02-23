@@ -9,22 +9,27 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { ArrowLeft } from "lucide-react";
 
 export default function SavedExercises() {
-  const { session } = useAuth();
+  const { session, isLoading } = useAuth();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
 
+  useEffect(() => {
+    if (!isLoading && !session) {
+      navigate('/auth');
+    }
+  }, [session, isLoading, navigate]);
+
   const { data: workoutLogs, refetch } = useQuery({
     queryKey: ['workout_logs', session?.user.id],
     queryFn: async () => {
       if (!session?.user.id) {
-        navigate('/auth');
         throw new Error('Not authenticated');
       }
 
@@ -62,15 +67,18 @@ export default function SavedExercises() {
       if (error) throw error;
 
       toast.success("Exercise deleted successfully");
-      refetch(); // Refresh the data after deletion
+      refetch();
     } catch (error: any) {
       toast.error("Failed to delete exercise");
       console.error("Delete error:", error);
     }
   };
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   if (!session) {
-    navigate('/auth');
     return null;
   }
 
