@@ -1,8 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import { Resend } from "npm:resend@2.0.0"
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"))
+const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY")
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -73,15 +72,33 @@ serve(async (req) => {
       </div>
     `
 
-    // Send email using Resend
-    const emailResponse = await resend.emails.send({
-      from: "Workout Tracker <onboarding@resend.dev>",
-      to: [userEmail],
-      subject: "🏋️‍♂️ Your Weekly Workout Report",
-      html: emailHtml,
-    })
+    // Send email using SendGrid
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        personalizations: [{
+          to: [{ email: userEmail }]
+        }],
+        from: { email: 'workout-tracker@yourdomain.com', name: 'Workout Tracker' },
+        subject: '🏋️‍♂️ Your Weekly Workout Report',
+        content: [{
+          type: 'text/html',
+          value: emailHtml
+        }]
+      })
+    });
 
-    console.log("Email sent successfully:", emailResponse)
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('SendGrid API Error:', errorData);
+      throw new Error('Failed to send email');
+    }
+
+    console.log("Email sent successfully via SendGrid");
 
     return new Response(
       JSON.stringify({ message: 'Workout report sent successfully!' }),
@@ -93,7 +110,7 @@ serve(async (req) => {
       }
     )
   } catch (error: any) {
-    console.error('Error sending workout report:', error)
+    console.error('Error sending workout report:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
