@@ -41,14 +41,14 @@ const Index = () => {
   return (
     <PageTransition>
       <div className="min-h-screen p-4 md:p-8 pb-24 bg-gradient-to-b from-background to-muted">
-        <div className="max-w-7xl mx-auto space-y-6">
+        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex-1" />
             <div className="flex-1 text-center">
               <img 
                 src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
                 alt="Fitness Project Logo"
-                className="w-48 md:w-56 mx-auto"
+                className="w-32 md:w-48 lg:w-56 mx-auto"
               />
             </div>
             <div className="flex-1 flex justify-end gap-2">
@@ -64,7 +64,7 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative scroll-container">
             {session && <ExerciseEntryForm />}
           </div>
         </div>
