@@ -5,13 +5,12 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Edit2, Check } from "lucide-react";
+import { ChevronLeft, Edit2, Check, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, isValid } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw } from "lucide-react";
 
 interface ProfileData {
   username: string | null;
@@ -75,10 +74,7 @@ export default function Profile() {
         .update({ username: newUsername })
         .eq('id', session.user.id);
 
-      if (error) {
-        console.error("Update error:", error);
-        throw error;
-      }
+      if (error) throw error;
 
       setProfile(prev => prev ? { ...prev, username: newUsername } : null);
       setIsEditingUsername(false);
@@ -119,10 +115,10 @@ export default function Profile() {
 
   const getProgressValue = (score: number) => {
     const levelThresholds = {
-      monster: 1500,
-      elite: 1125,
-      advanced: 750,
-      intermediate: 375,
+      monster: 4001,
+      elite: 3001,
+      advanced: 2001,
+      intermediate: 1001,
       beginner: 0
     };
 
@@ -274,23 +270,23 @@ export default function Profile() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="space-y-1">
                 <p className="font-medium text-[#EAB308]">Beginner</p>
-                <p className="text-sm text-muted-foreground">0 - 374</p>
+                <p className="text-sm text-muted-foreground">0 - 1,000</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#22C55E]">Intermediate</p>
-                <p className="text-sm text-muted-foreground">375 - 749</p>
+                <p className="text-sm text-muted-foreground">1,001 - 2,000</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#4488EF]">Advanced</p>
-                <p className="text-sm text-muted-foreground">750 - 1,124</p>
+                <p className="text-sm text-muted-foreground">2,001 - 3,000</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#A855F7]">Elite</p>
-                <p className="text-sm text-muted-foreground">1,125 - 1,499</p>
+                <p className="text-sm text-muted-foreground">3,001 - 4,000</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#FF0000] dark:text-[#FF4444]">Monster</p>
-                <p className="text-sm text-muted-foreground">1,500+</p>
+                <p className="text-sm text-muted-foreground">4,001+</p>
               </div>
             </div>
           </div>
