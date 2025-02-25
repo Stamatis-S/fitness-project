@@ -22,12 +22,20 @@ interface PRTrackerProps {
 }
 
 export function PRTracker({ records }: PRTrackerProps) {
-  // Only show new records that have history
-  const newRecords = records.filter(record => record.type === 'new' && record.hasHistory);
+  // Only show new records that have history and group them by exercise name
+  const groupedRecords = records
+    .filter(record => record.type === 'new' && record.hasHistory)
+    .reduce((acc, record) => {
+      // If we already have this exercise, skip it
+      if (acc.some(r => r.exercise === record.exercise)) {
+        return acc;
+      }
+      return [...acc, record];
+    }, [] as PersonalRecord[]);
 
   return (
     <div className="space-y-2">
-      {newRecords.length > 0 ? (
+      {groupedRecords.length > 0 ? (
         <Table>
           <TableHeader>
             <TableRow>
@@ -36,7 +44,7 @@ export function PRTracker({ records }: PRTrackerProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {newRecords.map((record, index) => (
+            {groupedRecords.map((record, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium">{record.exercise}</TableCell>
                 <TableCell className="text-emerald-600 dark:text-emerald-400">{record.achievement}</TableCell>
