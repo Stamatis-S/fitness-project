@@ -261,41 +261,41 @@ export default function Profile() {
 
           <div className="space-y-2">
             <h3 className="text-lg font-medium">Level Requirements</h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="space-y-1">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4">
+              <div className="p-2">
                 <div className="flex items-center gap-2">
-                  <ArrowDown className="h-4 w-4 text-[#EAB308]" />
+                  <ArrowDown className="h-4 w-4 shrink-0 text-[#EAB308]" />
                   <p className="font-medium text-[#EAB308]">Beginner</p>
                 </div>
-                <p className="text-sm text-muted-foreground whitespace-nowrap">0 - 1,000</p>
+                <p className="text-sm text-muted-foreground">0 - 1,000</p>
               </div>
-              <div className="space-y-1">
+              <div className="p-2">
                 <div className="flex items-center gap-2">
-                  <ArrowUp className="h-4 w-4 text-[#22C55E]" />
+                  <ArrowUp className="h-4 w-4 shrink-0 text-[#22C55E]" />
                   <p className="font-medium text-[#22C55E]">Intermediate</p>
                 </div>
-                <p className="text-sm text-muted-foreground whitespace-nowrap">1,001 - 2,000</p>
+                <p className="text-sm text-muted-foreground">1,001 - 2,000</p>
               </div>
-              <div className="space-y-1">
+              <div className="p-2">
                 <div className="flex items-center gap-2">
-                  <Medal className="h-4 w-4 text-[#4488EF]" />
+                  <Medal className="h-4 w-4 shrink-0 text-[#4488EF]" />
                   <p className="font-medium text-[#4488EF]">Advanced</p>
                 </div>
-                <p className="text-sm text-muted-foreground whitespace-nowrap">2,001 - 3,000</p>
+                <p className="text-sm text-muted-foreground">2,001 - 3,000</p>
               </div>
-              <div className="space-y-1">
+              <div className="p-2">
                 <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-[#A855F7]" />
+                  <Star className="h-4 w-4 shrink-0 text-[#A855F7]" />
                   <p className="font-medium text-[#A855F7]">Elite</p>
                 </div>
-                <p className="text-sm text-muted-foreground whitespace-nowrap">3,001 - 4,000</p>
+                <p className="text-sm text-muted-foreground">3,001 - 4,000</p>
               </div>
-              <div className="space-y-1">
+              <div className="p-2">
                 <div className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4 text-[#FF0000] dark:text-[#FF4444]" />
+                  <Trophy className="h-4 w-4 shrink-0 text-[#FF0000] dark:text-[#FF4444]" />
                   <p className="font-medium text-[#FF0000] dark:text-[#FF4444]">Monster</p>
                 </div>
-                <p className="text-sm text-muted-foreground whitespace-nowrap">4,001+</p>
+                <p className="text-sm text-muted-foreground">4,001+</p>
               </div>
             </div>
           </div>
