@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { format, isValid } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { useQueryClient } from "@tanstack/react-query";
-import { Badge } from "@/components/ui/badge";
 
 interface ProfileData {
   username: string | null;
@@ -184,7 +183,7 @@ export default function Profile() {
           </div>
         </div>
         
-        <Card className="p-6 space-y-6 border bg-card text-card-foreground shadow-sm">
+        <Card className="p-6 space-y-4 border bg-card text-card-foreground shadow-sm">
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold">Account Information</h2>
             <div className="space-y-2">
@@ -223,16 +222,10 @@ export default function Profile() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Role:</span>
-                <Badge variant={profile.role === 'admin' ? 'default' : 'secondary'}>
-                  {profile.role}
-                </Badge>
-              </div>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Fitness Level</h2>
               <Button
