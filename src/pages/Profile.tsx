@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,7 +83,6 @@ export default function Profile() {
       setProfile(prev => prev ? { ...prev, username: newUsername } : null);
       setIsEditingUsername(false);
       
-      // Invalidate all queries that might use the username
       await queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
       await queryClient.invalidateQueries({ queryKey: ['leaderboard-stats'] });
       
@@ -107,7 +105,6 @@ export default function Profile() {
       
       await fetchProfile();
       
-      // Invalidate leaderboard queries to reflect new score
       await queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
       await queryClient.invalidateQueries({ queryKey: ['leaderboard-stats'] });
       
@@ -121,12 +118,11 @@ export default function Profile() {
   };
 
   const getProgressValue = (score: number) => {
-    // Updated progress calculation based on new thresholds
     const levelThresholds = {
-      monster: 6000,
-      elite: 4500,
-      advanced: 3000,
-      intermediate: 1500,
+      monster: 1500,
+      elite: 1125,
+      advanced: 750,
+      intermediate: 375,
       beginner: 0
     };
 
@@ -278,23 +274,23 @@ export default function Profile() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="space-y-1">
                 <p className="font-medium text-[#EAB308]">Beginner</p>
-                <p className="text-sm text-muted-foreground">0 - 1,499</p>
+                <p className="text-sm text-muted-foreground">0 - 374</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#22C55E]">Intermediate</p>
-                <p className="text-sm text-muted-foreground">1,500 - 2,999</p>
+                <p className="text-sm text-muted-foreground">375 - 749</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#4488EF]">Advanced</p>
-                <p className="text-sm text-muted-foreground">3,000 - 4,499</p>
+                <p className="text-sm text-muted-foreground">750 - 1,124</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#A855F7]">Elite</p>
-                <p className="text-sm text-muted-foreground">4,500 - 5,999</p>
+                <p className="text-sm text-muted-foreground">1,125 - 1,499</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-[#FF0000] dark:text-[#FF4444]">Monster</p>
-                <p className="text-sm text-muted-foreground">6,000+</p>
+                <p className="text-sm text-muted-foreground">1,500+</p>
               </div>
             </div>
           </div>
