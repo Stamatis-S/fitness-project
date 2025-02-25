@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Edit2, Check, RefreshCw } from "lucide-react";
+import { ChevronLeft, Edit2, Check, RefreshCw, Trophy, Star, Medal, ArrowUp, ArrowDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, isValid } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -262,24 +263,39 @@ export default function Profile() {
             <h3 className="text-lg font-medium">Level Requirements</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="space-y-1">
-                <p className="font-medium text-[#EAB308]">Beginner</p>
-                <p className="text-sm text-muted-foreground">0 - 1,000</p>
+                <div className="flex items-center gap-2">
+                  <ArrowDown className="h-4 w-4 text-[#EAB308]" />
+                  <p className="font-medium text-[#EAB308]">Beginner</p>
+                </div>
+                <p className="text-sm text-muted-foreground whitespace-nowrap">0 - 1,000</p>
               </div>
               <div className="space-y-1">
-                <p className="font-medium text-[#22C55E]">Intermediate</p>
-                <p className="text-sm text-muted-foreground">1,001 - 2,000</p>
+                <div className="flex items-center gap-2">
+                  <ArrowUp className="h-4 w-4 text-[#22C55E]" />
+                  <p className="font-medium text-[#22C55E]">Intermediate</p>
+                </div>
+                <p className="text-sm text-muted-foreground whitespace-nowrap">1,001 - 2,000</p>
               </div>
               <div className="space-y-1">
-                <p className="font-medium text-[#4488EF]">Advanced</p>
-                <p className="text-sm text-muted-foreground">2,001 - 3,000</p>
+                <div className="flex items-center gap-2">
+                  <Medal className="h-4 w-4 text-[#4488EF]" />
+                  <p className="font-medium text-[#4488EF]">Advanced</p>
+                </div>
+                <p className="text-sm text-muted-foreground whitespace-nowrap">2,001 - 3,000</p>
               </div>
               <div className="space-y-1">
-                <p className="font-medium text-[#A855F7]">Elite</p>
-                <p className="text-sm text-muted-foreground">3,001 - 4,000</p>
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-[#A855F7]" />
+                  <p className="font-medium text-[#A855F7]">Elite</p>
+                </div>
+                <p className="text-sm text-muted-foreground whitespace-nowrap">3,001 - 4,000</p>
               </div>
               <div className="space-y-1">
-                <p className="font-medium text-[#FF0000] dark:text-[#FF4444]">Monster</p>
-                <p className="text-sm text-muted-foreground">4,001+</p>
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-[#FF0000] dark:text-[#FF4444]" />
+                  <p className="font-medium text-[#FF0000] dark:text-[#FF4444]">Monster</p>
+                </div>
+                <p className="text-sm text-muted-foreground whitespace-nowrap">4,001+</p>
               </div>
             </div>
           </div>
