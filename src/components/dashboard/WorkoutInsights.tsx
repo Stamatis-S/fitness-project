@@ -1,7 +1,9 @@
 
 import { Card } from "@/components/ui/card";
-import type { WorkoutLog } from "@/components/saved-exercises/types";
+import type { WorkoutLog } from "@/pages/Dashboard";
+import { format } from "date-fns";
 import { Activity, Award } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { WorkoutCycleCard } from "./WorkoutCycleCard";
 
@@ -29,9 +31,9 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
+        initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.3 }}
         className="col-span-full md:col-span-2"
       >
         <WorkoutCycleCard 
@@ -41,32 +43,32 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
+        initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.2, delay: 0.05 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
         className="col-span-full md:col-span-1"
       >
         <Card className="h-full">
           <div className="grid grid-cols-2 h-full">
             {mostTrainedCategory && (
-              <div className="flex flex-col gap-1 p-2 border-r border-border">
-                <div className="flex items-center gap-1">
-                  <Activity className="h-3 w-3 text-green-500" />
-                  <h3 className="text-xs font-semibold">Most Trained</h3>
+              <div className="flex flex-col gap-3 p-4 border-r border-border">
+                <div className="flex items-center space-x-4">
+                  <Activity className="h-5 w-5 text-green-500" />
+                  <h3 className="text-lg font-semibold">Most Trained</h3>
                 </div>
-                <div className="text-sm font-bold">{mostTrainedCategory}</div>
-                <p className="text-xs text-muted-foreground">Keep balance!</p>
+                <div className="text-2xl font-bold">{mostTrainedCategory}</div>
+                <p className="text-sm text-muted-foreground">Focus on other categories too!</p>
               </div>
             )}
 
             {logs.length > 0 && (
-              <div className="flex flex-col gap-1 p-2">
-                <div className="flex items-center gap-1">
-                  <Award className="h-3 w-3 text-yellow-500" />
-                  <h3 className="text-xs font-semibold">Total Workouts</h3>
+              <div className="flex flex-col gap-3 p-4">
+                <div className="flex items-center space-x-4">
+                  <Award className="h-5 w-5 text-yellow-500" />
+                  <h3 className="text-lg font-semibold">Total Workouts</h3>
                 </div>
-                <div className="text-sm font-bold">{logs.length}</div>
-                <p className="text-xs text-muted-foreground">Great job!</p>
+                <div className="text-3xl font-bold">{logs.length}</div>
+                <p className="text-sm text-muted-foreground">You're doing great!</p>
               </div>
             )}
           </div>

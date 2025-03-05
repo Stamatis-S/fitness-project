@@ -34,18 +34,18 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   const personalRecords = getPersonalRecords(workoutLogs);
 
   return (
-    <div className="grid grid-cols-1 gap-1.5 md:gap-2">
+    <div className="grid grid-cols-1 gap-6">
       <motion.div 
-        initial={{ opacity: 0, y: 5 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="col-span-full"
       >
         <Card className="h-full">
           <div className="grid grid-cols-2 h-full">
-            <div className="p-2 border-r border-border">
+            <div className="p-4 border-r border-border">
               <MostUsedExercise {...mostUsed} />
             </div>
-            <div className="p-2">
+            <div className="p-4">
               <MaxWeightMetric {...maxWeight} />
             </div>
           </div>
@@ -53,25 +53,18 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
       </motion.div>
 
       <motion.div 
-        initial={{ opacity: 0, y: 5 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className="col-span-full"
-      >
-        <Card className="p-2">
-          <h2 className="text-sm font-bold mb-1.5">Weekly Personal Records</h2>
-          <PRTracker records={personalRecords} />
-        </Card>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 5 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="col-span-full"
       >
-        <WorkoutReports workoutLogs={workoutLogs} />
+        <Card className="p-4">
+          <h2 className="text-xl font-bold mb-4">Weekly Personal Records</h2>
+          <PRTracker records={personalRecords} />
+        </Card>
       </motion.div>
+
+      <WorkoutReports workoutLogs={workoutLogs} />
     </div>
   );
 }

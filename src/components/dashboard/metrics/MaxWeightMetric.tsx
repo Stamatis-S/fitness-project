@@ -10,19 +10,16 @@ interface MaxWeightMetricProps {
 
 export function MaxWeightMetric({ topExercises }: MaxWeightMetricProps) {
   return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-1">
-        <Dumbbell className="h-3 w-3 text-primary" />
-        <h3 className="text-xs font-semibold">Top Weight Lifted</h3>
+    <div className="space-y-2">
+      <div className="flex items-center space-x-3">
+        <Dumbbell className="h-4 w-4 text-primary" />
+        <h3 className="text-base font-semibold">Top Weight Lifted</h3>
       </div>
-      <div>
+      <div className="space-y-1.5">
         {topExercises.map((entry, index) => (
-          <div 
-            key={entry.exercise} 
-            className={`flex justify-between items-baseline ${index > 0 ? 'mt-0.5' : ''}`}
-          >
-            <p className="text-[10px] text-muted-foreground truncate max-w-[70%]">{entry.exercise}</p>
-            <p className="text-xs font-bold">{entry.weight} kg</p>
+          <div key={entry.exercise} className="space-y-0.5">
+            <p className="text-lg font-bold">{entry.weight} kg</p>
+            <p className="text-xs text-muted-foreground">{entry.exercise}</p>
           </div>
         ))}
       </div>

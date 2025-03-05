@@ -275,7 +275,6 @@ export type Database = {
         | "ΩΜΟΙ"
         | "ΠΟΔΙΑ"
         | "ΚΟΡΜΟΣ"
-        | "CARDIO"
       user_role: "admin" | "user"
     }
     CompositeTypes: {

@@ -6,8 +6,7 @@ export const EXERCISE_CATEGORIES = {
   "ΤΡΙΚΕΦΑΛΑ": { color: "#818cf8", gradientClass: "from-indigo-500 to-indigo-600" },
   "ΩΜΟΙ": { color: "#4ade80", gradientClass: "from-green-500 to-green-600" },
   "ΠΟΔΙΑ": { color: "#fcd34d", gradientClass: "from-yellow-500 to-yellow-600" },
-  "ΚΟΡΜΟΣ": { color: "#f472b6", gradientClass: "from-pink-500 to-pink-600" },
-  "CARDIO": { color: "#fb923c", gradientClass: "from-orange-500 to-orange-600" }
+  "ΚΟΡΜΟΣ": { color: "#f472b6", gradientClass: "from-pink-500 to-pink-600" }
 } as const;
 
 export type ExerciseCategory = keyof typeof EXERCISE_CATEGORIES;
@@ -20,7 +19,6 @@ export const CATEGORY_COLORS = {
   "ΩΜΟΙ": "#22C55E",      // Green
   "ΠΟΔΙΑ": "#EAB308",     // Yellow
   "ΚΟΡΜΟΣ": "#EC4899",    // Pink
-  "CARDIO": "#FB923C"     // Orange
 } as const;
 
 export type CategoryColor = keyof typeof CATEGORY_COLORS;

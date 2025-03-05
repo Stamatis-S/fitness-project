@@ -93,9 +93,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     : defaultRepButtons;
 
   return (
-    <div className="bg-[#111111] rounded-md p-2.5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="text-red-500 text-xs font-semibold">
+    <div className="bg-[#111111] rounded-xl p-4">
+      <div className="flex items-center justify-between mb-6">
+        <div className="text-red-500 text-base font-semibold">
           Set {index + 1}
         </div>
         {index > 0 && (
@@ -106,12 +106,12 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         )}
       </div>
       
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         {/* Weight Section */}
         <div>
-          <div className="flex items-center gap-1.5 mb-2">
-            <Weight className="h-3.5 w-3.5 text-red-500" />
-            <span className="text-white text-xs font-medium">Weight: {weight || 0} KG</span>
+          <div className="flex items-center gap-2 mb-4">
+            <Weight className="h-4 w-4 text-red-500" />
+            <span className="text-white text-sm font-medium">Weight: {weight || 0} KG</span>
           </div>
           
           <QuickSelectButtons
@@ -133,9 +133,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
 
         {/* Reps Section */}
         <div>
-          <div className="flex items-center gap-1.5 mb-2">
-            <RotateCw className="h-3.5 w-3.5 text-red-500" />
-            <span className="text-white text-xs font-medium">Reps: {reps || 0}</span>
+          <div className="flex items-center gap-2 mb-4">
+            <RotateCw className="h-4 w-4 text-red-500" />
+            <span className="text-white text-sm font-medium">Reps: {reps || 0}</span>
           </div>
           
           <QuickSelectButtons

@@ -26,88 +26,85 @@ export function WorkoutFilters({
 }: WorkoutFiltersProps) {
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="glass-card space-y-2 p-2 rounded-lg"
+      transition={{ duration: 0.5 }}
+      className="glass-card space-y-6 p-6 rounded-lg"
     >
-      <div className="space-y-2">
+      <div className="space-y-4">
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             placeholder="Search exercises..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-7 glass-card border-none h-7 text-xs"
+            className="pl-10 glass-card border-none"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <h3 className="text-xs font-medium text-muted-foreground mb-1">Category</h3>
-            <div className="flex flex-wrap gap-1">
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium">Filter by Category</h3>
+          <div className="flex flex-wrap gap-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={cn(
+                "px-4 py-2 rounded-full text-sm font-medium glass-button",
+                categoryFilter === "all" ? "bg-primary text-primary-foreground" : "bg-background"
+              )}
+              onClick={() => onCategoryChange("all")}
+            >
+              All Categories
+            </motion.button>
+            {Object.entries(EXERCISE_CATEGORIES).map(([name]) => (
               <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                key={name}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "px-2 py-0.5 rounded-full text-[10px] font-medium glass-button",
-                  categoryFilter === "all" ? "bg-primary text-primary-foreground" : "bg-background"
+                  "category-button px-4 py-2 text-sm font-medium text-white rounded-full",
+                  "transition-all duration-300",
+                  categoryFilter === name && "ring-2 ring-offset-2 ring-white"
                 )}
-                onClick={() => onCategoryChange("all")}
+                style={{ 
+                  backgroundColor: CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS],
+                  boxShadow: categoryFilter === name 
+                    ? `0 0 20px ${CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS]}80`
+                    : 'none'
+                }}
+                onClick={() => onCategoryChange(name)}
               >
-                All
+                {name}
               </motion.button>
-              {Object.entries(EXERCISE_CATEGORIES).map(([name]) => (
-                <motion.button
-                  key={name}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  className={cn(
-                    "category-button px-2 py-0.5 text-[10px] font-medium text-white rounded-full",
-                    "transition-all duration-200",
-                    categoryFilter === name && "ring-1 ring-offset-1 ring-white"
-                  )}
-                  style={{ 
-                    backgroundColor: CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS],
-                    boxShadow: categoryFilter === name 
-                      ? `0 0 10px ${CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS]}80`
-                      : 'none'
-                  }}
-                  onClick={() => onCategoryChange(name)}
-                >
-                  {name}
-                </motion.button>
-              ))}
-            </div>
+            ))}
           </div>
+        </div>
 
-          <div>
-            <h3 className="text-xs font-medium text-muted-foreground mb-1">Time Range</h3>
-            <div className="flex flex-wrap gap-1">
-              {[
-                { value: "all", label: "All Time" },
-                { value: "7days", label: "7 Days" },
-                { value: "15days", label: "15 Days" },
-                { value: "30days", label: "30 Days" },
-                { value: "45days", label: "45 Days" },
-                { value: "90days", label: "90 Days" },
-              ].map(({ value, label }) => (
-                <motion.button
-                  key={value}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  className={cn(
-                    "px-2 py-0.5 rounded-full text-[10px] font-medium glass-button",
-                    dateFilter === value 
-                      ? "bg-primary text-primary-foreground" 
-                      : "bg-background"
-                  )}
-                  onClick={() => onDateChange(value)}
-                >
-                  {label}
-                </motion.button>
-              ))}
-            </div>
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium">Filter by Time Range</h3>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: "all", label: "All Time" },
+              { value: "15days", label: "Last 15 Days" },
+              { value: "30days", label: "Last 30 Days" },
+              { value: "45days", label: "Last 45 Days" },
+              { value: "90days", label: "Last 90 Days" },
+            ].map(({ value, label }) => (
+              <motion.button
+                key={value}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={cn(
+                  "px-4 py-2 rounded-full text-sm font-medium glass-button",
+                  dateFilter === value 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-background"
+                )}
+                onClick={() => onDateChange(value)}
+              >
+                {label}
+              </motion.button>
+            ))}
           </div>
         </div>
       </div>

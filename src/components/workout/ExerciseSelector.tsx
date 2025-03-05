@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -153,99 +154,119 @@ export function ExerciseSelector({
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex gap-1 items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 text-muted-foreground h-3 w-3" />
+    <div className="space-y-4">
+      <div className="relative">
+        <Search className={cn(
+          "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground",
+          isMobile ? "h-3 w-3" : "h-4 w-4"
+        )} />
+        <Input
+          placeholder="Search exercises..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className={cn(
+            "pl-9 pr-4",
+            isMobile ? "h-8 text-xs" : "h-10 text-sm"
+          )}
+        />
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
           <Input
-            placeholder="Search exercises..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-6 pr-2 h-7 text-xs"
-          />
-        </div>
-        <div className="flex gap-1 h-7">
-          <Input
-            placeholder="Add custom..."
+            placeholder="Add new custom exercise..."
             value={newCustomExercise}
             onChange={(e) => setNewCustomExercise(e.target.value)}
-            className="h-7 text-xs w-[100px]"
+            className={cn(
+              isMobile ? "h-8 text-xs" : "h-10 text-sm"
+            )}
           />
           <Button
             onClick={handleAddCustomExercise}
-            size="sm"
-            className="h-7 w-7 p-0"
+            size={isMobile ? "sm" : "default"}
+            className="shrink-0"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className={cn(
+              isMobile ? "h-4 w-4" : "h-5 w-5"
+            )} />
           </Button>
         </div>
-      </div>
 
-      <div className="grid grid-cols-3 gap-1">
-        {(isLoadingStandard || isLoadingCustom) ? (
-          <div className="col-span-full text-center py-1 text-xs">Loading...</div>
-        ) : (
-          <>
-            {allExercises.map((exercise) => (
-              <div key={`${exercise.isCustom ? 'custom' : 'standard'}-${exercise.id}`} className="relative group">
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  transition={{ duration: 0.1 }}
-                  onClick={() => onValueChange(exercise.id.toString())}
-                  className={cn(
-                    "w-full px-1.5 py-0.5 rounded-md font-medium",
-                    "transition-all duration-50",
-                    "text-center break-words bg-[#222222] dark:bg-slate-900",
-                    "min-h-[28px] text-[10px] leading-tight",
-                    value === exercise.id.toString()
-                      ? "ring-1 ring-primary bg-[#333333] dark:bg-slate-800"
-                      : "hover:bg-[#333333] dark:hover:bg-slate-800",
-                    "text-white dark:text-white"
-                  )}
-                >
-                  {exercise.name}
-                </motion.button>
-                
-                {exercise.isCustom && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute -right-0.5 -top-0.5 h-4 w-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground hover:bg-destructive/90 p-0"
-                      >
-                        <Trash2 className="h-2 w-2" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Custom Exercise</AlertDialogTitle>
-                        <AlertDialogDescription className="text-xs">
-                          Are you sure you want to delete "{exercise.name}"? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => deleteCustomExercise.mutate(exercise.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        <div className={cn(
+          "grid gap-1.5",
+          isMobile ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 gap-2"
+        )}>
+          {(isLoadingStandard || isLoadingCustom) ? (
+            <div className="col-span-full text-center py-4">Loading exercises...</div>
+          ) : (
+            <>
+              {allExercises.map((exercise) => (
+                <div key={`${exercise.isCustom ? 'custom' : 'standard'}-${exercise.id}`} className="relative group">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => onValueChange(exercise.id.toString())}
+                    className={cn(
+                      "w-full px-2 py-1.5 rounded-lg font-medium",
+                      "transition-all duration-200",
+                      "text-center break-words bg-[#333333] dark:bg-slate-800",
+                      isMobile ? (
+                        "min-h-[32px] text-xs leading-tight"
+                      ) : (
+                        "min-h-[40px] text-sm px-3 py-2"
+                      ),
+                      value === exercise.id.toString()
+                        ? "ring-2 ring-primary"
+                        : "hover:bg-[#444444] dark:hover:bg-slate-700",
+                      "text-white dark:text-white"
+                    )}
+                  >
+                    {exercise.name}
+                  </motion.button>
+                  
+                  {exercise.isCustom && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute -right-2 -top-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-              </div>
-            ))}
-            {!isLoadingStandard && !isLoadingCustom && allExercises.length === 0 && (
-              <div className="col-span-full text-center py-1 text-[10px] text-muted-foreground">
-                No exercises found
-              </div>
-            )}
-          </>
-        )}
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Custom Exercise</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{exercise.name}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteCustomExercise.mutate(exercise.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+              ))}
+              {!isLoadingStandard && !isLoadingCustom && allExercises.length === 0 && (
+                <div className={cn(
+                  "col-span-full text-center py-4 text-muted-foreground",
+                  isMobile && "text-xs"
+                )}>
+                  No exercises found
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -24,34 +24,42 @@ export function WorkoutReports({ workoutLogs }: WorkoutReportsProps) {
   const strengthProgress = calculateStrengthProgress(workoutLogs);
 
   return (
-    <Card className="p-2">
-      <h2 className="text-sm font-bold mb-1.5">Workout Reports</h2>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="col-span-full"
+    >
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold">Workout Reports</h2>
+        </div>
 
-      <div className="grid gap-1.5 md:grid-cols-2">
-        <Card className="p-2 bg-muted/50">
-          <h3 className="text-xs font-semibold mb-1">Weekly Summary</h3>
-          <ul className="space-y-1">
-            {summary.weeklyInsights.map((insight, index) => (
-              <li key={index} className="flex items-center gap-1 text-xs leading-tight">
-                <FileText className="h-3 w-3 text-primary flex-shrink-0" />
-                {insight}
-              </li>
-            ))}
-          </ul>
-        </Card>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card className="p-4 bg-muted/50">
+            <h3 className="text-lg font-semibold mb-2">Weekly Summary</h3>
+            <ul className="space-y-2">
+              {summary.weeklyInsights.map((insight, index) => (
+                <li key={index} className="flex items-center gap-2 text-sm">
+                  <FileText className="h-4 w-4 text-primary" />
+                  {insight}
+                </li>
+              ))}
+            </ul>
+          </Card>
 
-        <Card className="p-2 bg-muted/50">
-          <h3 className="text-xs font-semibold mb-1">Strength Progress</h3>
-          <ul className="space-y-1">
-            {strengthProgress.map((progress, index) => (
-              <li key={index} className="flex items-center gap-1 text-xs leading-tight">
-                <FileText className="h-3 w-3 text-primary flex-shrink-0" />
-                {progress}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </div>
-    </Card>
+          <Card className="p-4 bg-muted/50">
+            <h3 className="text-lg font-semibold mb-2">Strength Progress</h3>
+            <ul className="space-y-2">
+              {strengthProgress.map((progress, index) => (
+                <li key={index} className="flex items-center gap-2 text-sm">
+                  <FileText className="h-4 w-4 text-primary" />
+                  {progress}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </div>
+      </Card>
+    </motion.div>
   );
 }
