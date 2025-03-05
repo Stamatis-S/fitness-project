@@ -25,34 +25,35 @@ export function WorkoutReports({ workoutLogs }: WorkoutReportsProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
       className="col-span-full"
     >
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">Workout Reports</h2>
+      <Card className="p-3">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-bold">Workout Reports</h2>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="p-4 bg-muted/50">
-            <h3 className="text-lg font-semibold mb-2">Weekly Summary</h3>
-            <ul className="space-y-2">
+        <div className="grid gap-2 md:grid-cols-2">
+          <Card className="p-3 bg-muted/50">
+            <h3 className="text-sm font-semibold mb-2">Weekly Summary</h3>
+            <ul className="space-y-1.5">
               {summary.weeklyInsights.map((insight, index) => (
-                <li key={index} className="flex items-center gap-2 text-sm">
-                  <FileText className="h-4 w-4 text-primary" />
+                <li key={index} className="flex items-center gap-1.5 text-xs">
+                  <FileText className="h-3.5 w-3.5 text-primary" />
                   {insight}
                 </li>
               ))}
             </ul>
           </Card>
 
-          <Card className="p-4 bg-muted/50">
-            <h3 className="text-lg font-semibold mb-2">Strength Progress</h3>
-            <ul className="space-y-2">
+          <Card className="p-3 bg-muted/50">
+            <h3 className="text-sm font-semibold mb-2">Strength Progress</h3>
+            <ul className="space-y-1.5">
               {strengthProgress.map((progress, index) => (
-                <li key={index} className="flex items-center gap-2 text-sm">
-                  <FileText className="h-4 w-4 text-primary" />
+                <li key={index} className="flex items-center gap-1.5 text-xs">
+                  <FileText className="h-3.5 w-3.5 text-primary" />
                   {progress}
                 </li>
               ))}

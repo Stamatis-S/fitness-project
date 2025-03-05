@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { format, addDays, isAfter, isBefore, differenceInDays } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
@@ -182,23 +183,23 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
     : CYCLE_DAYS;
 
   return (
-    <Card className="flex flex-col gap-3 p-4">
+    <Card className="flex flex-col gap-2 p-3">
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h3 className="font-semibold">Workout Cycle</h3>
+        <div className="space-y-0.5">
+          <h3 className="text-sm font-medium">Workout Cycle</h3>
           {currentCycle?.start_date ? (
             <>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Cycle started on: {format(new Date(currentCycle.start_date), 'MMM d, yyyy')}
               </p>
               {currentCycle.is_active && (
-                <p className="text-sm">
+                <p className="text-xs">
                   {daysLeft} workout days left to complete cycle
                 </p>
               )}
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               Set your first workout day
             </p>
           )}
@@ -207,8 +208,8 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
         {(!currentCycle?.is_active || !currentCycle) && (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                <CalendarIcon className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" className="h-7 px-2 text-xs">
+                <CalendarIcon className="h-3.5 w-3.5 mr-1" />
                 Set First Day
               </Button>
             </PopoverTrigger>
@@ -228,7 +229,7 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
       {currentCycle?.is_active && (
         <Progress
           value={progress}
-          className="h-2"
+          className="h-1.5"
         />
       )}
     </Card>
