@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -162,9 +163,9 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
   }
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 bg-[#1E1E1E] border-[#333333]">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-        <h2 className="text-xl font-semibold">Progress Over Time</h2>
+        <h2 className="text-xl font-semibold text-white">Progress Over Time</h2>
         <Button
           variant="outline"
           onClick={() => {
@@ -173,7 +174,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
             }
             setCompareMode(!compareMode);
           }}
-          className="shrink-0"
+          className="shrink-0 bg-[#333333] text-white border-[#444444] hover:bg-[#444444]"
         >
           {compareMode ? "Exit Compare Mode" : "Compare Exercises"}
         </Button>
@@ -181,71 +182,79 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <div className="lg:col-span-1">
-          <h3 className="text-sm font-medium mb-2">Select Exercises</h3>
-          <ScrollArea className="h-[200px] w-full border rounded-md p-4">
-            <div className="grid grid-cols-1 gap-2">
-              {exerciseNames.map(name => (
-                <TooltipProvider key={name}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={selectedExercises.includes(name)}
-                          onCheckedChange={(checked) => {
-                            if (compareMode && selectedExercises.length >= 2 && checked) {
-                              toast.error("Can only compare two exercises at a time");
-                              return;
-                            }
-                            setSelectedExercises(prev =>
-                              checked
-                                ? [...prev, name]
-                                : prev.filter(e => e !== name)
-                            );
-                          }}
-                        />
-                        <label className="text-sm font-medium truncate">{name}</label>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{name}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ))}
-            </div>
-          </ScrollArea>
+          <h3 className="text-sm font-medium mb-2 text-gray-300">Select Exercises</h3>
+          <div className="bg-[#252525] border border-[#333333] rounded-md">
+            <ScrollArea className="h-[250px] w-full p-3">
+              <div className="grid grid-cols-1 gap-3">
+                {exerciseNames.map(name => (
+                  <TooltipProvider key={name}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center space-x-3 p-2 hover:bg-[#333333] rounded-md transition-colors">
+                          <Checkbox
+                            checked={selectedExercises.includes(name)}
+                            onCheckedChange={(checked) => {
+                              if (compareMode && selectedExercises.length >= 2 && checked) {
+                                toast.error("Can only compare two exercises at a time");
+                                return;
+                              }
+                              setSelectedExercises(prev =>
+                                checked
+                                  ? [...prev, name]
+                                  : prev.filter(e => e !== name)
+                              );
+                            }}
+                            className="border-[#555555] data-[state=checked]:bg-[#E22222] data-[state=checked]:border-[#E22222]"
+                          />
+                          <label className="text-sm font-medium text-gray-200 cursor-pointer whitespace-normal break-words">
+                            {name}
+                          </label>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-[#333333] text-white border-[#444444]">
+                        <p>{name}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
         
         <div className="lg:col-span-2">
-          <div className="h-[350px]">
+          <div className="h-[350px] bg-[#252525] border border-[#333333] rounded-md p-4">
             {progressData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={progressData}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
+                  margin={{ top: 10, right: 30, left: 10, bottom: 30 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.4} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333333" opacity={0.4} />
                   <XAxis
                     dataKey="date"
                     angle={-35}
                     textAnchor="end"
                     height={60}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 12, fill: "#CCCCCC" }}
                     padding={{ left: 10, right: 10 }}
+                    stroke="#555555"
                   />
                   <YAxis
                     label={{ 
                       value: 'Weight (kg)', 
                       angle: -90, 
                       position: 'insideLeft',
-                      style: { textAnchor: 'middle', fontSize: 12 }
+                      style: { textAnchor: 'middle', fontSize: 12, fill: "#CCCCCC" }
                     }}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 12, fill: "#CCCCCC" }}
+                    stroke="#555555"
                   />
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Legend 
                     wrapperStyle={{ paddingTop: 10, fontSize: 12 }}
                     align="center"
+                    formatter={(value) => <span style={{ color: "#FFFFFF" }}>{value}</span>}
                   />
                   {selectedExercises
                     .slice(0, compareMode ? 2 : undefined)
@@ -255,16 +264,16 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                         type="monotone"
                         dataKey={exercise}
                         stroke={COLORS[index % COLORS.length]}
-                        dot={{ r: 4 }}
+                        dot={{ r: 4, strokeWidth: 1, fill: "#252525" }}
+                        activeDot={{ r: 6, strokeWidth: 2, fill: "#252525" }}
                         connectNulls
                         strokeWidth={2}
-                        activeDot={{ r: 6, strokeWidth: 1 }}
                       />
                     ))}
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
+              <div className="h-full flex items-center justify-center text-gray-400">
                 {selectedExercises.length === 0 
                   ? "Select exercises to view progress"
                   : "No data available for selected exercises"}

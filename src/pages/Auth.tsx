@@ -45,14 +45,11 @@ export default function Auth() {
       if (isSignUp) {
         result = await supabase.auth.signUp({ email, password });
       } else {
+        const options = rememberMe ? {} : { options: { autoRefreshToken: false } };
         result = await supabase.auth.signInWithPassword({ 
           email, 
           password,
-          options: {
-            // Set session persistence based on rememberMe checkbox
-            // This controls if the session is remembered when the browser is closed
-            persistSession: rememberMe
-          }
+          ...options
         });
       }
 
