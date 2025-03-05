@@ -1,3 +1,4 @@
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
@@ -35,30 +36,6 @@ console.log('Initializing app with:', {
     height: window.innerHeight
   }
 });
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    // Register the service worker
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('SW registered with scope:', registration.scope);
-      })
-      .catch(error => {
-        console.error('SW registration failed:', error);
-      });
-      
-    // Handle offline status changes
-    window.addEventListener('online', () => {
-      console.log('You are now online');
-      document.dispatchEvent(new CustomEvent('app-online'));
-    });
-    
-    window.addEventListener('offline', () => {
-      console.log('You are now offline');
-      document.dispatchEvent(new CustomEvent('app-offline'));
-    });
-  });
-}
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {

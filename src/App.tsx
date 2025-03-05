@@ -1,27 +1,44 @@
 
-import { AuthProvider } from "./components/AuthProvider";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { RouterProvider } from "react-router-dom";
-import { router } from "./router";
-import { Toaster } from "sonner";
+import { AuthProvider } from "@/components/AuthProvider";
+import { Toaster } from "@/components/ui/sonner";
+import { BottomNav } from "@/components/BottomNav";
+import Index from "@/pages/Index";
+import Auth from "@/pages/Auth";
+import Dashboard from "@/pages/Dashboard";
+import Profile from "@/pages/Profile";
+import SavedExercises from "@/pages/SavedExercises";
+import Leaderboard from "@/pages/Leaderboard";
+import NotFound from "@/pages/NotFound";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-// Add the UpdatePrompt import
-import { UpdatePrompt } from "@/components/UpdatePrompt";
+const queryClient = new QueryClient();
 
 function App() {
-  const queryClient = new QueryClient();
+  const isMobile = useIsMobile();
 
   return (
-    <ThemeProvider defaultTheme="brand">
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Toaster />
-          <UpdatePrompt />
-          <RouterProvider router={router} />
-        </AuthProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <ThemeProvider>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/saved-exercises" element={<SavedExercises />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            {isMobile && <BottomNav />}
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
+      </Router>
+    </QueryClientProvider>
   );
 }
 
