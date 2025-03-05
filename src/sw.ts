@@ -71,8 +71,7 @@ registerRoute(
       return response;
     } catch (error) {
       // Use the proper method to queue a request when offline
-      const bgSyncQueue = workoutSyncPlugin.createQueueEntry({ request });
-      await workoutSyncPlugin.registerQueueEntry(bgSyncQueue);
+      await workoutSyncPlugin.queue.pushRequest({ request });
       
       return new Response('Offline, request queued', {
         status: 503,
