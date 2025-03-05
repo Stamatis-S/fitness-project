@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -45,12 +44,9 @@ export default function Auth() {
       if (isSignUp) {
         result = await supabase.auth.signUp({ email, password });
       } else {
-        const options = rememberMe ? {} : { options: { autoRefreshToken: false } };
-        result = await supabase.auth.signInWithPassword({ 
-          email, 
-          password,
-          ...options
-        });
+        // The Supabase API doesn't support autoRefreshToken in signInWithPassword options
+        // We'll handle rememberMe through localStorage instead
+        result = await supabase.auth.signInWithPassword({ email, password });
       }
 
       const { error } = result;
