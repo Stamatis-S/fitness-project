@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { format } from "date-fns";
@@ -50,24 +51,24 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
         <Card className="h-full">
           <div className="grid grid-cols-2 h-full">
             {mostTrainedCategory && (
-              <div className="flex flex-col gap-3 p-4 border-r border-border">
-                <div className="flex items-center space-x-4">
-                  <Activity className="h-5 w-5 text-green-500" />
-                  <h3 className="text-lg font-semibold">Most Trained</h3>
+              <div className="flex flex-col gap-2 p-3 border-r border-border">
+                <div className="flex items-center space-x-2">
+                  <Activity className="h-4 w-4 text-green-500" />
+                  <h3 className="text-sm font-semibold">Most Trained</h3>
                 </div>
-                <div className="text-2xl font-bold">{mostTrainedCategory}</div>
-                <p className="text-sm text-muted-foreground">Focus on other categories too!</p>
+                <div className="text-xl font-bold">{mostTrainedCategory}</div>
+                <p className="text-xs text-muted-foreground">Focus on other categories too!</p>
               </div>
             )}
 
             {logs.length > 0 && (
-              <div className="flex flex-col gap-3 p-4">
-                <div className="flex items-center space-x-4">
-                  <Award className="h-5 w-5 text-yellow-500" />
-                  <h3 className="text-lg font-semibold">Total Workouts</h3>
+              <div className="flex flex-col gap-2 p-3">
+                <div className="flex items-center space-x-2">
+                  <Award className="h-4 w-4 text-yellow-500" />
+                  <h3 className="text-sm font-semibold">Total Workouts</h3>
                 </div>
-                <div className="text-3xl font-bold">{logs.length}</div>
-                <p className="text-sm text-muted-foreground">You're doing great!</p>
+                <div className="text-2xl font-bold">{logs.length}</div>
+                <p className="text-xs text-muted-foreground">You're doing great!</p>
               </div>
             )}
           </div>

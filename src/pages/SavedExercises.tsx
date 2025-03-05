@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { ArrowLeft } from "lucide-react";
+import { subDays } from "date-fns";
 
 export default function SavedExercises() {
   const { session, isLoading } = useAuth();
@@ -82,38 +83,64 @@ export default function SavedExercises() {
     return null;
   }
 
+  const getDateRange = (filter: string): [Date, Date] | null => {
+    const today = new Date();
+    
+    switch (filter) {
+      case "7days":
+        return [subDays(today, 7), today];
+      case "15days":
+        return [subDays(today, 15), today];
+      case "30days":
+        return [subDays(today, 30), today];
+      case "45days":
+        return [subDays(today, 45), today];
+      case "90days":
+        return [subDays(today, 90), today];
+      default:
+        return null;
+    }
+  };
+
   const filteredLogs = workoutLogs?.filter(log => {
     if (categoryFilter !== "all" && log.category !== categoryFilter) return false;
+    
     if (searchTerm) {
       const exerciseName = log.exercises?.name || log.custom_exercise;
       if (!exerciseName?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     }
+    
     if (dateFilter !== "all") {
-      const logDate = new Date(log.workout_date);
-      if (logDate < new Date(dateFilter[0]) || logDate > new Date(dateFilter[1])) return false;
+      const dateRange = getDateRange(dateFilter);
+      if (dateRange) {
+        const logDate = new Date(log.workout_date);
+        const [startDate, endDate] = dateRange;
+        if (logDate < startDate || logDate > endDate) return false;
+      }
     }
+    
     return true;
   });
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black pb-16">
+      <div className="min-h-screen bg-black pb-10">
         <div className="mx-auto space-y-2">
           <div className="flex items-center p-2">
             <button
-              className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-2 rounded"
+              className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-1.5 rounded"
               onClick={() => navigate("/")}
             >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">Back</span>
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span className="text-xs">Back</span>
             </button>
-            <h1 className="text-lg font-bold flex-1 text-center text-white">
+            <h1 className="text-base font-bold flex-1 text-center text-white">
               Saved Exercises
             </h1>
-            <div className="w-[60px]" />
+            <div className="w-[50px]" />
           </div>
 
-          <Card className="p-2 md:p-3 bg-[#222222] border-0 rounded-lg">
+          <Card className="p-2 bg-[#222222] border-0 rounded-lg">
             <WorkoutFilters
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}

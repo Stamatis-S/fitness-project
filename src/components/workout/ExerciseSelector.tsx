@@ -154,7 +154,7 @@ export function ExerciseSelector({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="relative">
         <Search className={cn(
           "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground",
@@ -166,38 +166,38 @@ export function ExerciseSelector({
           onChange={(e) => setSearchQuery(e.target.value)}
           className={cn(
             "pl-9 pr-4",
-            isMobile ? "h-8 text-xs" : "h-10 text-sm"
+            isMobile ? "h-8 text-xs" : "h-9 text-sm"
           )}
         />
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
+      <div className="space-y-3">
+        <div className="flex items-center gap-1">
           <Input
             placeholder="Add new custom exercise..."
             value={newCustomExercise}
             onChange={(e) => setNewCustomExercise(e.target.value)}
             className={cn(
-              isMobile ? "h-8 text-xs" : "h-10 text-sm"
+              isMobile ? "h-8 text-xs" : "h-9 text-sm"
             )}
           />
           <Button
             onClick={handleAddCustomExercise}
-            size={isMobile ? "sm" : "default"}
+            size={isMobile ? "sm" : "sm"}
             className="shrink-0"
           >
             <Plus className={cn(
-              isMobile ? "h-4 w-4" : "h-5 w-5"
+              isMobile ? "h-3 w-3" : "h-4 w-4"
             )} />
           </Button>
         </div>
 
         <div className={cn(
-          "grid gap-1.5",
-          isMobile ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 gap-2"
+          "grid gap-1",
+          isMobile ? "grid-cols-3" : "grid-cols-3 sm:grid-cols-4 gap-1.5"
         )}>
           {(isLoadingStandard || isLoadingCustom) ? (
-            <div className="col-span-full text-center py-4">Loading exercises...</div>
+            <div className="col-span-full text-center py-2 text-sm">Loading exercises...</div>
           ) : (
             <>
               {allExercises.map((exercise) => (
@@ -207,13 +207,13 @@ export function ExerciseSelector({
                     whileTap={{ scale: 0.98 }}
                     onClick={() => onValueChange(exercise.id.toString())}
                     className={cn(
-                      "w-full px-2 py-1.5 rounded-lg font-medium",
+                      "w-full px-2 py-1 rounded-lg font-medium",
                       "transition-all duration-200",
                       "text-center break-words bg-[#333333] dark:bg-slate-800",
                       isMobile ? (
-                        "min-h-[32px] text-xs leading-tight"
+                        "min-h-[30px] text-xs leading-tight"
                       ) : (
-                        "min-h-[40px] text-sm px-3 py-2"
+                        "min-h-[36px] text-xs px-2 py-1.5"
                       ),
                       value === exercise.id.toString()
                         ? "ring-2 ring-primary"
@@ -230,9 +230,9 @@ export function ExerciseSelector({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute -right-2 -top-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          className="absolute -right-1 -top-1 h-5 w-5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-2.5 w-2.5" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -258,7 +258,7 @@ export function ExerciseSelector({
               ))}
               {!isLoadingStandard && !isLoadingCustom && allExercises.length === 0 && (
                 <div className={cn(
-                  "col-span-full text-center py-4 text-muted-foreground",
+                  "col-span-full text-center py-2 text-muted-foreground",
                   isMobile && "text-xs"
                 )}>
                   No exercises found

@@ -75,26 +75,26 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
   groupedLogs.sort((a, b) => b.date.localeCompare(a.date));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {groupedLogs.map((dateGroup) => (
-        <div key={dateGroup.date} className="space-y-4">
-          <h3 className="font-semibold text-xl px-4">
+        <div key={dateGroup.date} className="space-y-3">
+          <h3 className="font-semibold text-base px-3 py-1">
             {formatDate(dateGroup.date)}
           </h3>
           {dateGroup.exercises.map((exercise) => (
             <div 
               key={`${dateGroup.date}-${exercise.name}`}
-              className="bg-neutral-900/50 rounded-lg p-4 space-y-3"
+              className="bg-neutral-900/50 rounded-lg p-3 mx-2 space-y-2"
             >
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <h4 className="text-lg font-medium text-neutral-200">
+                  <div className="space-y-1">
+                    <h4 className="text-base font-medium text-neutral-200">
                       {exercise.name}
                     </h4>
                     <Badge 
                       className={`
-                        px-3 py-1 rounded-full font-medium
+                        px-2 py-0.5 rounded-full text-xs font-medium
                         ${exercise.category === 'ΩΜΟΙ' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : ''}
                         ${exercise.category === 'ΠΟΔΙΑ' ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : ''}
                         ${exercise.category === 'ΣΤΗΘΟΣ' ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : ''}
@@ -113,18 +113,18 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => onDelete(exercise.sets[0].id)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 w-7"
                     >
-                      <Trash2 className="h-5 w-5" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {exercise.sets.map((set) => (
                   <div 
                     key={set.id}
-                    className="bg-neutral-800 px-4 py-2 rounded-lg whitespace-nowrap text-neutral-200"
+                    className="bg-neutral-800 px-3 py-1.5 rounded-lg whitespace-nowrap text-xs text-neutral-200"
                   >
                     Set {set.set_number}: {set.weight_kg}kg × {set.reps}
                   </div>
