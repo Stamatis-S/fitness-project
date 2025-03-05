@@ -26,50 +26,50 @@ export function WorkoutFilters({
 }: WorkoutFiltersProps) {
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="glass-card space-y-6 p-6 rounded-lg"
+      transition={{ duration: 0.3 }}
+      className="glass-card space-y-3 p-4 rounded-lg"
     >
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search exercises..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 glass-card border-none"
+            className="pl-8 glass-card border-none h-8 text-sm"
           />
         </div>
 
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium">Filter by Category</h3>
-          <div className="flex flex-wrap gap-2">
+        <div className="space-y-1">
+          <h3 className="text-xs font-medium text-muted-foreground">Category</h3>
+          <div className="flex flex-wrap gap-1">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium glass-button",
+                "px-3 py-1 rounded-full text-xs font-medium glass-button",
                 categoryFilter === "all" ? "bg-primary text-primary-foreground" : "bg-background"
               )}
               onClick={() => onCategoryChange("all")}
             >
-              All Categories
+              All
             </motion.button>
             {Object.entries(EXERCISE_CATEGORIES).map(([name]) => (
               <motion.button
                 key={name}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 className={cn(
-                  "category-button px-4 py-2 text-sm font-medium text-white rounded-full",
-                  "transition-all duration-300",
-                  categoryFilter === name && "ring-2 ring-offset-2 ring-white"
+                  "category-button px-3 py-1 text-xs font-medium text-white rounded-full",
+                  "transition-all duration-200",
+                  categoryFilter === name && "ring-1 ring-offset-1 ring-white"
                 )}
                 style={{ 
                   backgroundColor: CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS],
                   boxShadow: categoryFilter === name 
-                    ? `0 0 20px ${CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS]}80`
+                    ? `0 0 10px ${CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS]}80`
                     : 'none'
                 }}
                 onClick={() => onCategoryChange(name)}
@@ -80,11 +80,12 @@ export function WorkoutFilters({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium">Filter by Time Range</h3>
-          <div className="flex flex-wrap gap-2">
+        <div className="space-y-1">
+          <h3 className="text-xs font-medium text-muted-foreground">Time Range</h3>
+          <div className="flex flex-wrap gap-1">
             {[
               { value: "all", label: "All Time" },
+              { value: "7days", label: "Last 7 Days" },
               { value: "15days", label: "Last 15 Days" },
               { value: "30days", label: "Last 30 Days" },
               { value: "45days", label: "Last 45 Days" },
@@ -92,10 +93,10 @@ export function WorkoutFilters({
             ].map(({ value, label }) => (
               <motion.button
                 key={value}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 className={cn(
-                  "px-4 py-2 rounded-full text-sm font-medium glass-button",
+                  "px-3 py-1 rounded-full text-xs font-medium glass-button",
                   dateFilter === value 
                     ? "bg-primary text-primary-foreground" 
                     : "bg-background"
