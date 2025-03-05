@@ -18,13 +18,13 @@ export function MostUsedExercise({ exercises, sets }: MostUsedExerciseProps) {
       
       <div className="bg-[#333333] rounded-md p-2">
         <div className="flex justify-between items-center">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 overflow-hidden pr-2">
             {exercises.map((exercise, index) => (
-              <p key={index} className="text-sm font-bold truncate">{exercise}</p>
+              <p key={index} className="text-sm font-bold whitespace-normal break-words">{exercise}</p>
             ))}
             <p className="text-xs text-muted-foreground mt-0.5">{sets} total sets</p>
           </div>
-          <div className="flex-shrink-0 bg-primary/10 p-1.5 rounded-full ml-1.5">
+          <div className="flex-shrink-0 bg-primary/10 p-1.5 rounded-full">
             <Target className="h-3.5 w-3.5 text-primary" />
           </div>
         </div>
