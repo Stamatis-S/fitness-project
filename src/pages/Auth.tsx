@@ -8,14 +8,30 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
+import { Loader2 } from "lucide-react";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
   const { session } = useAuth();
+
+  useEffect(() => {
+    // Check for existing session
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate("/");
+      }
+      setIsCheckingSession(false);
+    };
+    
+    checkSession();
+  }, [navigate]);
 
   useEffect(() => {
     if (session) {
@@ -28,20 +44,36 @@ export default function Auth() {
     setIsLoading(true);
 
     try {
-      const { error } = isSignUp 
-        ? await supabase.auth.signUp({ email, password })
-        : await supabase.auth.signInWithPassword({ email, password });
-
-      if (error) throw error;
-
       if (isSignUp) {
+        // Sign up
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              email
+            }
+          }
+        });
+        
+        if (error) throw error;
         toast.success("Check your email to confirm your account!");
       } else {
+        // Sign in
+        const { error } = await supabase.auth.signInWithPassword({ 
+          email, 
+          password,
+          options: {
+            persistSession: rememberMe // This enables session persistence when true
+          }
+        });
+        
+        if (error) throw error;
         toast.success("Successfully logged in!");
         navigate("/");
       }
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || "Authentication failed");
     } finally {
       setIsLoading(false);
     }
@@ -50,6 +82,14 @@ export default function Auth() {
   const toggleSignUp = () => {
     setIsSignUp(!isSignUp);
   };
+
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start pt-8 md:pt-16 bg-gradient-to-b from-background to-muted p-4">
@@ -93,12 +133,32 @@ export default function Auth() {
             />
           </div>
 
+          {!isSignUp && (
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="remember"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <Label htmlFor="remember" className="text-sm font-normal">
+                Remember me
+              </Label>
+            </div>
+          )}
+
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading
-              ? "Loading..."
-              : isSignUp
-              ? "Create Account"
-              : "Log In"}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : isSignUp ? (
+              "Create Account"
+            ) : (
+              "Log In"
+            )}
           </Button>
         </form>
 

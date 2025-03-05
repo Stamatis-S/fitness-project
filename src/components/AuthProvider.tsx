@@ -8,9 +8,14 @@ import { toast } from "sonner";
 interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
+  signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ session: null, isLoading: true });
+const AuthContext = createContext<AuthContextType>({ 
+  session: null, 
+  isLoading: true,
+  signOut: async () => {} 
+});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -43,7 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
 
       if (!session) {
-        toast.error("Session expired. Please log in again.");
         navigate('/auth');
       }
     });
@@ -51,8 +55,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [navigate, location.pathname]);
 
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      setSession(null);
+      toast.success("Successfully logged out");
+      navigate('/auth');
+    } catch (error) {
+      toast.error("Error signing out");
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ session, isLoading }}>
+    <AuthContext.Provider value={{ session, isLoading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
