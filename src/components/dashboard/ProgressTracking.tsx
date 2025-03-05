@@ -179,84 +179,99 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
         </Button>
       </div>
       
-      <ScrollArea className="h-[150px] w-full border rounded-md p-4">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {exerciseNames.map(name => (
-            <TooltipProvider key={name}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={selectedExercises.includes(name)}
-                      onCheckedChange={(checked) => {
-                        if (compareMode && selectedExercises.length >= 2 && checked) {
-                          toast.error("Can only compare two exercises at a time");
-                          return;
-                        }
-                        setSelectedExercises(prev =>
-                          checked
-                            ? [...prev, name]
-                            : prev.filter(e => e !== name)
-                        );
-                      }}
-                    />
-                    <label className="text-sm truncate">{name}</label>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{name}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div className="lg:col-span-1">
+          <h3 className="text-sm font-medium mb-2">Select Exercises</h3>
+          <ScrollArea className="h-[200px] w-full border rounded-md p-4">
+            <div className="grid grid-cols-1 gap-2">
+              {exerciseNames.map(name => (
+                <TooltipProvider key={name}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={selectedExercises.includes(name)}
+                          onCheckedChange={(checked) => {
+                            if (compareMode && selectedExercises.length >= 2 && checked) {
+                              toast.error("Can only compare two exercises at a time");
+                              return;
+                            }
+                            setSelectedExercises(prev =>
+                              checked
+                                ? [...prev, name]
+                                : prev.filter(e => e !== name)
+                            );
+                          }}
+                        />
+                        <label className="text-sm font-medium truncate">{name}</label>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{name}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
+            </div>
+          </ScrollArea>
         </div>
-      </ScrollArea>
-      
-      <div className="h-[400px] mt-4">
-        {progressData.length > 0 ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={progressData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                angle={-45}
-                textAnchor="end"
-                height={80}
-              />
-              <YAxis
-                label={{ 
-                  value: 'Weighted Average (kg)', 
-                  angle: -90, 
-                  position: 'insideLeft',
-                  style: { textAnchor: 'middle' }
-                }}
-              />
-              <RechartsTooltip content={<CustomTooltip />} />
-              <Legend />
-              {selectedExercises
-                .slice(0, compareMode ? 2 : undefined)
-                .map((exercise, index) => (
-                  <Line
-                    key={exercise}
-                    type="monotone"
-                    dataKey={exercise}
-                    stroke={COLORS[index % COLORS.length]}
-                    dot={{ r: 4 }}
-                    connectNulls
+        
+        <div className="lg:col-span-2">
+          <div className="h-[350px]">
+            {progressData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={progressData}
+                  margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.4} />
+                  <XAxis
+                    dataKey="date"
+                    angle={-35}
+                    textAnchor="end"
+                    height={60}
+                    tick={{ fontSize: 12 }}
+                    padding={{ left: 10, right: 10 }}
                   />
-                ))}
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="h-full flex items-center justify-center text-muted-foreground">
-            {selectedExercises.length === 0 
-              ? "Select exercises to view progress"
-              : "No data available for selected exercises"}
+                  <YAxis
+                    label={{ 
+                      value: 'Weight (kg)', 
+                      angle: -90, 
+                      position: 'insideLeft',
+                      style: { textAnchor: 'middle', fontSize: 12 }
+                    }}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <RechartsTooltip content={<CustomTooltip />} />
+                  <Legend 
+                    wrapperStyle={{ paddingTop: 10, fontSize: 12 }}
+                    align="center"
+                  />
+                  {selectedExercises
+                    .slice(0, compareMode ? 2 : undefined)
+                    .map((exercise, index) => (
+                      <Line
+                        key={exercise}
+                        type="monotone"
+                        dataKey={exercise}
+                        stroke={COLORS[index % COLORS.length]}
+                        dot={{ r: 4 }}
+                        connectNulls
+                        strokeWidth={2}
+                        activeDot={{ r: 6, strokeWidth: 1 }}
+                      />
+                    ))}
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted-foreground">
+                {selectedExercises.length === 0 
+                  ? "Select exercises to view progress"
+                  : "No data available for selected exercises"}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </Card>
   );

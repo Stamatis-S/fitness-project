@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
@@ -14,9 +15,20 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
   const { session } = useAuth();
 
+  // Load saved credentials from localStorage on component mount
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("savedEmail");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      // Don't load password from localStorage for security reasons
+      // Instead just indicate that there are saved credentials
+    }
+  }, []);
+  
   useEffect(() => {
     if (session) {
       navigate("/");
@@ -28,11 +40,31 @@ export default function Auth() {
     setIsLoading(true);
 
     try {
-      const { error } = isSignUp 
-        ? await supabase.auth.signUp({ email, password })
-        : await supabase.auth.signInWithPassword({ email, password });
+      let result;
+      
+      if (isSignUp) {
+        result = await supabase.auth.signUp({ email, password });
+      } else {
+        result = await supabase.auth.signInWithPassword({ 
+          email, 
+          password,
+          options: {
+            // Set session persistence based on rememberMe checkbox
+            // This controls if the session is remembered when the browser is closed
+            persistSession: rememberMe
+          }
+        });
+      }
 
+      const { error } = result;
       if (error) throw error;
+
+      // Save email to localStorage if rememberMe is checked
+      if (rememberMe && !isSignUp) {
+        localStorage.setItem("savedEmail", email);
+      } else {
+        localStorage.removeItem("savedEmail");
+      }
 
       if (isSignUp) {
         toast.success("Check your email to confirm your account!");
@@ -94,6 +126,19 @@ export default function Auth() {
               className="compact-input h-9"
             />
           </div>
+
+          {!isSignUp && (
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="rememberMe" 
+                checked={rememberMe} 
+                onCheckedChange={checked => setRememberMe(checked === true)}
+              />
+              <Label htmlFor="rememberMe" className="text-xs text-gray-400">
+                Remember me
+              </Label>
+            </div>
+          )}
 
           <Button 
             type="submit" 

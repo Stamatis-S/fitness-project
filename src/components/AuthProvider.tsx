@@ -42,7 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setIsLoading(false);
 
-      if (!session) {
+      // Only redirect to auth page if there was previously a session
+      // This prevents unexpected redirects when using "remember me" feature
+      if (!session && location.pathname !== '/auth') {
         toast.error("Session expired. Please log in again.");
         navigate('/auth');
       }
