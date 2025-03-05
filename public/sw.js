@@ -2,10 +2,12 @@
 // This is a minimal service worker
 self.addEventListener('install', (event) => {
   self.skipWaiting();
+  console.log('Service worker installed');
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(clients.claim());
+  console.log('Service worker activated');
 });
 
 self.addEventListener('message', (event) => {
@@ -14,8 +16,11 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Fetch event handler for caching
+// Simple fetch handler that doesn't try to read directories
 self.addEventListener('fetch', (event) => {
-  // Default fetch behavior
-  event.respondWith(fetch(event.request));
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      return new Response('Network error', { status: 408 });
+    })
+  );
 });

@@ -16,19 +16,15 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' &&
     componentTagger(),
     VitePWA({
-      strategies: 'injectManifest',
-      injectRegister: 'auto',
-      injectManifest: {
-        injectionPoint: undefined,
-        swSrc: 'public/sw.js',
-        swDest: 'dist/sw.js',
-      },
-      devOptions: {
-        enabled: true,
-        type: 'module',
-      },
-      includeAssets: ['favicon.ico', 'robots.txt', 'icons/*.png'],
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: false, // Use our custom manifest.json file
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'],
+        navigateFallback: 'index.html',
+        // Remove the service worker configuration that tries to read directories
+        // and instead rely on defaults
+      },
     }),
   ].filter(Boolean),
   resolve: {
