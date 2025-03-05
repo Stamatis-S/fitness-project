@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -60,12 +59,10 @@ export default function Auth() {
         toast.success("Check your email to confirm your account!");
       } else {
         // Sign in
+        // Fix: Move persistSession to the correct location in the API
         const { error } = await supabase.auth.signInWithPassword({ 
           email, 
-          password,
-          options: {
-            persistSession: rememberMe // This enables session persistence when true
-          }
+          password
         });
         
         if (error) throw error;
