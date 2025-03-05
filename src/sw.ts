@@ -8,7 +8,7 @@ import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { NetworkFirst, StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { BackgroundSyncPlugin } from 'workbox-background-sync';
+import { BackgroundSyncPlugin, Queue } from 'workbox-background-sync';
 
 // Use with precache injection
 precacheAndRoute(self.__WB_MANIFEST);
@@ -57,7 +57,12 @@ registerRoute(
   new NavigationRoute(createHandlerBoundToURL('/index.html')),
 );
 
-// Background sync for offline workout submissions
+// Create a queue for background sync
+const workoutQueue = new Queue('workout-sync-queue', {
+  maxRetentionTime: 24 * 60 // Retry for max of 24 Hours (specified in minutes)
+});
+
+// Create the background sync plugin using the queue
 const workoutSyncPlugin = new BackgroundSyncPlugin('workout-sync-queue', {
   maxRetentionTime: 24 * 60 // Retry for max of 24 Hours (specified in minutes)
 });
@@ -70,8 +75,8 @@ registerRoute(
       const response = await fetch(request.clone());
       return response;
     } catch (error) {
-      // Use the proper method to queue a request when offline
-      await workoutSyncPlugin.queue.pushRequest({ request });
+      // Use the queue directly to add the request
+      await workoutQueue.pushRequest({ request });
       
       return new Response('Offline, request queued', {
         status: 503,
