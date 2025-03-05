@@ -15,24 +15,9 @@ import { useAuth } from "@/components/AuthProvider";
 import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import type { WorkoutLog } from "@/components/saved-exercises/types";
 
 type ExerciseCategory = Database['public']['Enums']['exercise_category'];
-
-export interface WorkoutLog {
-  id: number;
-  workout_date: string;
-  category: ExerciseCategory;
-  exercise_id: number | null;
-  custom_exercise: string | null;
-  exercises?: {
-    id: number;
-    name: string;
-  } | null;
-  set_number: number;
-  weight_kg: number;
-  reps: number;
-  user_id: string;
-}
 
 export default function Dashboard() {
   const navigate = useNavigate();
