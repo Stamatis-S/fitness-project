@@ -254,17 +254,19 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={progressData}
-                  margin={{ top: 10, right: 30, left: 10, bottom: 30 }}
+                  margin={{ top: 10, right: 40, left: 20, bottom: 60 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#333333" opacity={0.4} />
                   <XAxis
                     dataKey="date"
-                    angle={-35}
+                    angle={-45}
                     textAnchor="end"
-                    height={60}
+                    height={70}
                     tick={{ fontSize: 12, fill: "#CCCCCC" }}
-                    padding={{ left: 10, right: 10 }}
+                    padding={{ left: 20, right: 20 }}
                     stroke="#555555"
+                    interval={0}
+                    tickMargin={15}
                   />
                   <YAxis
                     label={{ 
@@ -278,7 +280,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                   />
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Legend 
-                    wrapperStyle={{ paddingTop: 10, fontSize: 12 }}
+                    wrapperStyle={{ paddingTop: 20, fontSize: 12 }}
                     align="center"
                     formatter={(value) => <span style={{ color: "#FFFFFF" }}>{value}</span>}
                   />
