@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
@@ -140,39 +141,40 @@ export function ExerciseEntryForm() {
   };
 
   return (
-    <Card className="max-w-2xl mx-auto p-4 md:p-6">
+    <Card className="max-w-2xl mx-auto p-3 md:p-4">
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="flex items-center justify-between mb-4">
+        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
             {step !== 'category' && (
               <Button
                 type="button"
                 onClick={handleBack}
                 variant="ghost"
-                className="flex items-center gap-2 -ml-2"
+                className="flex items-center gap-1 -ml-2 h-8"
+                size="sm"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-4 w-4" />
                 Back
               </Button>
             )}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex-1 text-center"
             >
-              <h2 className="text-xl font-semibold">
+              <h2 className="text-lg font-semibold">
                 {step === 'category' && 'Select Category'}
                 {step === 'exercise' && 'Choose Exercise'}
                 {step === 'sets' && 'Add Sets'}
               </h2>
             </motion.div>
-            {step !== 'category' && <div className="w-[73px]" />}
+            {step !== 'category' && <div className="w-[60px]" />}
           </div>
           
           <Tabs value={step} className="space-y-4">
-            <TabsContent value="category" className="m-0 space-y-6">
+            <TabsContent value="category" className="m-0 space-y-4">
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
                 <DateSelector 
@@ -182,9 +184,9 @@ export function ExerciseEntryForm() {
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                exit={{ opacity: 0, x: -10 }}
               >
                 <CategorySelector 
                   onCategoryChange={(category) => {
@@ -198,12 +200,12 @@ export function ExerciseEntryForm() {
 
             <TabsContent value="exercise" className="m-0">
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                exit={{ opacity: 0, x: -10 }}
               >
                 {selectedCategory && (
-                  <div className="px-2">
+                  <div className="px-1">
                     <ExerciseSelector 
                       category={selectedCategory}
                       value={methods.watch("exercise")}
@@ -221,20 +223,20 @@ export function ExerciseEntryForm() {
 
             <TabsContent value="sets" className="m-0">
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="flex flex-col h-[calc(100vh-20rem)]"
+                exit={{ opacity: 0, x: -10 }}
+                className="flex flex-col h-[calc(100vh-18rem)]"
               >
-                <ScrollArea className="flex-1 -mx-2 px-2 pb-4 overflow-hidden">
-                  <div className="space-y-3 touch-pan-y">
+                <ScrollArea className="flex-1 -mx-2 px-2 pb-3 overflow-hidden">
+                  <div className="space-y-2 touch-pan-y">
                     <AnimatePresence>
                       {fields.map((field, index) => (
                         <motion.div
                           key={field.id}
-                          initial={{ opacity: 0, y: 20 }}
+                          initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -20 }}
+                          exit={{ opacity: 0, y: -10 }}
                         >
                           <SetInput
                             key={field.id}
@@ -247,7 +249,7 @@ export function ExerciseEntryForm() {
                   </div>
                 </ScrollArea>
                 
-                <div className="space-y-3 pt-2 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="space-y-2 pt-2 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                   <motion.div
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
@@ -255,10 +257,11 @@ export function ExerciseEntryForm() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full h-12"
+                      className="w-full h-10"
                       onClick={() => append({ weight: 0, reps: 0 })}
+                      size="sm"
                     >
-                      <PlusCircle className="h-5 w-5 mr-2" />
+                      <PlusCircle className="h-4 w-4 mr-2" />
                       Add Set
                     </Button>
                   </motion.div>
@@ -267,8 +270,8 @@ export function ExerciseEntryForm() {
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                   >
-                    <Button type="submit" className="w-full h-12 text-lg">
-                      <Save className="h-5 w-5 mr-2" />
+                    <Button type="submit" className="w-full h-10">
+                      <Save className="h-4 w-4 mr-2" />
                       Save Exercise
                     </Button>
                   </motion.div>
