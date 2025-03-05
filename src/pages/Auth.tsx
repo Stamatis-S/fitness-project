@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -58,16 +59,21 @@ export default function Auth() {
         if (error) throw error;
         toast.success("Check your email to confirm your account!");
       } else {
-        // Sign in with persist session option
+        // Sign in
         const { error } = await supabase.auth.signInWithPassword({ 
           email, 
-          password,
-          options: {
-            persistSession: rememberMe // This enables session persistence when checked
-          }
+          password
         });
         
         if (error) throw error;
+        
+        // If rememberMe is false, set session expiry to 1 day instead of default 7 days
+        if (!rememberMe) {
+          await supabase.auth.refreshSession({
+            refreshToken: (await supabase.auth.getSession()).data.session?.refresh_token || '',
+          });
+        }
+        
         toast.success("Successfully logged in!");
         navigate("/");
       }

@@ -2,35 +2,63 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { registerSW } from 'virtual:pwa-register';
 
+// Use regular service worker registration instead of virtual:pwa-register
 export function UpdatePrompt() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
-    try {
-      // Use vite-plugin-pwa's registerSW function
-      const updateSW = registerSW({
-        onNeedRefresh() {
-          setUpdateAvailable(true);
-          showUpdateToast();
-        },
-        onOfflineReady() {
-          toast.success("App ready for offline use");
-        },
-      });
+    // Check if service workers are supported
+    if ('serviceWorker' in navigator) {
+      try {
+        // Register service worker
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('Service Worker registered with scope:', registration.scope);
 
-      // No need to directly interact with service worker anymore
-      return () => {
-        // Clean up
-      };
-    } catch (error) {
-      console.error('Error registering service worker:', error);
+            // Check if there's a waiting service worker
+            if (registration.waiting) {
+              setUpdateAvailable(true);
+              showUpdateToast();
+            }
+
+            // When a new service worker is waiting
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    setUpdateAvailable(true);
+                    showUpdateToast();
+                  }
+                });
+              }
+            });
+          })
+          .catch(error => {
+            console.error('Service Worker registration failed:', error);
+          });
+
+        // Detect controller change and refresh the page
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+      } catch (error) {
+        console.error('Error registering service worker:', error);
+      }
     }
   }, []);
 
   const reloadPage = () => {
-    // Will automatically trigger the update
+    // Send message to service worker to skip waiting
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+    }
     window.location.reload();
     setUpdateAvailable(false);
   };
