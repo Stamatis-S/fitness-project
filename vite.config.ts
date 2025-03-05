@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => ({
         runtimeCaching: [
           {
             // NetworkFirst strategy for Supabase API calls
-            urlPattern: ({ url }) => {
+            urlPattern: ({ url }: { url: URL }) => {
               const supabaseUrl = new URL("https://ygjzljotnkjadiolbiwk.supabase.co");
               return url.hostname === supabaseUrl.hostname;
             },
@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => ({
           },
           {
             // Cache workout data with background sync
-            urlPattern: ({ url }) => {
+            urlPattern: ({ url }: { url: URL }) => {
               return url.pathname.includes('workout_logs');
             },
             handler: 'NetworkFirst',

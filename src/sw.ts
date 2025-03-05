@@ -79,7 +79,7 @@ self.addEventListener('fetch', (event) => {
         await workoutSyncPlugin.pushRequest({ request: event.request.clone() });
         return new Response(JSON.stringify({ 
           queued: true,
-          message: 'Your workout has been saved and will be uploaded when you're back online.'
+          message: "Your workout has been saved and will be uploaded when you're back online."
         }), {
           headers: { 'Content-Type': 'application/json' }
         });
