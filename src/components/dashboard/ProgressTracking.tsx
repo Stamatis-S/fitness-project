@@ -23,7 +23,7 @@ import {
 } from "recharts";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
-import type { WorkoutLog } from "@/pages/Dashboard";
+import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { CustomTooltip } from "./CustomTooltip";
 
 const COLORS = [

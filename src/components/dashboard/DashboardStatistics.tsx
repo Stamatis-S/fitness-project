@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, PieChart, Pie, Cell } from "recharts";
-import type { WorkoutLog } from "@/pages/Dashboard";
+import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { CustomTooltip } from "./CustomTooltip";
 import { format, subMonths } from "date-fns";
 import { EXERCISE_CATEGORIES, CATEGORY_COLORS } from "@/lib/constants";

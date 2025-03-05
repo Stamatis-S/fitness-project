@@ -102,6 +102,7 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
                         ${exercise.category === 'ΔΙΚΕΦΑΛΑ' ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : ''}
                         ${exercise.category === 'ΤΡΙΚΕΦΑΛΑ' ? 'bg-pink-500/20 text-pink-400 hover:bg-pink-500/30' : ''}
                         ${exercise.category === 'ΚΟΡΜΟΣ' ? 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30' : ''}
+                        ${exercise.category === 'CARDIO' ? 'bg-orange-500/20 text-orange-400 hover:bg-orange-500/30' : ''}
                       `}
                     >
                       {exercise.category}

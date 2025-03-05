@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
@@ -20,7 +19,8 @@ const categories: Array<{
   { label: "Τρικέφαλα", value: "ΤΡΙΚΕΦΑΛΑ" },
   { label: "Ώμοι", value: "ΩΜΟΙ" },
   { label: "Πόδια", value: "ΠΟΔΙΑ" },
-  { label: "Κορμός", value: "ΚΟΡΜΟΣ" }
+  { label: "Κορμός", value: "ΚΟΡΜΟΣ" },
+  { label: "Cardio", value: "CARDIO" }
 ];
 
 export function CategorySelector({
