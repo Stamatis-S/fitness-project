@@ -1,4 +1,5 @@
 
+/// <reference lib="webworker" />
 import { clientsClaim } from 'workbox-core';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
@@ -6,6 +7,7 @@ import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from 'workbox-strategi
 import { ExpirationPlugin } from 'workbox-expiration';
 import { BackgroundSyncPlugin } from 'workbox-background-sync';
 
+// Add proper type declaration
 declare const self: ServiceWorkerGlobalScope;
 
 // Use clientsClaim to take control immediately
@@ -76,7 +78,7 @@ self.addEventListener('fetch', (event) => {
         return response;
       } catch (error) {
         // If offline, add to background sync queue
-        await workoutSyncPlugin.pushRequest({ request: event.request.clone() });
+        await workoutSyncPlugin.queue.pushRequest({ request: event.request.clone() });
         return new Response(JSON.stringify({ 
           queued: true,
           message: "Your workout has been saved and will be uploaded when you're back online."
