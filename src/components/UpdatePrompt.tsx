@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-// Use regular service worker registration instead of virtual:pwa-register
 export function UpdatePrompt() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
