@@ -3,7 +3,6 @@ import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import {
@@ -26,6 +25,8 @@ import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { CustomTooltip } from "./CustomTooltip";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 const COLORS = [
   "#8884d8",
@@ -47,6 +48,7 @@ interface ProgressTrackingProps {
 export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [compareMode, setCompareMode] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const { session } = useAuth();
   const navigate = useNavigate();
 
@@ -76,6 +78,14 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
       return [];
     }
   }, [workoutLogs]);
+
+  // Filter exercises based on search term
+  const filteredExercises = useMemo(() => {
+    return searchTerm 
+      ? exerciseNames.filter(name => 
+          name.toLowerCase().includes(searchTerm.toLowerCase()))
+      : exerciseNames;
+  }, [exerciseNames, searchTerm]);
 
   // Process workout data for the chart with weighted averages
   const progressData = useMemo(() => {
@@ -162,6 +172,18 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
     );
   }
 
+  const toggleExercise = (name: string, checked: boolean | "indeterminate") => {
+    if (compareMode && selectedExercises.length >= 2 && checked) {
+      toast.error("Can only compare two exercises at a time");
+      return;
+    }
+    setSelectedExercises(prev =>
+      checked
+        ? [...prev, name]
+        : prev.filter(e => e !== name)
+    );
+  };
+
   return (
     <Card className="p-6 bg-[#1E1E1E] border-[#333333]">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
@@ -180,30 +202,33 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        <div className="lg:col-span-1">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
+        {/* Exercise selector - takes 3/12 columns on large screens */}
+        <div className="lg:col-span-3">
           <h3 className="text-sm font-medium mb-2 text-gray-300">Select Exercises</h3>
-          <div className="bg-[#252525] border border-[#333333] rounded-md">
-            <ScrollArea className="h-[250px] w-full p-3">
-              <div className="grid grid-cols-1 gap-3">
-                {exerciseNames.map(name => (
+          <div className="bg-[#252525] border border-[#333333] rounded-md p-3">
+            <div className="relative mb-3">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search exercises..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8 h-8 text-sm bg-[#333333] border-[#444444] text-white"
+              />
+            </div>
+            
+            <div className="max-h-[200px] overflow-y-auto pr-1 grid grid-cols-1 gap-1">
+              {filteredExercises.length === 0 ? (
+                <p className="text-gray-400 text-sm p-2">No exercises found</p>
+              ) : (
+                filteredExercises.map(name => (
                   <TooltipProvider key={name}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div className="flex items-center space-x-3 p-2 hover:bg-[#333333] rounded-md transition-colors">
                           <Checkbox
                             checked={selectedExercises.includes(name)}
-                            onCheckedChange={(checked) => {
-                              if (compareMode && selectedExercises.length >= 2 && checked) {
-                                toast.error("Can only compare two exercises at a time");
-                                return;
-                              }
-                              setSelectedExercises(prev =>
-                                checked
-                                  ? [...prev, name]
-                                  : prev.filter(e => e !== name)
-                              );
-                            }}
+                            onCheckedChange={(checked) => toggleExercise(name, checked)}
                             className="border-[#555555] data-[state=checked]:bg-[#E22222] data-[state=checked]:border-[#E22222]"
                           />
                           <label className="text-sm font-medium text-gray-200 cursor-pointer whitespace-normal break-words">
@@ -216,14 +241,15 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                ))}
-              </div>
-            </ScrollArea>
+                ))
+              )}
+            </div>
           </div>
         </div>
         
-        <div className="lg:col-span-2">
-          <div className="h-[350px] bg-[#252525] border border-[#333333] rounded-md p-4">
+        {/* Graph area - takes 9/12 columns on large screens */}
+        <div className="lg:col-span-9">
+          <div className="h-[400px] bg-[#252525] border border-[#333333] rounded-md p-4">
             {progressData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
