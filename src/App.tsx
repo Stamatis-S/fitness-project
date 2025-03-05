@@ -13,6 +13,7 @@ import SavedExercises from "@/pages/SavedExercises";
 import Leaderboard from "@/pages/Leaderboard";
 import NotFound from "@/pages/NotFound";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { UpdatePrompt } from "@/components/UpdatePrompt";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ function App() {
             </Routes>
             {isMobile && <BottomNav />}
             <Toaster />
+            <UpdatePrompt />
           </AuthProvider>
         </ThemeProvider>
       </Router>
