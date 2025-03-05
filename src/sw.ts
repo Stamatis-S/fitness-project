@@ -78,7 +78,8 @@ self.addEventListener('fetch', (event) => {
         return response;
       } catch (error) {
         // If offline, add to background sync queue
-        await workoutSyncPlugin.queue.pushRequest({ request: event.request.clone() });
+        // Access the BackgroundSyncPlugin directly since it doesn't have a queue property
+        await workoutSyncPlugin.addRequest(event.request.clone());
         return new Response(JSON.stringify({ 
           queued: true,
           message: "Your workout has been saved and will be uploaded when you're back online."

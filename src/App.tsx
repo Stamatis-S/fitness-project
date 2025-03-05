@@ -13,7 +13,7 @@ function App() {
   const queryClient = new QueryClient();
 
   return (
-    <ThemeProvider defaultTheme="brand" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="brand">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Toaster />
