@@ -9,8 +9,7 @@ export function UpdatePrompt() {
   useEffect(() => {
     // Check if service workers are supported
     if ('serviceWorker' in navigator) {
-      try {
-        // Register service worker
+      window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
           .then(registration => {
             console.log('Service Worker registered with scope:', registration.scope);
@@ -47,9 +46,7 @@ export function UpdatePrompt() {
             window.location.reload();
           }
         });
-      } catch (error) {
-        console.error('Error registering service worker:', error);
-      }
+      });
     }
   }, []);
 

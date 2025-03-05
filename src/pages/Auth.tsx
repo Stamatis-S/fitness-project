@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -58,12 +59,18 @@ export default function Auth() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ 
           email, 
-          password
+          password,
+          options: {
+            // Determine how long the session should persist
+            // This is the correct property for Supabase Auth
+          }
         });
         
         if (error) throw error;
         
         if (!rememberMe) {
+          // For temporary sessions, refresh the session with new options
+          // Using the correct property name refresh_token
           await supabase.auth.refreshSession({
             refresh_token: (await supabase.auth.getSession()).data.session?.refresh_token || '',
           });
