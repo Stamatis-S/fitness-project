@@ -3,12 +3,10 @@ import { VitePWAOptions } from 'vite-plugin-pwa';
 
 export const pwaConfig: Partial<VitePWAOptions> = {
   includeAssets: ['favicon.ico', 'robots.txt', 'icons/*.png'],
-  manifest: false, // We'll use our custom manifest
+  manifest: true, // Use the manifest file
   registerType: 'autoUpdate',
-  strategies: 'injectManifest',
-  srcDir: 'src',
-  filename: 'sw.ts',
-  injectRegister: false, // We're handling registration in UpdatePrompt.tsx
+  strategies: 'generateSW', // Change from injectManifest to generateSW
+  injectRegister: 'auto', // Let Vite handle the registration
   workbox: {
     globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'],
     navigateFallback: '/index.html',

@@ -58,11 +58,13 @@ export default function Auth() {
         if (error) throw error;
         toast.success("Check your email to confirm your account!");
       } else {
-        // Sign in
-        // Fix: Move persistSession to the correct location in the API
+        // Sign in with persist session option
         const { error } = await supabase.auth.signInWithPassword({ 
           email, 
-          password
+          password,
+          options: {
+            persistSession: rememberMe // This enables session persistence when checked
+          }
         });
         
         if (error) throw error;
