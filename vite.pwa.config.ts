@@ -5,6 +5,10 @@ export const pwaConfig: Partial<VitePWAOptions> = {
   includeAssets: ['favicon.ico', 'robots.txt', 'icons/*.png'],
   manifest: false, // We'll use our custom manifest
   registerType: 'autoUpdate',
+  strategies: 'injectManifest',
+  srcDir: 'src',
+  filename: 'sw.ts',
+  injectRegister: false, // We're handling registration in UpdatePrompt.tsx
   workbox: {
     globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'],
     navigateFallback: '/index.html',

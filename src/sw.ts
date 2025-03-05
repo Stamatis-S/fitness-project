@@ -70,7 +70,10 @@ registerRoute(
       const response = await fetch(request.clone());
       return response;
     } catch (error) {
-      await workoutSyncPlugin.addRequest({request}); // Fixed: changed pushRequest to addRequest
+      // Use the proper method to queue a request when offline
+      const bgSyncQueue = workoutSyncPlugin.createQueueEntry({ request });
+      await workoutSyncPlugin.registerQueueEntry(bgSyncQueue);
+      
       return new Response('Offline, request queued', {
         status: 503,
         statusText: 'Service Unavailable'
