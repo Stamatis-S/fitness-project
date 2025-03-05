@@ -34,26 +34,26 @@ export function PRTracker({ records }: PRTrackerProps) {
     }, [] as PersonalRecord[]);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       {groupedRecords.length > 0 ? (
-        <Table>
+        <Table className="border-collapse">
           <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px]">Exercise</TableHead>
-              <TableHead>Achievement</TableHead>
+            <TableRow className="border-b border-border">
+              <TableHead className="py-1 text-xs">Exercise</TableHead>
+              <TableHead className="py-1 text-xs">Achievement</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {groupedRecords.map((record, index) => (
-              <TableRow key={index}>
-                <TableCell className="font-medium">{record.exercise}</TableCell>
-                <TableCell className="text-emerald-600 dark:text-emerald-400">{record.achievement}</TableCell>
+              <TableRow key={index} className="border-b border-border/50">
+                <TableCell className="py-1 text-xs font-medium">{record.exercise}</TableCell>
+                <TableCell className="py-1 text-xs text-emerald-600 dark:text-emerald-400">{record.achievement}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       ) : (
-        <p className="text-sm text-muted-foreground">No new PRs this week. Keep pushing!</p>
+        <p className="text-xs text-muted-foreground">No new PRs this week. Keep pushing!</p>
       )}
     </div>
   );

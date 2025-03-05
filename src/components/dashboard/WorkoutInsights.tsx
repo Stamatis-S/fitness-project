@@ -29,9 +29,9 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.25 }}
+        transition={{ duration: 0.2 }}
         className="col-span-full md:col-span-2"
       >
         <WorkoutCycleCard 
@@ -41,32 +41,32 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.25, delay: 0.05 }}
+        transition={{ duration: 0.2, delay: 0.05 }}
         className="col-span-full md:col-span-1"
       >
         <Card className="h-full">
           <div className="grid grid-cols-2 h-full">
             {mostTrainedCategory && (
-              <div className="flex flex-col gap-2 p-3 border-r border-border">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-green-500" />
-                  <h3 className="text-sm font-semibold">Most Trained</h3>
+              <div className="flex flex-col gap-1 p-2 border-r border-border">
+                <div className="flex items-center gap-1">
+                  <Activity className="h-3 w-3 text-green-500" />
+                  <h3 className="text-xs font-semibold">Most Trained</h3>
                 </div>
-                <div className="text-base font-bold">{mostTrainedCategory}</div>
-                <p className="text-xs text-muted-foreground">Focus on other categories too!</p>
+                <div className="text-sm font-bold">{mostTrainedCategory}</div>
+                <p className="text-xs text-muted-foreground">Keep balance!</p>
               </div>
             )}
 
             {logs.length > 0 && (
-              <div className="flex flex-col gap-2 p-3">
-                <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-yellow-500" />
-                  <h3 className="text-sm font-semibold">Total Workouts</h3>
+              <div className="flex flex-col gap-1 p-2">
+                <div className="flex items-center gap-1">
+                  <Award className="h-3 w-3 text-yellow-500" />
+                  <h3 className="text-xs font-semibold">Total Workouts</h3>
                 </div>
-                <div className="text-xl font-bold">{logs.length}</div>
-                <p className="text-xs text-muted-foreground">You're doing great!</p>
+                <div className="text-sm font-bold">{logs.length}</div>
+                <p className="text-xs text-muted-foreground">Great job!</p>
               </div>
             )}
           </div>

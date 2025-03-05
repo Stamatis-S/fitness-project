@@ -24,43 +24,34 @@ export function WorkoutReports({ workoutLogs }: WorkoutReportsProps) {
   const strengthProgress = calculateStrengthProgress(workoutLogs);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      className="col-span-full"
-    >
-      <Card className="p-3">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-bold">Workout Reports</h2>
-        </div>
+    <Card className="p-2">
+      <h2 className="text-sm font-bold mb-1.5">Workout Reports</h2>
 
-        <div className="grid gap-2 md:grid-cols-2">
-          <Card className="p-3 bg-muted/50">
-            <h3 className="text-sm font-semibold mb-2">Weekly Summary</h3>
-            <ul className="space-y-1.5">
-              {summary.weeklyInsights.map((insight, index) => (
-                <li key={index} className="flex items-center gap-1.5 text-xs">
-                  <FileText className="h-3.5 w-3.5 text-primary" />
-                  {insight}
-                </li>
-              ))}
-            </ul>
-          </Card>
+      <div className="grid gap-1.5 md:grid-cols-2">
+        <Card className="p-2 bg-muted/50">
+          <h3 className="text-xs font-semibold mb-1">Weekly Summary</h3>
+          <ul className="space-y-1">
+            {summary.weeklyInsights.map((insight, index) => (
+              <li key={index} className="flex items-center gap-1 text-xs leading-tight">
+                <FileText className="h-3 w-3 text-primary flex-shrink-0" />
+                {insight}
+              </li>
+            ))}
+          </ul>
+        </Card>
 
-          <Card className="p-3 bg-muted/50">
-            <h3 className="text-sm font-semibold mb-2">Strength Progress</h3>
-            <ul className="space-y-1.5">
-              {strengthProgress.map((progress, index) => (
-                <li key={index} className="flex items-center gap-1.5 text-xs">
-                  <FileText className="h-3.5 w-3.5 text-primary" />
-                  {progress}
-                </li>
-              ))}
-            </ul>
-          </Card>
-        </div>
-      </Card>
-    </motion.div>
+        <Card className="p-2 bg-muted/50">
+          <h3 className="text-xs font-semibold mb-1">Strength Progress</h3>
+          <ul className="space-y-1">
+            {strengthProgress.map((progress, index) => (
+              <li key={index} className="flex items-center gap-1 text-xs leading-tight">
+                <FileText className="h-3 w-3 text-primary flex-shrink-0" />
+                {progress}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
+    </Card>
   );
 }
