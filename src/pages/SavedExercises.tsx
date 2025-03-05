@@ -99,8 +99,7 @@ export default function SavedExercises() {
       case "90days":
         return [subDays(today, 90), today];
       default:
-        // "all" or any other value - return a range that includes all dates
-        return [new Date(0), today]; // From epoch start to today
+        return [new Date(0), today];
     }
   };
 
@@ -127,24 +126,24 @@ export default function SavedExercises() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen p-3 md:p-6 pb-24 bg-gradient-to-b from-background to-muted">
-        <div className="max-w-7xl mx-auto space-y-3">
+      <div className="min-h-screen p-2 pb-20 bg-gradient-to-b from-background to-muted">
+        <div className="max-w-2xl mx-auto space-y-2">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
-              className="hidden md:flex items-center gap-1 bg-[#333333] hover:bg-[#444444]"
+              className="hidden md:flex items-center gap-1 bg-[#333333] hover:bg-[#444444] h-7"
               onClick={() => navigate("/")}
             >
               <ArrowLeft className="h-3 w-3" />
               Back
             </Button>
-            <h1 className="text-lg md:text-xl font-bold flex-1 md:text-left text-center">
+            <h1 className="text-base md:text-lg font-bold flex-1 md:text-left text-center">
               Saved Exercises
             </h1>
           </div>
 
-          <Card className="p-3 bg-[#333333]">
+          <Card className="p-2 bg-[#333333]">
             <WorkoutFilters
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
@@ -155,7 +154,7 @@ export default function SavedExercises() {
             />
           </Card>
 
-          <Card className="overflow-hidden bg-[#333333]">
+          <Card className="p-2 overflow-hidden bg-[#333333]">
             <WorkoutTable logs={filteredLogs || []} onDelete={handleDelete} />
           </Card>
         </div>

@@ -75,56 +75,54 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
   groupedLogs.sort((a, b) => b.date.localeCompare(a.date));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {groupedLogs.map((dateGroup) => (
-        <div key={dateGroup.date} className="space-y-4">
-          <h3 className="font-semibold text-xl px-4">
+        <div key={dateGroup.date} className="space-y-2">
+          <h3 className="font-semibold text-sm px-2">
             {formatDate(dateGroup.date)}
           </h3>
           {dateGroup.exercises.map((exercise) => (
             <div 
               key={`${dateGroup.date}-${exercise.name}`}
-              className="bg-neutral-900/50 rounded-lg p-4 space-y-3"
+              className="bg-neutral-900/50 rounded-md p-2 space-y-2"
             >
-              <div className="space-y-2">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <h4 className="text-lg font-medium text-neutral-200">
-                      {exercise.name}
-                    </h4>
-                    <Badge 
-                      className={`
-                        px-3 py-1 rounded-full font-medium
-                        ${exercise.category === 'ΩΜΟΙ' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : ''}
-                        ${exercise.category === 'ΠΟΔΙΑ' ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : ''}
-                        ${exercise.category === 'ΣΤΗΘΟΣ' ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : ''}
-                        ${exercise.category === 'ΠΛΑΤΗ' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : ''}
-                        ${exercise.category === 'ΔΙΚΕΦΑΛΑ' ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : ''}
-                        ${exercise.category === 'ΤΡΙΚΕΦΑΛΑ' ? 'bg-pink-500/20 text-pink-400 hover:bg-pink-500/30' : ''}
-                        ${exercise.category === 'ΚΟΡΜΟΣ' ? 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30' : ''}
-                        ${exercise.category === 'CARDIO' ? 'bg-orange-500/20 text-orange-400 hover:bg-orange-500/30' : ''}
-                      `}
-                    >
-                      {exercise.category}
-                    </Badge>
-                  </div>
-                  {onDelete && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onDelete(exercise.sets[0].id)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
-                  )}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <h4 className="text-sm font-medium text-neutral-200">
+                    {exercise.name}
+                  </h4>
+                  <Badge 
+                    className={`
+                      px-2 py-0.5 rounded-full text-xs font-medium
+                      ${exercise.category === 'ΩΜΟΙ' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : ''}
+                      ${exercise.category === 'ΠΟΔΙΑ' ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : ''}
+                      ${exercise.category === 'ΣΤΗΘΟΣ' ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : ''}
+                      ${exercise.category === 'ΠΛΑΤΗ' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : ''}
+                      ${exercise.category === 'ΔΙΚΕΦΑΛΑ' ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : ''}
+                      ${exercise.category === 'ΤΡΙΚΕΦΑΛΑ' ? 'bg-pink-500/20 text-pink-400 hover:bg-pink-500/30' : ''}
+                      ${exercise.category === 'ΚΟΡΜΟΣ' ? 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30' : ''}
+                      ${exercise.category === 'CARDIO' ? 'bg-orange-500/20 text-orange-400 hover:bg-orange-500/30' : ''}
+                    `}
+                  >
+                    {exercise.category}
+                  </Badge>
                 </div>
+                {onDelete && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onDelete(exercise.sets[0].id)}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-6 w-6"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1">
                 {exercise.sets.map((set) => (
                   <div 
                     key={set.id}
-                    className="bg-neutral-800 px-4 py-2 rounded-lg whitespace-nowrap text-neutral-200"
+                    className="bg-neutral-800 px-2 py-1 rounded text-xs whitespace-nowrap text-neutral-200"
                   >
                     Set {set.set_number}: {set.weight_kg}kg × {set.reps}
                   </div>
