@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
@@ -141,28 +140,28 @@ export function ExerciseEntryForm() {
   };
 
   return (
-    <Card className="max-w-2xl mx-auto p-3 md:p-4">
+    <Card className="max-w-2xl mx-auto p-2 md:p-3">
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="flex items-center justify-between mb-2">
+        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-3">
+          <div className="flex items-center justify-between mb-1">
             {step !== 'category' && (
               <Button
                 type="button"
                 onClick={handleBack}
                 variant="ghost"
-                className="flex items-center gap-1 -ml-2 h-8"
+                className="flex items-center gap-1 -ml-2 h-7"
                 size="sm"
               >
-                <ArrowLeft className="h-4 w-4" />
-                Back
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span className="text-xs">Back</span>
               </Button>
             )}
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex-1 text-center"
             >
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-base font-semibold">
                 {step === 'category' && 'Select Category'}
                 {step === 'exercise' && 'Choose Exercise'}
                 {step === 'sets' && 'Add Sets'}
@@ -171,10 +170,10 @@ export function ExerciseEntryForm() {
             {step !== 'category' && <div className="w-[60px]" />}
           </div>
           
-          <Tabs value={step} className="space-y-4">
-            <TabsContent value="category" className="m-0 space-y-4">
+          <Tabs value={step} className="space-y-3">
+            <TabsContent value="category" className="m-0 space-y-3">
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
               >
                 <DateSelector 
@@ -184,9 +183,9 @@ export function ExerciseEntryForm() {
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, x: 10 }}
+                initial={{ opacity: 0, x: 5 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
+                exit={{ opacity: 0, x: -5 }}
               >
                 <CategorySelector 
                   onCategoryChange={(category) => {
@@ -200,12 +199,12 @@ export function ExerciseEntryForm() {
 
             <TabsContent value="exercise" className="m-0">
               <motion.div
-                initial={{ opacity: 0, x: 10 }}
+                initial={{ opacity: 0, x: 5 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
+                exit={{ opacity: 0, x: -5 }}
               >
                 {selectedCategory && (
-                  <div className="px-1">
+                  <div className="px-0.5">
                     <ExerciseSelector 
                       category={selectedCategory}
                       value={methods.watch("exercise")}
