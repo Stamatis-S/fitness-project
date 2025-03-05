@@ -8,9 +8,9 @@ interface MostUsedExerciseProps {
 
 export function MostUsedExercise({ exercises, sets }: MostUsedExerciseProps) {
   return (
-    <div className="flex flex-col gap-2 p-3 border-r border-border h-full">
-      <div className="flex items-center gap-2">
-        <Target className="h-4 w-4 text-primary" />
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <Target className="h-3.5 w-3.5 text-primary" />
         <h3 className="text-sm font-semibold">Most Used Exercise</h3>
       </div>
       <div className="space-y-0.5">

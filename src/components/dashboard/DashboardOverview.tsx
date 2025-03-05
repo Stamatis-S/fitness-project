@@ -42,8 +42,12 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
       >
         <Card className="h-full">
           <div className="grid grid-cols-2 h-full">
-            <MostUsedExercise {...mostUsed} />
-            <MaxWeightMetric {...maxWeight} />
+            <div className="p-3 border-r border-border">
+              <MostUsedExercise {...mostUsed} />
+            </div>
+            <div className="p-3">
+              <MaxWeightMetric {...maxWeight} />
+            </div>
           </div>
         </Card>
       </motion.div>
