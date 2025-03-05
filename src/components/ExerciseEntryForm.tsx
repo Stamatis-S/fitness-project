@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
@@ -225,17 +226,18 @@ export function ExerciseEntryForm() {
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="flex flex-col h-[calc(100vh-18rem)]"
+                className="flex flex-col h-[calc(100vh-16rem)]"
               >
-                <ScrollArea className="flex-1 -mx-2 px-2 pb-3 overflow-hidden">
-                  <div className="space-y-2 touch-pan-y">
+                <ScrollArea className="flex-1 -mx-2 px-2 pb-2 overflow-hidden">
+                  <div className="space-y-1.5 touch-pan-y">
                     <AnimatePresence>
                       {fields.map((field, index) => (
                         <motion.div
                           key={field.id}
-                          initial={{ opacity: 0, y: 10 }}
+                          initial={{ opacity: 0, y: 5 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
+                          exit={{ opacity: 0, y: -5 }}
+                          transition={{ duration: 0.15 }}
                         >
                           <SetInput
                             key={field.id}
@@ -248,19 +250,20 @@ export function ExerciseEntryForm() {
                   </div>
                 </ScrollArea>
                 
-                <div className="space-y-2 pt-2 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="space-y-1.5 pt-2 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                   <motion.div
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
+                    transition={{ duration: 0.1 }}
                   >
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full h-10"
+                      className="w-full h-8 text-xs"
                       onClick={() => append({ weight: 0, reps: 0 })}
                       size="sm"
                     >
-                      <PlusCircle className="h-4 w-4 mr-2" />
+                      <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
                       Add Set
                     </Button>
                   </motion.div>
@@ -268,9 +271,10 @@ export function ExerciseEntryForm() {
                   <motion.div
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
+                    transition={{ duration: 0.1 }}
                   >
-                    <Button type="submit" className="w-full h-10">
-                      <Save className="h-4 w-4 mr-2" />
+                    <Button type="submit" className="w-full h-8 text-xs">
+                      <Save className="h-3.5 w-3.5 mr-1.5" />
                       Save Exercise
                     </Button>
                   </motion.div>
