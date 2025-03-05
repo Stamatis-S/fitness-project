@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,6 @@ export default function Auth() {
   const { session } = useAuth();
 
   useEffect(() => {
-    // Check for existing session
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
@@ -45,7 +43,6 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        // Sign up
         const { error } = await supabase.auth.signUp({ 
           email, 
           password,
@@ -59,7 +56,6 @@ export default function Auth() {
         if (error) throw error;
         toast.success("Check your email to confirm your account!");
       } else {
-        // Sign in
         const { error } = await supabase.auth.signInWithPassword({ 
           email, 
           password
@@ -67,10 +63,9 @@ export default function Auth() {
         
         if (error) throw error;
         
-        // If rememberMe is false, set session expiry to 1 day instead of default 7 days
         if (!rememberMe) {
           await supabase.auth.refreshSession({
-            refreshToken: (await supabase.auth.getSession()).data.session?.refresh_token || '',
+            refresh_token: (await supabase.auth.getSession()).data.session?.refresh_token || '',
           });
         }
         
