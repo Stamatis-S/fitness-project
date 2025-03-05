@@ -184,6 +184,14 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
     );
   };
 
+  // Calculate dynamic grid column size based on number of data points
+  const getTickInterval = () => {
+    if (progressData.length <= 5) return 0; // Show all ticks
+    if (progressData.length <= 10) return 1; // Show every other tick
+    if (progressData.length <= 15) return 2; // Show every third tick
+    return Math.floor(progressData.length / 8); // Adjust based on data length
+  };
+
   return (
     <Card className="p-6 bg-[#1E1E1E] border-[#333333]">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
@@ -254,19 +262,19 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={progressData}
-                  margin={{ top: 10, right: 40, left: 20, bottom: 60 }}
+                  margin={{ top: 10, right: 40, left: 20, bottom: 80 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#333333" opacity={0.4} />
                   <XAxis
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
-                    height={70}
-                    tick={{ fontSize: 12, fill: "#CCCCCC" }}
-                    padding={{ left: 20, right: 20 }}
+                    height={80}
+                    tick={{ fontSize: 11, fill: "#CCCCCC" }}
+                    padding={{ left: 30, right: 30 }}
                     stroke="#555555"
-                    interval={0}
-                    tickMargin={15}
+                    interval={getTickInterval()}
+                    tickMargin={20}
                   />
                   <YAxis
                     label={{ 
@@ -277,6 +285,8 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                     }}
                     tick={{ fontSize: 12, fill: "#CCCCCC" }}
                     stroke="#555555"
+                    domain={['auto', 'auto']}
+                    padding={{ top: 20, bottom: 20 }}
                   />
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Legend 
