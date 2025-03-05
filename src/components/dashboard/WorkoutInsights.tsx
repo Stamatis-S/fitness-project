@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import type { WorkoutLog } from "@/pages/Dashboard";
+import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { format } from "date-fns";
 import { Activity, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
