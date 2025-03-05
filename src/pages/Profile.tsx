@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Edit2, Check, RefreshCw, Trophy, Star, Medal, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowLeft, Edit2, Check, RefreshCw, Trophy, Star, Medal, ArrowUp, ArrowDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format, isValid } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -135,15 +135,15 @@ export default function Profile() {
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'Monster':
-        return 'text-[#FF0000] dark:text-[#FF4444]';
+        return 'text-[#FF0000]';
       case 'Elite':
-        return 'text-[#A855F7] dark:text-[#A855F7]';
+        return 'text-[#A855F7]';
       case 'Advanced':
-        return 'text-[#4488EF] dark:text-[#4488EF]';
+        return 'text-[#4488EF]';
       case 'Intermediate':
-        return 'text-[#22C55E] dark:text-[#22C55E]';
+        return 'text-[#22C55E]';
       default:
-        return 'text-[#EAB308] dark:text-[#EAB308]';
+        return 'text-[#EAB308]';
     }
   };
 
@@ -161,34 +161,31 @@ export default function Profile() {
   };
 
   if (!profile) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="flex h-screen items-center justify-center bg-black">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen p-8 bg-gradient-to-b from-background to-muted">
-      <div className="max-w-3xl mx-auto space-y-8">
-        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <div className="flex-1" />
-          <h1 className="text-4xl font-bold tracking-tight text-center flex-1">
+    <div className="min-h-screen bg-black pb-16">
+      <div className="mx-auto space-y-2">
+        <div className="flex items-center p-2">
+          <button
+            className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-2 rounded"
+            onClick={() => navigate("/")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="text-sm">Back</span>
+          </button>
+          <h1 className="text-lg font-bold flex-1 text-center text-white">
             Profile
           </h1>
-          <div className="flex-1 flex justify-end">
-            <Button
-              variant="ghost"
-              className="flex items-center gap-2 hover:bg-accent"
-              onClick={() => navigate("/")}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Back to Home
-            </Button>
-          </div>
+          <div className="w-[60px]" />
         </div>
         
-        <Card className="p-6 space-y-4 border bg-card text-card-foreground shadow-sm">
+        <Card className="p-3 space-y-3 border-0 bg-[#222222] rounded-lg">
           <div className="space-y-2">
-            <h2 className="text-2xl font-semibold">Account Information</h2>
-            <div className="space-y-2">
-              <p className="text-muted-foreground">
+            <h2 className="text-base font-semibold text-white">Account Information</h2>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-300">
                 Email: {session?.user.email}
               </p>
               <div className="flex items-center gap-2">
@@ -197,28 +194,30 @@ export default function Profile() {
                     <Input
                       value={newUsername}
                       onChange={(e) => setNewUsername(e.target.value)}
-                      className="max-w-[200px]"
+                      className="max-w-[200px] h-8 text-sm bg-[#333333] border-[#444444]"
                       placeholder="Enter new username"
                     />
                     <Button
                       size="sm"
                       onClick={handleUpdateUsername}
                       disabled={!newUsername.trim()}
+                      className="h-8 bg-[#333333] hover:bg-[#444444] border-0"
                     >
-                      <Check className="h-4 w-4" />
+                      <Check className="h-3 w-3" />
                     </Button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <p className="text-muted-foreground">
+                    <p className="text-sm text-gray-300">
                       Username: {profile.username || 'Not set'}
                     </p>
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => setIsEditingUsername(true)}
+                      className="h-6 p-1"
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-3 w-3 text-gray-400" />
                     </Button>
                   </div>
                 )}
@@ -226,76 +225,76 @@ export default function Profile() {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold">Fitness Level</h2>
+              <h2 className="text-base font-semibold text-white">Fitness Level</h2>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={handleRecalculateScore}
                 disabled={isRecalculating}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1 text-xs h-7 bg-[#333333] hover:bg-[#444444] text-white border-0"
               >
-                <RefreshCw className={`h-4 w-4 ${isRecalculating ? 'animate-spin' : ''}`} />
-                Recalculate Score
+                <RefreshCw className={`h-3 w-3 ${isRecalculating ? 'animate-spin' : ''}`} />
+                Recalculate
               </Button>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <div className="flex justify-between items-center">
-                <span className={`text-2xl font-bold ${getLevelColor(profile.fitness_level)}`}>
+                <span className={`text-lg font-bold ${getLevelColor(profile.fitness_level)}`}>
                   {profile.fitness_level}
                 </span>
-                <span className="text-lg font-semibold">
+                <span className="text-sm font-medium text-white">
                   Score: {Math.round(profile.fitness_score)}
                 </span>
               </div>
               <Progress 
                 value={getProgressValue(profile.fitness_score)} 
-                className="h-3"
+                className="h-2 bg-[#333333]"
               />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-gray-400">
                 Last updated: {formatLastUpdated(profile.last_score_update)}
               </p>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <h3 className="text-lg font-medium">Level Requirements</h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4">
-              <div className="p-2">
-                <div className="flex items-center gap-2">
-                  <ArrowDown className="h-4 w-4 shrink-0 text-[#EAB308]" />
-                  <p className="font-medium text-[#EAB308]">Beginner</p>
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium text-white">Level Requirements</h3>
+            <div className="grid grid-cols-3 gap-1">
+              <div className="p-1 bg-[#333333] rounded">
+                <div className="flex items-center gap-1">
+                  <ArrowDown className="h-3 w-3 shrink-0 text-[#EAB308]" />
+                  <p className="text-xs font-medium text-[#EAB308]">Beginner</p>
                 </div>
-                <p className="text-sm text-muted-foreground">0 - 1,000</p>
+                <p className="text-xs text-gray-400">0 - 1,000</p>
               </div>
-              <div className="p-2">
-                <div className="flex items-center gap-2">
-                  <ArrowUp className="h-4 w-4 shrink-0 text-[#22C55E]" />
-                  <p className="font-medium text-[#22C55E]">Intermediate</p>
+              <div className="p-1 bg-[#333333] rounded">
+                <div className="flex items-center gap-1">
+                  <ArrowUp className="h-3 w-3 shrink-0 text-[#22C55E]" />
+                  <p className="text-xs font-medium text-[#22C55E]">Intermediate</p>
                 </div>
-                <p className="text-sm text-muted-foreground">1,001 - 2,000</p>
+                <p className="text-xs text-gray-400">1,001 - 2,000</p>
               </div>
-              <div className="p-2">
-                <div className="flex items-center gap-2">
-                  <Medal className="h-4 w-4 shrink-0 text-[#4488EF]" />
-                  <p className="font-medium text-[#4488EF]">Advanced</p>
+              <div className="p-1 bg-[#333333] rounded">
+                <div className="flex items-center gap-1">
+                  <Medal className="h-3 w-3 shrink-0 text-[#4488EF]" />
+                  <p className="text-xs font-medium text-[#4488EF]">Advanced</p>
                 </div>
-                <p className="text-sm text-muted-foreground">2,001 - 3,000</p>
+                <p className="text-xs text-gray-400">2,001 - 3,000</p>
               </div>
-              <div className="p-2">
-                <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 shrink-0 text-[#A855F7]" />
-                  <p className="font-medium text-[#A855F7]">Elite</p>
+              <div className="p-1 bg-[#333333] rounded">
+                <div className="flex items-center gap-1">
+                  <Star className="h-3 w-3 shrink-0 text-[#A855F7]" />
+                  <p className="text-xs font-medium text-[#A855F7]">Elite</p>
                 </div>
-                <p className="text-sm text-muted-foreground">3,001 - 4,000</p>
+                <p className="text-xs text-gray-400">3,001 - 4,000</p>
               </div>
-              <div className="p-2">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4 shrink-0 text-[#FF0000] dark:text-[#FF4444]" />
-                  <p className="font-medium text-[#FF0000] dark:text-[#FF4444]">Monster</p>
+              <div className="p-1 bg-[#333333] rounded">
+                <div className="flex items-center gap-1">
+                  <Trophy className="h-3 w-3 shrink-0 text-[#FF0000]" />
+                  <p className="text-xs font-medium text-[#FF0000]">Monster</p>
                 </div>
-                <p className="text-sm text-muted-foreground">4,001+</p>
+                <p className="text-xs text-gray-400">4,001+</p>
               </div>
             </div>
           </div>

@@ -13,6 +13,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/components/AuthProvider";
 import { useEffect } from "react";
+import { ArrowLeft } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type ExerciseCategory = Database['public']['Enums']['exercise_category'];
@@ -73,7 +74,7 @@ export default function Dashboard() {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex h-screen items-center justify-center bg-black">Loading...</div>;
   }
 
   if (!session) {
@@ -82,46 +83,55 @@ export default function Dashboard() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen p-3 md:p-6 pb-24 bg-gradient-to-b from-background to-muted">
-        <div className="max-w-7xl mx-auto space-y-2 md:space-y-4">
-          <div className="flex items-center justify-between gap-2">
-            <h1 className="text-xl md:text-2xl font-bold">My Dashboard</h1>
+      <div className="min-h-screen bg-black pb-16">
+        <div className="mx-auto space-y-2">
+          <div className="flex items-center p-2">
+            <button
+              className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-2 rounded"
+              onClick={() => navigate("/")}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-sm">Back</span>
+            </button>
+            <h1 className="text-lg font-bold flex-1 text-center text-white">
+              My Dashboard
+            </h1>
             <Button
               onClick={() => navigate("/")}
               variant="outline"
-              size={isMobile ? "sm" : "default"}
-              className="shrink-0"
+              size="sm"
+              className="text-xs bg-[#333333] hover:bg-[#444444] text-white border-0"
             >
-              New Workout
+              New
             </Button>
           </div>
 
           {workoutLogs && (
-            <div className="grid gap-2 md:gap-4">
-              <div className="bg-card rounded-lg shadow-sm">
+            <div className="space-y-2">
+              <div className="bg-[#222222] rounded-lg border-0">
                 <Tabs defaultValue="overview" className="w-full">
-                  <div className={`${isMobile ? 'sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-1.5 px-2 rounded-t-lg' : 'px-4 pt-4'}`}>
-                    <TabsList className={`grid w-full ${isMobile ? 'grid-cols-3 gap-1' : 'grid-cols-3'}`}>
-                      <TabsTrigger value="overview" className={isMobile ? 'text-sm py-1.5' : ''}>Overview</TabsTrigger>
-                      <TabsTrigger value="progress" className={isMobile ? 'text-sm py-1.5' : ''}>Progress</TabsTrigger>
-                      <TabsTrigger value="statistics" className={isMobile ? 'text-sm py-1.5' : ''}>Statistics</TabsTrigger>
+                  <div className="sticky top-0 z-40 bg-[#222222] py-1.5 px-2 rounded-t-lg">
+                    <TabsList className="grid w-full grid-cols-3 gap-1 bg-[#333333]">
+                      <TabsTrigger value="overview" className="text-sm py-1 data-[state=active]:bg-[#E22222]">Overview</TabsTrigger>
+                      <TabsTrigger value="progress" className="text-sm py-1 data-[state=active]:bg-[#E22222]">Progress</TabsTrigger>
+                      <TabsTrigger value="statistics" className="text-sm py-1 data-[state=active]:bg-[#E22222]">Statistics</TabsTrigger>
                     </TabsList>
                   </div>
 
-                  <div className="p-2 md:p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 mb-4">
+                  <div className="p-2">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       <WorkoutInsights logs={workoutLogs} />
                     </div>
 
-                    <TabsContent value="overview" className="m-0 space-y-2 md:space-y-4">
+                    <TabsContent value="overview" className="m-0 space-y-2">
                       {workoutLogs && <DashboardOverview workoutLogs={workoutLogs} />}
                     </TabsContent>
 
-                    <TabsContent value="progress" className="m-0 space-y-2 md:space-y-4">
+                    <TabsContent value="progress" className="m-0 space-y-2">
                       {workoutLogs && <ProgressTracking workoutLogs={workoutLogs} />}
                     </TabsContent>
 
-                    <TabsContent value="statistics" className="m-0 space-y-2 md:space-y-4">
+                    <TabsContent value="statistics" className="m-0 space-y-2">
                       {workoutLogs && <DashboardStatistics workoutLogs={workoutLogs} />}
                     </TabsContent>
                   </div>

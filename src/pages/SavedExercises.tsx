@@ -75,7 +75,7 @@ export default function SavedExercises() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex h-screen items-center justify-center bg-black">Loading...</div>;
   }
 
   if (!session) {
@@ -97,23 +97,23 @@ export default function SavedExercises() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen p-3 md:p-6 pb-24 bg-gradient-to-b from-background to-muted">
-        <div className="max-w-7xl mx-auto space-y-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              className="hidden md:flex items-center gap-2 bg-[#333333] hover:bg-[#444444]"
+      <div className="min-h-screen bg-black pb-16">
+        <div className="mx-auto space-y-2">
+          <div className="flex items-center p-2">
+            <button
+              className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-2 rounded"
               onClick={() => navigate("/")}
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Exercise Entry
-            </Button>
-            <h1 className="text-xl md:text-2xl font-bold flex-1 md:text-left text-center">
+              <span className="text-sm">Back</span>
+            </button>
+            <h1 className="text-lg font-bold flex-1 text-center text-white">
               Saved Exercises
             </h1>
+            <div className="w-[60px]" />
           </div>
 
-          <Card className="p-4 md:p-6 bg-[#333333]">
+          <Card className="p-2 md:p-3 bg-[#222222] border-0 rounded-lg">
             <WorkoutFilters
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
@@ -124,7 +124,7 @@ export default function SavedExercises() {
             />
           </Card>
 
-          <Card className="overflow-hidden bg-[#333333]">
+          <Card className="overflow-hidden bg-[#222222] border-0 rounded-lg">
             <WorkoutTable logs={filteredLogs || []} onDelete={handleDelete} />
           </Card>
         </div>

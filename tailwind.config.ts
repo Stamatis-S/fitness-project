@@ -13,7 +13,7 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "1rem",
       screens: {
         "2xl": "1400px",
       },
@@ -80,8 +80,8 @@ export default {
         },
       },
       animation: {
-        "fade-up": "fade-up 0.5s ease-out",
-        "fade-down": "fade-down 0.5s ease-out",
+        "fade-up": "fade-up 0.3s ease-out",
+        "fade-down": "fade-down 0.3s ease-out",
       },
     },
   },

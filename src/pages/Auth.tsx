@@ -52,25 +52,25 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start pt-8 md:pt-16 bg-gradient-to-b from-background to-muted p-4">
-      <div className="w-full max-w-md mb-4">
+    <div className="min-h-screen flex flex-col items-center justify-start pt-6 md:pt-12 bg-black p-3">
+      <div className="w-full max-w-md mb-3">
         <img 
           src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
           alt="Fitness Project Logo"
-          className="w-40 md:w-48 mx-auto"
+          className="w-32 md:w-40 mx-auto"
         />
       </div>
       
-      <Card className="w-full max-w-md p-3 space-y-3 animate-fade-up">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-primary">
-            Fitness Project
+      <Card className="w-full max-w-md p-3 space-y-2 animate-fade-up bg-[#222222] border-0">
+        <div className="text-center mb-1">
+          <h1 className="text-xl font-bold text-white">
+            FITNESS PROJECT
           </h1>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
+        <form onSubmit={handleAuth} className="space-y-2">
+          <div className="space-y-1">
+            <Label htmlFor="email" className="text-sm text-gray-300">Email</Label>
             <Input
               id="email"
               type="email"
@@ -78,11 +78,12 @@ export default function Auth() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="compact-input h-9"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
+          <div className="space-y-1">
+            <Label htmlFor="password" className="text-sm text-gray-300">Password</Label>
             <Input
               id="password"
               type="password"
@@ -90,10 +91,15 @@ export default function Auth() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="compact-input h-9"
             />
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button 
+            type="submit" 
+            className="w-full bg-[#E22222] hover:bg-[#C11818] text-white h-9 mt-1" 
+            disabled={isLoading}
+          >
             {isLoading
               ? "Loading..."
               : isSignUp
@@ -107,7 +113,7 @@ export default function Auth() {
             type="button"
             variant="link"
             onClick={toggleSignUp}
-            className="text-sm text-primary hover:text-primary/80"
+            className="text-xs text-gray-400 hover:text-white"
           >
             {isSignUp
               ? "Already have an account? Log in"

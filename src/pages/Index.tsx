@@ -1,7 +1,6 @@
 
 import { ExerciseEntryForm } from "@/components/ExerciseEntryForm";
 import { useAuth } from "@/components/AuthProvider";
-import { Button } from "@/components/ui/button";
 import { PageTransition } from "@/components/PageTransition";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,14 +18,6 @@ const Index = () => {
     }
   }, [session, isLoading, navigate]);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!session) {
-    return null;
-  }
-
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
@@ -38,33 +29,38 @@ const Index = () => {
     }
   };
 
+  if (isLoading) {
+    return <div className="flex h-screen items-center justify-center bg-black">Loading...</div>;
+  }
+
+  if (!session) {
+    return null;
+  }
+
   return (
     <PageTransition>
-      <div className="min-h-screen p-4 md:p-8 pb-24 bg-gradient-to-b from-background to-muted">
-        <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="flex-1" />
-            <div className="flex-1 text-center">
+      <div className="min-h-screen bg-black pb-16">
+        <div className="mx-auto space-y-2">
+          <div className="flex flex-col items-center justify-between gap-2 p-2">
+            <div className="w-full flex justify-end">
+              <button
+                onClick={handleLogout}
+                className="bg-[#333333] hover:bg-[#444444] p-2 rounded"
+                title="Logout"
+              >
+                <LogOut className="h-4 w-4 text-white" />
+              </button>
+            </div>
+            <div className="text-center">
               <img 
                 src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
                 alt="Fitness Project Logo"
-                className="w-32 md:w-48 lg:w-56 mx-auto"
+                className="w-24 md:w-28 mx-auto"
               />
-            </div>
-            <div className="flex-1 flex justify-end gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleLogout}
-                title="Logout"
-                className="bg-[#333333] hover:bg-[#444444]"
-              >
-                <LogOut className="h-5 w-5" />
-              </Button>
             </div>
           </div>
 
-          <div className="relative scroll-container">
+          <div className="relative">
             {session && <ExerciseEntryForm />}
           </div>
         </div>
