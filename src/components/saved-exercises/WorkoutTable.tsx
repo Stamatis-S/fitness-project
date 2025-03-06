@@ -126,7 +126,11 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
                     key={set.id}
                     className="bg-neutral-800 px-3 py-1.5 rounded-lg whitespace-nowrap text-xs text-neutral-200"
                   >
-                    Set {set.set_number}: {set.weight_kg}kg × {set.reps}
+                    Set {set.set_number}: {
+                      exercise.category === 'CARDIO' 
+                        ? `${set.weight_kg} min × ${set.reps} intensity`
+                        : `${set.weight_kg}kg × ${set.reps}`
+                    }
                   </div>
                 ))}
               </div>

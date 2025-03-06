@@ -1,7 +1,7 @@
 
 import { useFormContext } from "react-hook-form";
 import { ExerciseFormData } from "@/components/workout/types";
-import { Weight, RotateCw } from "lucide-react";
+import { Weight, RotateCw, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
@@ -17,6 +17,8 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   const reps = watch(`sets.${index}.reps`);
   const selectedExercise = watch('exercise');
   const customExercise = watch('customExercise');
+  const selectedCategory = watch('category');
+  const isCardio = selectedCategory === 'CARDIO';
 
   const { data: frequentValues } = useQuery({
     queryKey: ['frequent-workout-values', session?.user.id, selectedExercise, customExercise],
@@ -73,15 +75,18 @@ export function SetInput({ index, onRemove }: SetInputProps) {
 
   const handleWeightChange = (amount: number) => {
     const currentWeight = weight || 0;
-    const newWeight = Math.round((currentWeight + amount) * 2) / 2;
-    setValue(`sets.${index}.weight`, Math.max(0, newWeight));
+    // For cardio, allow increments of 1 minute
+    const newWeight = isCardio 
+      ? Math.max(0, (currentWeight + amount))
+      : Math.max(0, Math.round((currentWeight + amount) * 2) / 2);
+    setValue(`sets.${index}.weight`, newWeight);
   };
 
   const handleRepsChange = (amount: number) => {
     setValue(`sets.${index}.reps`, (reps || 0) + amount);
   };
 
-  const defaultWeightButtons = [5, 10, 15, 20];
+  const defaultWeightButtons = isCardio ? [5, 10, 15, 30] : [5, 10, 15, 20];
   const defaultRepButtons = [8, 10, 12];
 
   const weightButtons = frequentValues?.weights.length 
@@ -107,27 +112,33 @@ export function SetInput({ index, onRemove }: SetInputProps) {
       </div>
       
       <div className="grid grid-cols-2 gap-4">
-        {/* Weight Section */}
+        {/* Weight/Minutes Section */}
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <Weight className="h-4 w-4 text-red-500" />
-            <span className="text-white text-sm font-medium">Weight: {weight || 0} KG</span>
+            {isCardio ? (
+              <Clock className="h-4 w-4 text-red-500" />
+            ) : (
+              <Weight className="h-4 w-4 text-red-500" />
+            )}
+            <span className="text-white text-sm font-medium">
+              {isCardio ? `Minutes: ${weight || 0}` : `Weight: ${weight || 0} KG`}
+            </span>
           </div>
           
           <QuickSelectButtons
             values={weightButtons}
             onSelect={(value) => setValue(`sets.${index}.weight`, value)}
-            unit="KG"
+            unit={isCardio ? "min" : "KG"}
           />
 
           <SetControl
             value={weight || 0}
             onChange={(value) => setValue(`sets.${index}.weight`, value)}
             min={0}
-            max={200}
-            step={0.5}
-            onDecrement={() => handleWeightChange(-0.5)}
-            onIncrement={() => handleWeightChange(0.5)}
+            max={isCardio ? 120 : 200}
+            step={isCardio ? 1 : 0.5}
+            onDecrement={() => handleWeightChange(isCardio ? -1 : -0.5)}
+            onIncrement={() => handleWeightChange(isCardio ? 1 : 0.5)}
           />
         </div>
 
@@ -135,11 +146,13 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <RotateCw className="h-4 w-4 text-red-500" />
-            <span className="text-white text-sm font-medium">Reps: {reps || 0}</span>
+            <span className="text-white text-sm font-medium">
+              {isCardio ? "Intensity (1-10)" : "Reps"}: {reps || 0}
+            </span>
           </div>
           
           <QuickSelectButtons
-            values={repButtons}
+            values={isCardio ? [3, 5, 7, 9] : repButtons}
             onSelect={(value) => setValue(`sets.${index}.reps`, value)}
           />
 
@@ -147,7 +160,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             value={reps || 0}
             onChange={(value) => setValue(`sets.${index}.reps`, value)}
             min={0}
-            max={50}
+            max={isCardio ? 10 : 50}
             step={1}
             onDecrement={() => handleRepsChange(-1)}
             onIncrement={() => handleRepsChange(1)}

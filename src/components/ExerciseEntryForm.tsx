@@ -34,6 +34,7 @@ export function ExerciseEntryForm() {
         ));
       })(),
       exercise: "",
+      category: undefined,
       sets: [{ weight: 0, reps: 0 }]
     }
   });
@@ -113,6 +114,7 @@ export function ExerciseEntryForm() {
           ));
         })(),
         exercise: "",
+        category: undefined,
         sets: [{ weight: 0, reps: 0 }]
       });
       setStep('category');
@@ -190,6 +192,7 @@ export function ExerciseEntryForm() {
                 <CategorySelector 
                   onCategoryChange={(category) => {
                     setSelectedCategory(category);
+                    methods.setValue("category", category);
                     setStep('exercise');
                   }}
                   selectedCategory={selectedCategory}
