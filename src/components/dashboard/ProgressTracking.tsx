@@ -211,8 +211,8 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Exercise selector */}
-        <div className="lg:col-span-3">
+        {/* Exercise selector - reduced width to give more space to the graph */}
+        <div className="lg:col-span-2">
           <h3 className="text-sm font-medium mb-2 text-gray-300">Select Exercises</h3>
           <div className="bg-[#252525] border border-[#333333] rounded-md p-3">
             <div className="relative mb-3">
@@ -255,8 +255,8 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
           </div>
         </div>
         
-        {/* Graph area */}
-        <div className="lg:col-span-9">
+        {/* Graph area - increased width by changing column span */}
+        <div className="lg:col-span-10">
           <div className="h-[500px] bg-[#252525] border border-[#333333] rounded-md p-4">
             {progressData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
@@ -271,7 +271,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                     textAnchor="end"
                     height={70}
                     tick={{ fontSize: 11, fill: "#CCCCCC" }}
-                    padding={{ left: 20, right: 20 }}
+                    padding={{ left: 10, right: 10 }}
                     stroke="#555555"
                     interval={getTickInterval()}
                     tickMargin={15}

@@ -69,7 +69,7 @@ export default function Dashboard() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-black pb-16">
-        <div className="mx-auto space-y-2">
+        <div className="mx-auto max-w-full px-2">
           <div className="flex items-center p-2">
             <button
               className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-2 rounded"
@@ -112,11 +112,11 @@ export default function Dashboard() {
                       {workoutLogs && <DashboardOverview workoutLogs={workoutLogs} />}
                     </TabsContent>
 
-                    <TabsContent value="progress" className="m-0">
+                    <TabsContent value="progress" className="m-0 w-full">
                       {workoutLogs && <ProgressTracking workoutLogs={workoutLogs} />}
                     </TabsContent>
 
-                    <TabsContent value="statistics" className="m-0">
+                    <TabsContent value="statistics" className="m-0 w-full">
                       {workoutLogs && <DashboardStatistics workoutLogs={workoutLogs} />}
                     </TabsContent>
                   </div>
