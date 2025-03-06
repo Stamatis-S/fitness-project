@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -135,9 +136,9 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4">
-      <Card className="p-4 col-span-full bg-[#1E1E1E] border-[#333333]">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+    <div className="grid grid-cols-1 gap-3">
+      <Card className="p-3 col-span-full bg-[#1E1E1E] border-[#333333]">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
           <h2 className="text-xl font-semibold text-white">Statistics Overview</h2>
           <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
             <SelectTrigger className="w-[140px] bg-[#333333] text-white border-[#444444]">
@@ -195,21 +196,21 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="p-4 bg-[#1E1E1E] border-[#333333]">
-          <h2 className="text-xl font-semibold mb-4 text-white">Max Weight Per Exercise</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <Card className="p-3 bg-[#1E1E1E] border-[#333333]">
+          <h2 className="text-xl font-semibold mb-3 text-white">Max Weight Per Exercise</h2>
           <div className="h-[500px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={maxWeightData}
                 layout="vertical"
                 margin={{
-                  left: isMobile ? 60 : 90,
-                  right: isMobile ? 10 : 15,
+                  left: isMobile ? 55 : 80,
+                  right: 5,
                   top: 5,
                   bottom: 20,
                 }}
-                barCategoryGap={isMobile ? 4 : 6}
+                barCategoryGap={isMobile ? 3 : 5}
               >
                 <CartesianGrid 
                   strokeDasharray="3 3" 
@@ -230,14 +231,14 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                 <YAxis 
                   type="category" 
                   dataKey="exercise" 
-                  width={isMobile ? 60 : 90}
+                  width={isMobile ? 55 : 80}
                   tick={{ 
-                    fontSize: isMobile ? 10 : 12,
+                    fontSize: isMobile ? 9 : 11,
                     fill: "#CCCCCC",
-                    width: isMobile ? 55 : 85,
+                    width: isMobile ? 55 : 75,
                   }}
                   tickFormatter={(value) => {
-                    const maxChars = isMobile ? 10 : 15;
+                    const maxChars = isMobile ? 8 : 12;
                     if (value.length > maxChars) {
                       return value.substring(0, maxChars) + "...";
                     }
@@ -253,7 +254,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                   dataKey="maxWeight"
                   name="Max Weight"
                   minPointSize={2}
-                  barSize={isMobile ? 16 : 20}
+                  barSize={isMobile ? 14 : 18}
                 >
                   {maxWeightData.map((entry, index) => (
                     <Cell 
@@ -268,11 +269,11 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
           </div>
         </Card>
 
-        <Card className="p-4 bg-[#1E1E1E] border-[#333333]">
-          <h2 className="text-xl font-semibold mb-4 text-white">Muscle Group Balance</h2>
+        <Card className="p-3 bg-[#1E1E1E] border-[#333333]">
+          <h2 className="text-xl font-semibold mb-3 text-white">Muscle Group Balance</h2>
           <div className="h-[500px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart outerRadius={isMobile ? "65%" : "80%"} data={radarData}>
+              <RadarChart outerRadius={isMobile ? "65%" : "85%"} data={radarData}>
                 <PolarGrid stroke="#444444" />
                 <PolarAngleAxis 
                   dataKey="category"

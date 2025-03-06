@@ -69,7 +69,7 @@ export default function Dashboard() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-black pb-16">
-        <div className="mx-auto max-w-full px-2">
+        <div className="mx-auto max-w-[98%] px-1">
           <div className="flex items-center p-2">
             <button
               className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-2 rounded"
@@ -95,7 +95,7 @@ export default function Dashboard() {
             <div className="space-y-2">
               <div className="bg-[#222222] rounded-lg border-0">
                 <Tabs defaultValue="overview" className="w-full">
-                  <div className="sticky top-0 z-40 bg-[#222222] py-1.5 px-2 rounded-t-lg">
+                  <div className="sticky top-0 z-40 bg-[#222222] py-1.5 px-1 rounded-t-lg">
                     <TabsList className="grid w-full grid-cols-3 gap-1 bg-[#333333]">
                       <TabsTrigger value="overview" className="text-sm py-1 data-[state=active]:bg-[#E22222]">Overview</TabsTrigger>
                       <TabsTrigger value="progress" className="text-sm py-1 data-[state=active]:bg-[#E22222]">Progress</TabsTrigger>
@@ -103,7 +103,7 @@ export default function Dashboard() {
                     </TabsList>
                   </div>
 
-                  <div className="p-2">
+                  <div className="p-1">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                       <WorkoutInsights logs={workoutLogs} />
                     </div>

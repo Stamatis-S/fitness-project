@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,13 +56,11 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
     return null;
   }
 
-  // Validate workout logs
   if (!Array.isArray(workoutLogs)) {
     console.error('Invalid workoutLogs:', workoutLogs);
     return <Card className="p-6">Loading...</Card>;
   }
 
-  // Get unique exercise names from logs with validation
   const exerciseNames = useMemo(() => {
     try {
       const names = new Set<string>();
@@ -79,7 +76,6 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
     }
   }, [workoutLogs]);
 
-  // Filter exercises based on search term
   const filteredExercises = useMemo(() => {
     return searchTerm 
       ? exerciseNames.filter(name => 
@@ -87,20 +83,18 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
       : exerciseNames;
   }, [exerciseNames, searchTerm]);
 
-  // Process workout data for the chart with weighted averages
   const progressData = useMemo(() => {
     try {
       const dataMap = new Map<string, Map<string, { totalWeight: number; totalReps: number }>>();
       
       const sortedLogs = [...workoutLogs]
-        .filter(log => log && log.workout_date && log.weight_kg && log.reps) // Filter out invalid logs
+        .filter(log => log && log.workout_date && log.weight_kg && log.reps)
         .sort((a, b) => {
           const dateA = new Date(a.workout_date).getTime();
           const dateB = new Date(b.workout_date).getTime();
           return dateA - dateB;
         });
 
-      // Group by date and exercise, accumulate weights and reps
       sortedLogs.forEach(log => {
         if (!log.workout_date || !log.weight_kg || !log.reps) return;
         
@@ -123,7 +117,6 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
         current.totalReps += log.reps;
       });
 
-      // Convert accumulated data to weighted averages
       return Array.from(dataMap.entries())
         .map(([date, exerciseMap]) => {
           try {
@@ -135,7 +128,6 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
             selectedExercises.forEach(exercise => {
               const exerciseData = exerciseMap.get(exercise);
               if (exerciseData && exerciseData.totalReps > 0) {
-                // Calculate weighted average
                 dataPoint[exercise] = Number((exerciseData.totalWeight / exerciseData.totalReps).toFixed(2));
               } else {
                 dataPoint[exercise] = null;
@@ -156,7 +148,6 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
     }
   }, [workoutLogs, selectedExercises]);
 
-  // Debug logging
   console.log('Chart Component State:', {
     selectedExercises,
     exerciseNames,
@@ -184,16 +175,15 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
     );
   };
 
-  // Calculate dynamic grid column size based on number of data points
   const getTickInterval = () => {
-    if (progressData.length <= 5) return 0; // Show all ticks
-    if (progressData.length <= 10) return 1; // Show every other tick
-    if (progressData.length <= 15) return 2; // Show every third tick
-    return Math.floor(progressData.length / 8); // Adjust based on data length
+    if (progressData.length <= 5) return 0;
+    if (progressData.length <= 10) return 1;
+    if (progressData.length <= 15) return 2;
+    return Math.floor(progressData.length / 8);
   };
 
   return (
-    <Card className="p-4 bg-[#1E1E1E] border-[#333333]">
+    <Card className="p-3 bg-[#1E1E1E] border-[#333333]">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <h2 className="text-xl font-semibold text-white">Progress Over Time</h2>
         <Button
@@ -210,36 +200,35 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Exercise selector - reduced width to give more space to the graph */}
-        <div className="lg:col-span-2">
-          <h3 className="text-sm font-medium mb-2 text-gray-300">Select Exercises</h3>
-          <div className="bg-[#252525] border border-[#333333] rounded-md p-3">
-            <div className="relative mb-3">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+        <div className="lg:col-span-1">
+          <h3 className="text-sm font-medium mb-2 text-gray-300">Exercises</h3>
+          <div className="bg-[#252525] border border-[#333333] rounded-md p-2">
+            <div className="relative mb-2">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
               <Input
-                placeholder="Search exercises..."
+                placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 h-8 text-sm bg-[#333333] border-[#444444] text-white"
+                className="pl-7 h-7 text-xs bg-[#333333] border-[#444444] text-white"
               />
             </div>
             
             <div className="max-h-[260px] overflow-y-auto pr-1 grid grid-cols-1 gap-1">
               {filteredExercises.length === 0 ? (
-                <p className="text-gray-400 text-sm p-2">No exercises found</p>
+                <p className="text-gray-400 text-xs p-1">No exercises found</p>
               ) : (
                 filteredExercises.map(name => (
                   <TooltipProvider key={name}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="flex items-center space-x-3 p-2 hover:bg-[#333333] rounded-md transition-colors">
+                        <div className="flex items-center space-x-2 p-1 hover:bg-[#333333] rounded-md transition-colors">
                           <Checkbox
                             checked={selectedExercises.includes(name)}
                             onCheckedChange={(checked) => toggleExercise(name, checked)}
-                            className="border-[#555555] data-[state=checked]:bg-[#E22222] data-[state=checked]:border-[#E22222]"
+                            className="h-3 w-3 border-[#555555] data-[state=checked]:bg-[#E22222] data-[state=checked]:border-[#E22222]"
                           />
-                          <label className="text-sm font-medium text-gray-200 cursor-pointer whitespace-normal break-words">
+                          <label className="text-xs font-medium text-gray-200 cursor-pointer whitespace-normal break-words truncate">
                             {name}
                           </label>
                         </div>
@@ -255,14 +244,13 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
           </div>
         </div>
         
-        {/* Graph area - increased width by changing column span */}
-        <div className="lg:col-span-10">
-          <div className="h-[500px] bg-[#252525] border border-[#333333] rounded-md p-4">
+        <div className="lg:col-span-11">
+          <div className="h-[500px] bg-[#252525] border border-[#333333] rounded-md p-2">
             {progressData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={progressData}
-                  margin={{ top: 10, right: 30, left: 20, bottom: 70 }}
+                  margin={{ top: 10, right: 20, left: 10, bottom: 70 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#333333" opacity={0.4} />
                   <XAxis
@@ -271,7 +259,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                     textAnchor="end"
                     height={70}
                     tick={{ fontSize: 11, fill: "#CCCCCC" }}
-                    padding={{ left: 10, right: 10 }}
+                    padding={{ left: 0, right: 0 }}
                     stroke="#555555"
                     interval={getTickInterval()}
                     tickMargin={15}
@@ -287,6 +275,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                     stroke="#555555"
                     domain={['auto', 'auto']}
                     padding={{ top: 20, bottom: 20 }}
+                    width={40}
                   />
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Legend 
