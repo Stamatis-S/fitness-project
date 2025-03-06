@@ -135,25 +135,25 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card className="p-4 sm:p-6 col-span-full">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <h2 className="text-xl font-semibold">Statistics Overview</h2>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <Card className="p-4 col-span-full bg-[#1E1E1E] border-[#333333]">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <h2 className="text-xl font-semibold text-white">Statistics Overview</h2>
           <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] bg-[#333333] text-white border-[#444444]">
               <SelectValue placeholder="Time Range" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1M">Last Month</SelectItem>
-              <SelectItem value="3M">Last 3 Months</SelectItem>
-              <SelectItem value="6M">Last 6 Months</SelectItem>
-              <SelectItem value="1Y">Last Year</SelectItem>
-              <SelectItem value="ALL">All Time</SelectItem>
+            <SelectContent className="bg-[#252525] border-[#444444] text-white">
+              <SelectItem value="1M" className="focus:bg-[#333333] focus:text-white">Last Month</SelectItem>
+              <SelectItem value="3M" className="focus:bg-[#333333] focus:text-white">Last 3 Months</SelectItem>
+              <SelectItem value="6M" className="focus:bg-[#333333] focus:text-white">Last 6 Months</SelectItem>
+              <SelectItem value="1Y" className="focus:bg-[#333333] focus:text-white">Last Year</SelectItem>
+              <SelectItem value="ALL" className="focus:bg-[#333333] focus:text-white">All Time</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <div className={`${isMobile ? "h-[360px]" : "h-[400px]"}`}>
+        <div className={`${isMobile ? "h-[340px]" : "h-[450px]"} w-full`}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -162,7 +162,8 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                outerRadius={isMobile ? 100 : 140}
+                outerRadius={isMobile ? 120 : 180}
+                innerRadius={isMobile ? 40 : 60}
                 label={renderCustomLabel}
                 labelLine={{
                   stroke: "currentColor",
@@ -186,7 +187,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
                 verticalAlign="bottom"
                 wrapperStyle={{ 
                   paddingTop: "20px",
-                  fontSize: isMobile ? "9px" : "11px"
+                  fontSize: isMobile ? "10px" : "12px"
                 }}
               />
             </PieChart>
@@ -194,116 +195,108 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
         </div>
       </Card>
 
-      <Card className="p-4 sm:p-6 col-span-full lg:col-span-1">
-        <h2 className="text-xl font-semibold mb-4">Max Weight Per Exercise</h2>
-        <div className="h-[600px] sm:h-[500px] -mx-4 sm:mx-0">
-          <div className="h-full w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={maxWeightData}
-                layout="vertical"
-                margin={{
-                  left: isMobile ? 80 : 120,
-                  right: isMobile ? 16 : 24,
-                  top: 5,
-                  bottom: 20,
+      <Card className="p-4 col-span-full lg:col-span-1 bg-[#1E1E1E] border-[#333333]">
+        <h2 className="text-xl font-semibold mb-4 text-white">Max Weight Per Exercise</h2>
+        <div className="h-[500px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={maxWeightData}
+              layout="vertical"
+              margin={{
+                left: isMobile ? 70 : 100,
+                right: isMobile ? 10 : 20,
+                top: 5,
+                bottom: 20,
+              }}
+              barCategoryGap={isMobile ? 4 : 6}
+            >
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                horizontal={true}
+                vertical={false}
+                stroke="#444444"
+              />
+              <XAxis 
+                type="number"
+                tickFormatter={(value) => `${value}kg`}
+                domain={[0, "auto"]}
+                tick={{ 
+                  fontSize: isMobile ? 10 : 12,
+                  fill: "#CCCCCC"
                 }}
-                barCategoryGap={isMobile ? 5 : 8}
+                stroke="#555555"
+              />
+              <YAxis 
+                type="category" 
+                dataKey="exercise" 
+                width={isMobile ? 70 : 100}
+                tick={{ 
+                  fontSize: isMobile ? 10 : 12,
+                  fill: "#CCCCCC",
+                  width: isMobile ? 65 : 95,
+                }}
+                tickFormatter={(value) => {
+                  const maxChars = isMobile ? 10 : 15;
+                  if (value.length > maxChars) {
+                    return value.substring(0, maxChars) + "...";
+                  }
+                  return value;
+                }}
+                stroke="#555555"
+              />
+              <Tooltip 
+                content={<CustomTooltip />}
+                cursor={{ fill: "rgba(255, 255, 255, 0.1)" }}
+              />
+              <Bar 
+                dataKey="maxWeight"
+                name="Max Weight"
+                minPointSize={2}
+                barSize={isMobile ? 16 : 20}
               >
-                <CartesianGrid 
-                  strokeDasharray="3 3" 
-                  horizontal={true}
-                  vertical={false}
-                />
-                <XAxis 
-                  type="number"
-                  tickFormatter={(value) => `${value}kg`}
-                  domain={[0, "auto"]}
-                  label={{ 
-                    value: "Weight (kg)", 
-                    position: "insideBottom",
-                    offset: -10,
-                    fontSize: isMobile ? 10 : 12
-                  }}
-                  tick={{ 
-                    fontSize: isMobile ? 10 : 12,
-                    fill: "currentColor"
-                  }}
-                />
-                <YAxis 
-                  type="category" 
-                  dataKey="exercise" 
-                  width={isMobile ? 70 : 110}
-                  tick={{ 
-                    fontSize: isMobile ? 10 : 12,
-                    fill: "currentColor",
-                    width: isMobile ? 65 : 100,
-                    dy: 3
-                  }}
-                  tickFormatter={(value) => {
-                    const maxChars = isMobile ? 12 : 15;
-                    if (value.length > maxChars) {
-                      return value.substring(0, maxChars) + "...";
-                    }
-                    return value;
-                  }}
-                />
-                <Tooltip 
-                  content={<CustomTooltip />}
-                  cursor={{ fill: "transparent" }}
-                />
-                <Bar 
-                  dataKey="maxWeight"
-                  name="Max Weight"
-                  minPointSize={2}
-                  barSize={isMobile ? 20 : 28}
-                >
-                  {maxWeightData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`}
-                      fill={entry.color}
-                      className="hover:opacity-80 transition-opacity"
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+                {maxWeightData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`}
+                    fill={entry.color}
+                    className="hover:opacity-80 transition-opacity"
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </Card>
 
-      <Card className="p-4 sm:p-6">
-        <h2 className="text-xl font-semibold mb-4">Muscle Group Balance</h2>
-        <div className={`${isMobile ? "h-[400px]" : "h-[400px]"} overflow-x-auto`}>
-          <div className={`${isMobile ? "min-w-[300px]" : "w-full"} h-full`}>
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData}>
-                <PolarGrid />
-                <PolarAngleAxis 
-                  dataKey="category"
-                  tick={{ fontSize: isMobile ? 10 : 12 }}
-                />
-                <PolarRadiusAxis />
-                <Radar
-                  name="Volume"
-                  dataKey="volume"
-                  stroke="#8884d8"
-                  fill="#8884d8"
-                  fillOpacity={0.6}
-                />
-                <Radar
-                  name="Baseline"
-                  dataKey="baseline"
-                  stroke="#82ca9d"
-                  strokeDasharray="3 3"
-                  fill="#82ca9d"
-                  fillOpacity={0.2}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
+      <Card className="p-4 bg-[#1E1E1E] border-[#333333]">
+        <h2 className="text-xl font-semibold mb-4 text-white">Muscle Group Balance</h2>
+        <div className="h-[500px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart outerRadius={isMobile ? "60%" : "75%"} data={radarData}>
+              <PolarGrid stroke="#444444" />
+              <PolarAngleAxis 
+                dataKey="category"
+                tick={{ fontSize: isMobile ? 10 : 12, fill: "#CCCCCC" }}
+              />
+              <PolarRadiusAxis stroke="#555555" tick={{ fill: "#CCCCCC" }} />
+              <Radar
+                name="Volume"
+                dataKey="volume"
+                stroke="#8884d8"
+                fill="#8884d8"
+                fillOpacity={0.6}
+              />
+              <Radar
+                name="Baseline"
+                dataKey="baseline"
+                stroke="#82ca9d"
+                strokeDasharray="3 3"
+                fill="#82ca9d"
+                fillOpacity={0.2}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend wrapperStyle={{ fontSize: isMobile ? 10 : 12, color: "#CCCCCC" }} />
+            </RadarChart>
+          </ResponsiveContainer>
         </div>
       </Card>
     </div>

@@ -193,7 +193,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
   };
 
   return (
-    <Card className="p-6 bg-[#1E1E1E] border-[#333333]">
+    <Card className="p-4 bg-[#1E1E1E] border-[#333333]">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <h2 className="text-xl font-semibold text-white">Progress Over Time</h2>
         <Button
@@ -210,8 +210,8 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
-        {/* Exercise selector - takes 3/12 columns on large screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Exercise selector */}
         <div className="lg:col-span-3">
           <h3 className="text-sm font-medium mb-2 text-gray-300">Select Exercises</h3>
           <div className="bg-[#252525] border border-[#333333] rounded-md p-3">
@@ -225,7 +225,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
               />
             </div>
             
-            <div className="max-h-[200px] overflow-y-auto pr-1 grid grid-cols-1 gap-1">
+            <div className="max-h-[260px] overflow-y-auto pr-1 grid grid-cols-1 gap-1">
               {filteredExercises.length === 0 ? (
                 <p className="text-gray-400 text-sm p-2">No exercises found</p>
               ) : (
@@ -255,26 +255,26 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
           </div>
         </div>
         
-        {/* Graph area - takes 9/12 columns on large screens */}
+        {/* Graph area */}
         <div className="lg:col-span-9">
-          <div className="h-[400px] bg-[#252525] border border-[#333333] rounded-md p-4">
+          <div className="h-[500px] bg-[#252525] border border-[#333333] rounded-md p-4">
             {progressData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={progressData}
-                  margin={{ top: 10, right: 40, left: 20, bottom: 80 }}
+                  margin={{ top: 10, right: 30, left: 20, bottom: 70 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#333333" opacity={0.4} />
                   <XAxis
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
-                    height={80}
+                    height={70}
                     tick={{ fontSize: 11, fill: "#CCCCCC" }}
-                    padding={{ left: 30, right: 30 }}
+                    padding={{ left: 20, right: 20 }}
                     stroke="#555555"
                     interval={getTickInterval()}
-                    tickMargin={20}
+                    tickMargin={15}
                   />
                   <YAxis
                     label={{ 
@@ -290,7 +290,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                   />
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Legend 
-                    wrapperStyle={{ paddingTop: 20, fontSize: 12 }}
+                    wrapperStyle={{ paddingTop: 10, fontSize: 12 }}
                     align="center"
                     formatter={(value) => <span style={{ color: "#FFFFFF" }}>{value}</span>}
                   />

@@ -108,15 +108,15 @@ export default function Dashboard() {
                       <WorkoutInsights logs={workoutLogs} />
                     </div>
 
-                    <TabsContent value="overview" className="m-0 space-y-2">
+                    <TabsContent value="overview" className="m-0">
                       {workoutLogs && <DashboardOverview workoutLogs={workoutLogs} />}
                     </TabsContent>
 
-                    <TabsContent value="progress" className="m-0 space-y-2">
+                    <TabsContent value="progress" className="m-0">
                       {workoutLogs && <ProgressTracking workoutLogs={workoutLogs} />}
                     </TabsContent>
 
-                    <TabsContent value="statistics" className="m-0 space-y-2">
+                    <TabsContent value="statistics" className="m-0">
                       {workoutLogs && <DashboardStatistics workoutLogs={workoutLogs} />}
                     </TabsContent>
                   </div>
