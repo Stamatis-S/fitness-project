@@ -115,7 +115,7 @@ export default function Profile() {
 
   const getProgressValue = (score: number) => {
     const levelThresholds = {
-      monster: 4001,
+      monster: 4501,
       elite: 3001,
       advanced: 2001,
       intermediate: 1001,
@@ -287,14 +287,14 @@ export default function Profile() {
                   <Star className="h-3 w-3 shrink-0 text-[#A855F7]" />
                   <p className="text-xs font-medium text-[#A855F7]">Elite</p>
                 </div>
-                <p className="text-xs text-gray-400">3,001 - 4,000</p>
+                <p className="text-xs text-gray-400">3,001 - 4,500</p>
               </div>
               <div className="p-1 bg-[#333333] rounded">
                 <div className="flex items-center gap-1">
                   <Trophy className="h-3 w-3 shrink-0 text-[#FF0000]" />
                   <p className="text-xs font-medium text-[#FF0000]">Monster</p>
                 </div>
-                <p className="text-xs text-gray-400">4,001+</p>
+                <p className="text-xs text-gray-400">4,501+</p>
               </div>
             </div>
           </div>
