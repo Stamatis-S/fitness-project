@@ -42,7 +42,7 @@ export function LeaderboardStats() {
       
       // Then get profile photos for each user
       if (statsData && statsData.length > 0) {
-        const userIds = statsData.map(s => s.user_id);
+        const userIds = statsData.map((s: any) => s.user_id);
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('id, profile_photo_url')
@@ -51,16 +51,16 @@ export function LeaderboardStats() {
         if (profilesError) throw profilesError;
         
         // Merge the profile photo URLs with the stats data
-        return statsData.map(stat => {
+        return statsData.map((stat: any) => {
           const profile = profilesData?.find(p => p.id === stat.user_id);
           return {
             ...stat,
             profile_photo_url: profile?.profile_photo_url || null
           };
-        });
+        }) as UserStats[];
       }
       
-      return statsData;
+      return statsData as UserStats[];
     },
   });
 
@@ -76,20 +76,20 @@ export function LeaderboardStats() {
     <ScrollArea className="h-[calc(100vh-250px)]">
       <div className="space-y-6 p-1">
         <div className="flex flex-col md:flex-row gap-4">
-          <Card className="flex-1 p-4 space-y-4">
+          <Card className="flex-1 p-5 space-y-4">
             <h3 className="text-lg font-semibold">Compare With</h3>
             <Select
               value={selectedUserId || ""}
               onValueChange={setSelectedUserId}
             >
-              <SelectTrigger>
+              <SelectTrigger className="py-2">
                 <SelectValue placeholder="Select a user to compare" />
               </SelectTrigger>
               <SelectContent>
                 {otherUsers.map((user) => (
                   <SelectItem key={user.user_id} value={user.user_id}>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
+                    <div className="flex items-center gap-3 py-1">
+                      <Avatar className="h-8 w-8">
                         {user.profile_photo_url ? (
                           <AvatarImage src={user.profile_photo_url} alt={user.username} />
                         ) : (
@@ -98,7 +98,7 @@ export function LeaderboardStats() {
                           </AvatarFallback>
                         )}
                       </Avatar>
-                      {user.username}
+                      <span className="text-base">{user.username}</span>
                     </div>
                   </SelectItem>
                 ))}
@@ -106,13 +106,13 @@ export function LeaderboardStats() {
             </Select>
           </Card>
 
-          <Card className="p-4 space-y-4">
+          <Card className="p-5 space-y-4">
             <h3 className="text-lg font-semibold">Time Range</h3>
             <Select
               value={timeRange}
               onValueChange={setTimeRange}
             >
-              <SelectTrigger>
+              <SelectTrigger className="py-2">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
