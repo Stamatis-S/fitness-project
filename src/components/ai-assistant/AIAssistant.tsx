@@ -68,8 +68,8 @@ export function AIAssistant() {
       
       if (!data) return [];
       
-      // Convert DB records to ChatMessage format
-      return data.map((chat: AssistantChat) => [
+      // Convert DB records to ChatMessage format and safely cast the data
+      return data.map((chat: any) => [
         {
           id: `user-${chat.id}`,
           role: "user" as const,
