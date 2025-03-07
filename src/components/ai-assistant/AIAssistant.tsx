@@ -16,15 +16,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ChatMessage } from "./types";
 import { MessageBubble } from "./MessageBubble";
 
-// Define the assistant_chats type to fix TypeScript errors
-interface AssistantChat {
-  id: number;
-  user_id: string;
-  user_message: string;
-  assistant_message: string;
-  created_at: string;
-}
-
 export function AIAssistant() {
   const { session } = useAuth();
   const navigate = useNavigate();
@@ -53,7 +44,6 @@ export function AIAssistant() {
     queryFn: async () => {
       if (!session?.user.id) return [];
 
-      // Using proper typing for Supabase query
       const { data, error } = await supabase
         .from("assistant_chats")
         .select("*")
@@ -68,7 +58,7 @@ export function AIAssistant() {
       
       if (!data) return [];
       
-      // Convert DB records to ChatMessage format and safely cast the data
+      // Convert DB records to ChatMessage format
       return data.map((chat: any) => [
         {
           id: `user-${chat.id}`,
@@ -156,6 +146,20 @@ export function AIAssistant() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+
+      // Save the conversation to the database
+      const { error: saveError } = await supabase
+        .from("assistant_chats")
+        .insert({
+          user_id: session.user.id,
+          user_message: newMessage,
+          assistant_message: response.data.response,
+        });
+
+      if (saveError) {
+        console.error("Error saving chat:", saveError);
+        toast.error("Failed to save conversation");
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("Failed to get response from assistant");
