@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
@@ -226,10 +225,10 @@ export function ExerciseEntryForm() {
                 initial={{ opacity: 0, x: 5 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -5 }}
-                className="flex flex-col h-[calc(100vh-16rem)]"
+                className="flex flex-col h-[calc(100vh-14rem)]"
               >
-                <ScrollArea className="flex-1 px-1 pb-3 overflow-hidden">
-                  <div className="space-y-2 touch-pan-y">
+                <ScrollArea className="flex-1 px-1 pb-2 overflow-hidden">
+                  <div className="space-y-1.5 touch-pan-y">
                     <AnimatePresence>
                       {fields.map((field, index) => (
                         <motion.div

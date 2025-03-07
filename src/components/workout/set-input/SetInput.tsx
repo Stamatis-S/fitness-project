@@ -98,9 +98,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     : defaultRepButtons;
 
   return (
-    <div className="bg-[#111111] rounded-xl p-4">
-      <div className="flex items-center justify-between mb-6">
-        <div className="text-red-500 text-base font-semibold">
+    <div className="bg-[#111111] rounded-xl p-3">
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-red-500 text-sm font-semibold">
           Set {index + 1}
         </div>
         {index > 0 && (
@@ -111,16 +111,16 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         )}
       </div>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {/* Weight/Minutes Section */}
         <div>
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-1 mb-2">
             {isCardio ? (
-              <Clock className="h-4 w-4 text-red-500" />
+              <Clock className="h-3.5 w-3.5 text-red-500" />
             ) : (
-              <Weight className="h-4 w-4 text-red-500" />
+              <Weight className="h-3.5 w-3.5 text-red-500" />
             )}
-            <span className="text-white text-sm font-medium">
+            <span className="text-white text-xs font-medium">
               {isCardio ? `Minutes: ${weight || 0}` : `Weight: ${weight || 0} KG`}
             </span>
           </div>
@@ -144,9 +144,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
 
         {/* Reps Section */}
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <RotateCw className="h-4 w-4 text-red-500" />
-            <span className="text-white text-sm font-medium">
+          <div className="flex items-center gap-1 mb-2">
+            <RotateCw className="h-3.5 w-3.5 text-red-500" />
+            <span className="text-white text-xs font-medium">
               {isCardio ? "Intensity (1-10)" : "Reps"}: {reps || 0}
             </span>
           </div>
