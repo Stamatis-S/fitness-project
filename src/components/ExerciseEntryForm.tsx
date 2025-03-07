@@ -227,8 +227,8 @@ export function ExerciseEntryForm() {
                 exit={{ opacity: 0, x: -5 }}
                 className="flex flex-col h-[calc(100vh-14rem)]"
               >
-                <ScrollArea className="flex-1 px-1 pb-2 overflow-hidden">
-                  <div className="space-y-1.5 touch-pan-y">
+                <ScrollArea className="flex-1 px-1 pb-1 overflow-hidden">
+                  <div className="space-y-1 touch-pan-y">
                     <AnimatePresence>
                       {fields.map((field, index) => (
                         <motion.div
@@ -248,7 +248,7 @@ export function ExerciseEntryForm() {
                   </div>
                 </ScrollArea>
                 
-                <div className="space-y-2 pt-2 border-t border-[#333333] bg-[#222222]/95">
+                <div className="space-y-1.5 pt-1.5 border-t border-[#333333] bg-[#222222]/95">
                   <motion.div
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
@@ -256,7 +256,7 @@ export function ExerciseEntryForm() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full h-10 bg-[#333333] hover:bg-[#444444] text-white border-0"
+                      className="w-full h-9 bg-[#333333] hover:bg-[#444444] text-white border-0"
                       onClick={() => append({ weight: 0, reps: 0 })}
                     >
                       <PlusCircle className="h-4 w-4 mr-2" />
@@ -270,7 +270,7 @@ export function ExerciseEntryForm() {
                   >
                     <Button 
                       type="submit" 
-                      className="w-full h-10 text-base bg-[#E22222] hover:bg-[#C11818] text-white"
+                      className="w-full h-9 text-base bg-[#E22222] hover:bg-[#C11818] text-white"
                     >
                       <Save className="h-4 w-4 mr-2" />
                       Save Exercise
