@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -13,6 +12,7 @@ import SavedExercises from "@/pages/SavedExercises";
 import Leaderboard from "@/pages/Leaderboard";
 import NotFound from "@/pages/NotFound";
 import { useIsMobile } from "@/hooks/use-mobile";
+import AICoachPage from "@/pages/AICoachPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +31,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/saved-exercises" element={<SavedExercises />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/ai-coach" element={<AICoachPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             {isMobile && <BottomNav />}

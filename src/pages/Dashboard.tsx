@@ -13,7 +13,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/components/AuthProvider";
 import { useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Bot } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 
@@ -81,14 +81,25 @@ export default function Dashboard() {
             <h1 className="text-lg font-bold flex-1 text-center text-white">
               My Dashboard
             </h1>
-            <Button
-              onClick={() => navigate("/")}
-              variant="outline"
-              size="sm"
-              className="text-xs bg-[#333333] hover:bg-[#444444] text-white border-0"
-            >
-              New
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => navigate("/ai-coach")}
+                variant="outline"
+                size="sm"
+                className="text-xs flex items-center gap-1 bg-[#E22222] hover:bg-[#C11818] text-white border-0"
+              >
+                <Bot className="h-3 w-3" />
+                Coach
+              </Button>
+              <Button
+                onClick={() => navigate("/")}
+                variant="outline"
+                size="sm"
+                className="text-xs bg-[#333333] hover:bg-[#444444] text-white border-0"
+              >
+                New
+              </Button>
+            </div>
           </div>
 
           {workoutLogs && (
