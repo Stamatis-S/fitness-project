@@ -53,9 +53,9 @@ export function AIAssistant() {
     queryFn: async () => {
       if (!session?.user.id) return [];
 
-      // Using a typed response to fix TypeScript errors
+      // Using proper typing for Supabase query
       const { data, error } = await supabase
-        .from<AssistantChat>("assistant_chats")
+        .from("assistant_chats")
         .select("*")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: true });
@@ -65,8 +65,11 @@ export function AIAssistant() {
         console.error("Error fetching chat history:", error);
         return [];
       }
-
-      return data.map((chat) => [
+      
+      if (!data) return [];
+      
+      // Convert DB records to ChatMessage format
+      return data.map((chat: AssistantChat) => [
         {
           id: `user-${chat.id}`,
           role: "user" as const,
