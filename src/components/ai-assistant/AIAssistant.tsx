@@ -16,6 +16,15 @@ import { useQuery } from "@tanstack/react-query";
 import { ChatMessage } from "./types";
 import { MessageBubble } from "./MessageBubble";
 
+// Define the assistant_chats type to fix TypeScript errors
+interface AssistantChat {
+  id: number;
+  user_id: string;
+  user_message: string;
+  assistant_message: string;
+  created_at: string;
+}
+
 export function AIAssistant() {
   const { session } = useAuth();
   const navigate = useNavigate();
@@ -44,8 +53,9 @@ export function AIAssistant() {
     queryFn: async () => {
       if (!session?.user.id) return [];
 
+      // Using a typed response to fix TypeScript errors
       const { data, error } = await supabase
-        .from("assistant_chats")
+        .from<AssistantChat>("assistant_chats")
         .select("*")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: true });
@@ -59,13 +69,13 @@ export function AIAssistant() {
       return data.map((chat) => [
         {
           id: `user-${chat.id}`,
-          role: "user",
+          role: "user" as const,
           content: chat.user_message,
           timestamp: chat.created_at,
         },
         {
           id: `assistant-${chat.id}`,
-          role: "assistant",
+          role: "assistant" as const,
           content: chat.assistant_message,
           timestamp: chat.created_at,
         },

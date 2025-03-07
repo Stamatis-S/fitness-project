@@ -14,9 +14,9 @@ serve(async (req) => {
   }
 
   try {
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not set');
+    const CLAUDE_API_KEY = Deno.env.get('CLAUDE_API_KEY');
+    if (!CLAUDE_API_KEY) {
+      throw new Error('CLAUDE_API_KEY is not set');
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -42,9 +42,9 @@ serve(async (req) => {
     Your recommendations should follow scientific principles of training, including progressive overload, variety, and recovery.
     Always tailor advice based on the user's history and goals, and suggest realistic progressions.`;
 
-    // Prepare messages array
+    // Prepare messages array for Claude
     const messages = [
-      { role: "system", content: systemPrompt },
+      { role: "assistant", content: systemPrompt },
     ];
 
     // If workout data is requested, fetch user's workout history
@@ -158,30 +158,30 @@ serve(async (req) => {
     // Add the current user message
     messages.push({ role: "user", content: message });
 
-    // Call OpenAI API
-    console.log("Calling OpenAI with messages:", JSON.stringify(messages));
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Call Claude API
+    console.log("Calling Claude API with messages:", JSON.stringify(messages));
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        "x-api-key": CLAUDE_API_KEY,
+        "anthropic-version": "2023-06-01",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "claude-3-haiku-20240307",
         messages: messages,
-        temperature: 0.7,
         max_tokens: 1000,
       }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      console.error("OpenAI API error:", error);
-      throw new Error(`OpenAI API error: ${error.message || JSON.stringify(error)}`);
+      console.error("Claude API error:", error);
+      throw new Error(`Claude API error: ${error.message || JSON.stringify(error)}`);
     }
 
     const result = await response.json();
-    const assistantMessage = result.choices[0].message.content;
+    const assistantMessage = result.content[0].text;
 
     // Save the chat history to the database
     const { error: chatError } = await supabase
