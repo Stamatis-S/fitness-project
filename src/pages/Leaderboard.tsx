@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageTransition } from "@/components/PageTransition";
 import { useAuth } from "@/components/AuthProvider";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,6 +17,7 @@ interface Profile {
   username: string;
   fitness_score: number;
   fitness_level: string;
+  profile_photo_url: string | null;
 }
 
 export default function Leaderboard() {
@@ -28,7 +29,7 @@ export default function Leaderboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, fitness_score, fitness_level')
+        .select('id, username, fitness_score, fitness_level, profile_photo_url')
         .order('fitness_score', { ascending: false });
       
       if (error) throw error;
@@ -47,6 +48,13 @@ export default function Leaderboard() {
       default:
         return <Star className="h-4 w-4 text-gray-600" />;
     }
+  };
+
+  const getUserInitials = (profile: Profile) => {
+    if (profile.username) {
+      return profile.username.substring(0, 2).toUpperCase();
+    }
+    return 'AN'; // For Anonymous
   };
 
   return (
@@ -114,7 +122,15 @@ export default function Leaderboard() {
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#333333]">
                             {getRankIcon(index + 1)}
                           </div>
-                          <Avatar className="h-8 w-8 border border-[#444444]" />
+                          <Avatar className="h-8 w-8 border border-[#444444]">
+                            {profile.profile_photo_url ? (
+                              <AvatarImage src={profile.profile_photo_url} alt={profile.username || 'User'} />
+                            ) : (
+                              <AvatarFallback className="bg-[#333333] text-white text-xs">
+                                {getUserInitials(profile)}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
                           <div className="flex-1">
                             <div className="flex items-center justify-between">
                               <h3 className="text-sm font-medium text-white">

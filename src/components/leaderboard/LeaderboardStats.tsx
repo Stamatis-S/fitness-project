@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface UserStats {
   user_id: string;
@@ -23,6 +23,7 @@ interface UserStats {
   total_volume: number;
   estimated_calories: number;
   pr_count: number;
+  profile_photo_url?: string | null;
 }
 
 export function LeaderboardStats() {
@@ -33,17 +34,43 @@ export function LeaderboardStats() {
   const { data: stats } = useQuery({
     queryKey: ['comparison-stats', timeRange],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get the comparison stats
+      const { data: statsData, error: statsError } = await supabase
         .rpc('get_user_comparison_stats', { time_range: timeRange });
 
-      if (error) throw error;
-      return data;
+      if (statsError) throw statsError;
+      
+      // Then get profile photos for each user
+      if (statsData && statsData.length > 0) {
+        const userIds = statsData.map(s => s.user_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, profile_photo_url')
+          .in('id', userIds);
+          
+        if (profilesError) throw profilesError;
+        
+        // Merge the profile photo URLs with the stats data
+        return statsData.map(stat => {
+          const profile = profilesData?.find(p => p.id === stat.user_id);
+          return {
+            ...stat,
+            profile_photo_url: profile?.profile_photo_url || null
+          };
+        });
+      }
+      
+      return statsData;
     },
   });
 
   if (!session?.user?.id || !stats) return null;
 
   const otherUsers = stats.filter(s => s.user_id !== session.user.id);
+
+  const getUserInitials = (username: string) => {
+    return username ? username.substring(0, 2).toUpperCase() : 'AN';
+  };
 
   return (
     <ScrollArea className="h-[calc(100vh-250px)]">
@@ -62,7 +89,15 @@ export function LeaderboardStats() {
                 {otherUsers.map((user) => (
                   <SelectItem key={user.user_id} value={user.user_id}>
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6" />
+                      <Avatar className="h-6 w-6">
+                        {user.profile_photo_url ? (
+                          <AvatarImage src={user.profile_photo_url} alt={user.username} />
+                        ) : (
+                          <AvatarFallback className="bg-[#333333] text-white text-xs">
+                            {getUserInitials(user.username)}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
                       {user.username}
                     </div>
                   </SelectItem>
