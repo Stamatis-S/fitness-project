@@ -11,6 +11,7 @@ import Dashboard from "@/pages/Dashboard";
 import Profile from "@/pages/Profile";
 import SavedExercises from "@/pages/SavedExercises";
 import Leaderboard from "@/pages/Leaderboard";
+import WorkoutPlan from "@/pages/WorkoutPlan";
 import NotFound from "@/pages/NotFound";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -31,6 +32,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/saved-exercises" element={<SavedExercises />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/workout-plan" element={<WorkoutPlan />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             {isMobile && <BottomNav />}
