@@ -16,7 +16,18 @@ serve(async (req) => {
   try {
     const CLAUDE_API_KEY = Deno.env.get('CLAUDE_API_KEY');
     if (!CLAUDE_API_KEY) {
-      throw new Error('CLAUDE_API_KEY is not set');
+      console.error("CLAUDE_API_KEY is not set");
+      
+      // Return a friendly response instead of throwing an error
+      return new Response(
+        JSON.stringify({ 
+          response: "I'm currently experiencing some technical difficulties. The AI service is temporarily unavailable. Please try again later or contact support if the issue persists."
+        }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200 
+        }
+      );
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -158,64 +169,96 @@ serve(async (req) => {
     // Add the current user message
     messages.push({ role: "user", content: message });
 
-    // Call Claude API
-    console.log("Calling Claude API with messages:", JSON.stringify(messages));
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": CLAUDE_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-3-haiku-20240307",
-        messages: messages,
-        max_tokens: 1000,
-      }),
-    });
+    try {
+      // Call Claude API
+      console.log("Calling Claude API with messages:", JSON.stringify(messages));
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "x-api-key": CLAUDE_API_KEY,
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "claude-3-haiku-20240307",
+          messages: messages,
+          max_tokens: 1000,
+        }),
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("Claude API error:", error);
-      throw new Error(`Claude API error: ${error.message || JSON.stringify(error)}`);
-    }
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Claude API error:", error);
+        
+        // Return a user-friendly message for API errors
+        return new Response(
+          JSON.stringify({ 
+            response: "I'm sorry, but I'm currently experiencing connection issues. Our AI service is temporarily unavailable. Please try again later or contact support if the issue persists." 
+          }),
+          { 
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200 
+          }
+        );
+      }
 
-    const result = await response.json();
-    const assistantMessage = result.content[0].text;
+      const result = await response.json();
+      const assistantMessage = result.content[0].text;
 
-    // Save the chat history to the database
-    const { error: chatError } = await supabase
-      .from('assistant_chats')
-      .insert([
-        { 
-          user_id: userId, 
-          user_message: message, 
-          assistant_message: assistantMessage,
-          created_at: new Date().toISOString() 
+      // Save the chat history to the database - but don't throw an error if this fails
+      try {
+        const { error: chatError } = await supabase
+          .from('assistant_chats')
+          .insert([
+            { 
+              user_id: userId, 
+              user_message: message, 
+              assistant_message: assistantMessage,
+              created_at: new Date().toISOString() 
+            }
+          ]);
+
+        if (chatError) {
+          console.error("Error saving chat history:", chatError);
         }
-      ]);
+      } catch (dbError) {
+        console.error("Database error when saving chat:", dbError);
+        // Continue execution - don't let DB errors prevent returning the response
+      }
 
-    if (chatError) {
-      console.error("Error saving chat history:", chatError);
+      // Return the response
+      return new Response(
+        JSON.stringify({ 
+          response: assistantMessage,
+        }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200 
+        }
+      );
+    } catch (apiError) {
+      console.error("API call error:", apiError.message);
+      
+      // Return a fallback response for any API errors
+      return new Response(
+        JSON.stringify({ 
+          response: "I apologize, but I'm currently experiencing technical difficulties. Please try again later. If you have specific workout questions, feel free to ask again in a moment." 
+        }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200 
+        }
+      );
     }
-
-    // Return the response
+  } catch (error) {
+    console.error("Function error:", error.message);
     return new Response(
       JSON.stringify({ 
-        response: assistantMessage,
+        response: "I encountered an unexpected error. Please try again or contact support if the issue persists." 
       }),
       { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200 
-      }
-    );
-  } catch (error) {
-    console.error("Function error:", error.message);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500 
       }
     );
   }
