@@ -89,11 +89,11 @@ export function LeaderboardStats() {
                 {otherUsers.map((user) => (
                   <SelectItem key={user.user_id} value={user.user_id}>
                     <div className="flex items-center gap-3 py-1">
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-10 w-10">
                         {user.profile_photo_url ? (
                           <AvatarImage src={user.profile_photo_url} alt={user.username} />
                         ) : (
-                          <AvatarFallback className="bg-[#333333] text-white text-xs">
+                          <AvatarFallback className="bg-[#333333] text-white text-sm">
                             {getUserInitials(user.username)}
                           </AvatarFallback>
                         )}
