@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -50,6 +51,7 @@ serve(async (req) => {
     }, 0)
 
     const strengthProgress = calculateStrengthProgress(workoutLogs)
+    const weightProgressions = calculateWeightProgressions(workoutLogs)
 
     // Create email HTML
     const emailHtml = `
@@ -63,6 +65,13 @@ serve(async (req) => {
               <li>Total volume: ${Math.round(totalVolume).toLocaleString()} kg</li>
               <li>Completed sets: ${recentLogs.length}</li>
               <li>Estimated calorie burn: ${Math.round(estimatedCalories)} kcal</li>
+            </ul>
+          </div>
+
+          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #1f2937; margin-top: 0;">Weight Progressions</h3>
+            <ul style="color: #4b5563; margin: 0; padding-left: 20px;">
+              ${weightProgressions.map(progress => `<li>${progress}</li>`).join('')}
             </ul>
           </div>
 
@@ -157,4 +166,52 @@ function calculateStrengthProgress(workoutLogs: any[]) {
   })
 
   return progressInsights.length > 0 ? progressInsights : ['Start logging more workouts to track your strength progress!']
+}
+
+function calculateWeightProgressions(workoutLogs: any[]) {
+  const exerciseGroups = workoutLogs.reduce((groups: any, log: any) => {
+    const exerciseName = log.custom_exercise || log.exercises?.name
+    if (!exerciseName || !log.weight_kg) return groups
+    
+    if (!groups[exerciseName]) {
+      groups[exerciseName] = []
+    }
+    groups[exerciseName].push(log)
+    return groups
+  }, {})
+
+  const weightInsights: string[] = []
+
+  Object.entries(exerciseGroups).forEach(([exercise, logs]: [string, any[]]) => {
+    // Sort logs by date (oldest first)
+    const sortedLogs = logs.sort((a: any, b: any) => 
+      new Date(a.workout_date).getTime() - new Date(b.workout_date).getTime()
+    )
+    
+    if (sortedLogs.length >= 2) {
+      const firstLog = sortedLogs[0]
+      const lastLog = sortedLogs[sortedLogs.length - 1]
+      
+      if (firstLog.weight_kg && lastLog.weight_kg && lastLog.weight_kg > firstLog.weight_kg) {
+        const weightIncrease = lastLog.weight_kg - firstLog.weight_kg
+        const daysDifference = Math.ceil(
+          (new Date(lastLog.workout_date).getTime() - new Date(firstLog.workout_date).getTime()) / 
+          (1000 * 60 * 60 * 24)
+        )
+        
+        if (daysDifference > 0) {
+          const ratePerDay = weightIncrease / daysDifference
+          const timeDescription = daysDifference > 30 
+            ? `${Math.floor(daysDifference / 30)} months` 
+            : `${daysDifference} days`
+            
+          weightInsights.push(
+            `${exercise}: +${weightIncrease.toFixed(1)}kg over ${timeDescription} (${(ratePerDay * 30).toFixed(1)}kg/month rate)`
+          )
+        }
+      }
+    }
+  })
+
+  return weightInsights.length > 0 ? weightInsights : ['Keep logging workouts to track your weight progression!']
 }

@@ -1,3 +1,4 @@
+
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 
 export function calculateExerciseStats(workoutLogs: WorkoutLog[]) {
@@ -19,12 +20,19 @@ export function calculateExerciseStats(workoutLogs: WorkoutLog[]) {
         totalSets: 0,
         thisWeekSets: 0,
         lastWeekSets: 0,
-        dailySets: new Map()
+        dailySets: new Map(),
+        maxWeight: 0,
+        weightProgress: 0
       });
     }
     
     const exerciseData = stats.get(exerciseName)!;
     exerciseData.totalSets += 1;
+    
+    // Track max weight for this exercise
+    if (log.weight_kg && log.weight_kg > exerciseData.maxWeight) {
+      exerciseData.maxWeight = log.weight_kg;
+    }
     
     const dailyCount = exerciseData.dailySets.get(dateKey) || 0;
     exerciseData.dailySets.set(dateKey, dailyCount + 1);
@@ -38,6 +46,40 @@ export function calculateExerciseStats(workoutLogs: WorkoutLog[]) {
     
     return stats;
   }, new Map());
+
+  // Calculate weight progress for each exercise
+  workoutLogs.forEach(currentLog => {
+    if (!currentLog.weight_kg) return;
+    
+    const exerciseName = currentLog.custom_exercise || currentLog.exercises?.name || 'Unknown Exercise';
+    if (!exerciseStats.has(exerciseName)) return;
+    
+    const exerciseData = exerciseStats.get(exerciseName)!;
+    const currentDate = new Date(currentLog.workout_date);
+    
+    // Find previous logs for this exercise
+    const previousLogs = workoutLogs.filter(log => {
+      const logExName = log.custom_exercise || log.exercises?.name || '';
+      const logDate = new Date(log.workout_date);
+      return logExName === exerciseName && 
+             logDate < currentDate && 
+             log.weight_kg !== null;
+    });
+    
+    if (previousLogs.length > 0) {
+      // Get the most recent previous log
+      const sortedPrevLogs = previousLogs.sort((a, b) => 
+        new Date(b.workout_date).getTime() - new Date(a.workout_date).getTime()
+      );
+      
+      const prevLog = sortedPrevLogs[0];
+      if (prevLog.weight_kg && currentLog.weight_kg > prevLog.weight_kg) {
+        // Calculate progressive overload - weight increase is emphasized
+        const weightIncrease = currentLog.weight_kg - prevLog.weight_kg;
+        exerciseData.weightProgress += weightIncrease * 2; // Double the impact of weight increases
+      }
+    }
+  });
 
   return {
     exerciseStats,
@@ -160,4 +202,69 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
   });
   
   return records;
+}
+
+export function getWeightProgressionFactor(workoutLogs: WorkoutLog[]) {
+  const exerciseProgression = new Map<string, {
+    initialWeight: number,
+    currentWeight: number,
+    progressFactor: number
+  }>();
+  
+  // Group logs by exercise and sort by date
+  const exerciseGroups = workoutLogs.reduce((groups, log) => {
+    const exerciseName = log.custom_exercise || log.exercises?.name;
+    if (!exerciseName || !log.weight_kg) return groups;
+    
+    if (!groups[exerciseName]) {
+      groups[exerciseName] = [];
+    }
+    groups[exerciseName].push(log);
+    return groups;
+  }, {} as Record<string, WorkoutLog[]>);
+  
+  Object.entries(exerciseGroups).forEach(([exercise, logs]) => {
+    // Sort logs by date (oldest first)
+    const sortedLogs = logs.sort((a, b) => 
+      new Date(a.workout_date).getTime() - new Date(b.workout_date).getTime()
+    );
+    
+    if (sortedLogs.length >= 2) {
+      const initialLog = sortedLogs[0];
+      const currentLog = sortedLogs[sortedLogs.length - 1];
+      
+      if (initialLog.weight_kg && currentLog.weight_kg) {
+        const initialWeight = initialLog.weight_kg;
+        const currentWeight = currentLog.weight_kg;
+        const timeDiff = (new Date(currentLog.workout_date).getTime() - new Date(initialLog.workout_date).getTime()) / (1000 * 60 * 60 * 24);
+        
+        // Calculate progression factor, emphasizing weight increases
+        // Higher weight increases over shorter time periods result in higher factors
+        // Use a logarithmic scale to prevent extreme values
+        let progressFactor = 0;
+        if (currentWeight > initialWeight && timeDiff > 0) {
+          const weightIncrease = currentWeight - initialWeight;
+          // Higher weight increases result in higher factors
+          progressFactor = (weightIncrease / initialWeight) * 100 * (30 / Math.max(timeDiff, 1));
+        }
+        
+        exerciseProgression.set(exercise, {
+          initialWeight,
+          currentWeight,
+          progressFactor
+        });
+      }
+    }
+  });
+  
+  // Calculate overall progression factor across all exercises
+  const progressionFactors = Array.from(exerciseProgression.values()).map(p => p.progressFactor);
+  const overallFactor = progressionFactors.length > 0 
+    ? progressionFactors.reduce((sum, factor) => sum + factor, 0) / progressionFactors.length
+    : 0;
+  
+  return {
+    exerciseProgression,
+    overallFactor
+  };
 }
