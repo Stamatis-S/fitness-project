@@ -14,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useLocation } from "react-router-dom";
 
 interface UserRecord {
   user_id: string;
@@ -28,6 +29,17 @@ export function UserRecordPopup() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+
+  // Reset popup state when navigating back to home page
+  useEffect(() => {
+    if (location.pathname === "/") {
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     async function fetchLatestRecords() {
@@ -91,24 +103,14 @@ export function UserRecordPopup() {
     return () => clearInterval(interval);
   }, [records.length]);
 
-  // Auto-open the popover when component mounts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
   const currentRecord = records[currentIndex];
 
   return (
     <div className="flex justify-center">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-white">
-            <Trophy className="h-3 w-3 text-amber-500" />
+          <button className="opacity-0 w-0 h-0 overflow-hidden">
             <span>Records</span>
-            {isLoading && <Loader2 className="h-2.5 w-2.5 animate-spin ml-1" />}
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-64 bg-[#1A1F2C] border-gray-700 text-white p-1.5">
