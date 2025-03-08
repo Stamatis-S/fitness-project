@@ -13,13 +13,14 @@ import { toast } from "sonner";
 import { generateWorkoutPlan } from "@/components/workout-plan/workout-plan-generator";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import type { ExerciseCategory } from "@/lib/constants";
-import type { WorkoutPlan } from "@/components/workout-plan/types";
+import type { WorkoutPlan, WorkoutExercise } from "@/components/workout-plan/types";
 
 export default function WorkoutPlan() {
   const { session, isLoading } = useAuth();
   const navigate = useNavigate();
   const [generatedPlan, setGeneratedPlan] = useState<WorkoutPlan | null>(null);
   const [isGenerating, setIsGenerating] = useState(true);
+  const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>([]);
 
   useEffect(() => {
     if (!isLoading && !session) {
@@ -59,19 +60,28 @@ export default function WorkoutPlan() {
     if (workoutLogs) {
       const plan = generateWorkoutPlan(workoutLogs);
       setGeneratedPlan(plan);
+      if (plan) {
+        setWorkoutExercises(plan.exercises);
+      }
       setIsGenerating(false);
     }
   }, [workoutLogs]);
+
+  const handleExerciseUpdate = (updatedExercise: WorkoutExercise, index: number) => {
+    const updatedExercises = [...workoutExercises];
+    updatedExercises[index] = updatedExercise;
+    setWorkoutExercises(updatedExercises);
+  };
 
   const handleSavePlan = async () => {
     if (!session?.user.id || !generatedPlan) return;
     
     try {
-      // Convert workout plan to workout_logs format
+      // Convert workout plan to workout_logs format using the updated exercises
       const currentDate = new Date();
       const dateString = currentDate.toISOString().split('T')[0];
       
-      const workoutLogEntries = generatedPlan.exercises.flatMap((exercise, exerciseIndex) => {
+      const workoutLogEntries = workoutExercises.flatMap((exercise, exerciseIndex) => {
         return exercise.sets.map((set, setIndex) => ({
           workout_date: dateString,
           category: exercise.category,
@@ -144,8 +154,12 @@ export default function WorkoutPlan() {
                 </div>
 
                 <div className="space-y-3">
-                  {generatedPlan.exercises.map((exercise, index) => (
-                    <WorkoutPlanExercise key={index} exercise={exercise} />
+                  {workoutExercises.map((exercise, index) => (
+                    <WorkoutPlanExercise 
+                      key={index} 
+                      exercise={exercise} 
+                      onExerciseUpdate={(updatedExercise) => handleExerciseUpdate(updatedExercise, index)}
+                    />
                   ))}
                 </div>
 

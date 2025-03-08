@@ -19,3 +19,8 @@ export interface WorkoutPlan {
   description: string;
   exercises: WorkoutExercise[];
 }
+
+export interface WorkoutPlanExerciseProps {
+  exercise: WorkoutExercise;
+  onExerciseUpdate: (updatedExercise: WorkoutExercise) => void;
+}

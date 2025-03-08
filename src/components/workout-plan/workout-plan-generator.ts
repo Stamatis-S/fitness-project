@@ -1,4 +1,3 @@
-
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import type { WorkoutPlan, WorkoutExercise, WorkoutSet } from "./types";
 import type { ExerciseCategory } from "@/lib/constants";
@@ -22,8 +21,8 @@ function groupByExercise(logs: WorkoutLog[]): Record<string, WorkoutLog[]> {
   return grouped;
 }
 
-// Helper function to calculate average sets per exercise
-function calculateAverageSets(logs: WorkoutLog[]): Record<string, WorkoutSet[]> {
+// Helper function to calculate progressive sets per exercise
+function calculateProgressiveSets(logs: WorkoutLog[]): Record<string, WorkoutSet[]> {
   const exerciseGroups = groupByExercise(logs);
   const result: Record<string, WorkoutSet[]> = {};
   
@@ -45,13 +44,32 @@ function calculateAverageSets(logs: WorkoutLog[]): Record<string, WorkoutSet[]> 
     // Get most recent workout for this exercise
     const sortedDates = Object.keys(byDate).sort().reverse();
     if (sortedDates.length > 0) {
+      // Use the most recent workout's sets as a base, but apply progressive overload
       const recentLogs = byDate[sortedDates[0]];
       
-      // Use the most recent workout's sets, adjusted to average count
-      let sets = recentLogs.map(log => ({
-        weight: log.weight_kg || 0,
-        reps: log.reps || 0
-      }));
+      // Apply progressive overload: either increase weight by 2.5-5% or increase reps by 1-2
+      let sets = recentLogs.map(log => {
+        const weight = log.weight_kg || 0;
+        const reps = log.reps || 0;
+        
+        // For heavier weights (>20kg), increase by ~2.5%, for lighter weights add 1-2kg
+        const weightIncrement = weight > 20 ? Math.round(weight * 0.025 * 2) / 2 : 1.5;
+        
+        // Randomly choose between increasing weight or reps for variety
+        const increaseWeight = Math.random() > 0.5;
+        
+        if (increaseWeight && weight > 0) {
+          return {
+            weight: Math.round((weight + weightIncrement) * 2) / 2, // Round to nearest 0.5
+            reps
+          };
+        } else {
+          return {
+            weight,
+            reps: reps + 1
+          };
+        }
+      });
       
       // Adjust set count to match average
       if (sets.length < averageSetCount) {
@@ -73,8 +91,8 @@ function calculateAverageSets(logs: WorkoutLog[]): Record<string, WorkoutSet[]> 
 }
 
 // Helper function to get favorite exercises per category
-function getFavoriteExercises(logs: WorkoutLog[]): Record<string, Array<{ name: string, exerciseId: number | null, customExercise: string | null, count: number }>> {
-  const categoryCounts: Record<string, Record<string, { name: string, exerciseId: number | null, customExercise: string | null, count: number }>> = {};
+function getFavoriteExercises(logs: WorkoutLog[]): Record<string, Array<{ name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> {
+  const categoryCounts: Record<string, Record<string, { name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> = {};
   
   logs.forEach(log => {
     if (!categoryCounts[log.category]) {
@@ -91,18 +109,44 @@ function getFavoriteExercises(logs: WorkoutLog[]): Record<string, Array<{ name: 
         name: exerciseName,
         exerciseId: log.exercise_id,
         customExercise: log.custom_exercise,
-        count: 0
+        count: 0,
+        lastUsed: log.workout_date
       };
     }
     
     categoryCounts[log.category][exerciseKey].count++;
+    
+    // Update last used date if this log is more recent
+    if (log.workout_date > categoryCounts[log.category][exerciseKey].lastUsed) {
+      categoryCounts[log.category][exerciseKey].lastUsed = log.workout_date;
+    }
   });
   
-  // Convert to array and sort by count
+  // Convert to array and sort by count and lastUsed
   const result: Record<string, Array<{ name: string, exerciseId: number | null, customExercise: string | null, count: number }>> = {};
   
   Object.entries(categoryCounts).forEach(([category, exercises]) => {
-    result[category] = Object.values(exercises).sort((a, b) => b.count - a.count);
+    // Get all exercises for this category
+    const exercisesList = Object.values(exercises);
+    
+    // Sort by a combination of frequency and recency (prefer less recently used exercises)
+    // This helps to provide variety in the workout plan
+    result[category] = exercisesList.sort((a, b) => {
+      // First, check if the exercise was used in the last 2 days
+      const twoDAysAgo = new Date();
+      twoDAysAgo.setDate(twoDAysAgo.getDate() - 2);
+      const dateStrTwoDaysAgo = twoDAysAgo.toISOString().split('T')[0];
+      
+      const aIsRecent = a.lastUsed >= dateStrTwoDaysAgo;
+      const bIsRecent = b.lastUsed >= dateStrTwoDaysAgo;
+      
+      // If one is recent and the other isn't, prefer the non-recent one
+      if (aIsRecent && !bIsRecent) return 1;
+      if (!aIsRecent && bIsRecent) return -1;
+      
+      // Otherwise, sort by count (frequency)
+      return b.count - a.count;
+    });
   });
   
   return result;
@@ -146,11 +190,11 @@ export function generateWorkoutPlan(logs: WorkoutLog[]): WorkoutPlan | null {
       .sort((a, b) => (categoryCounts[b] || 0) - (categoryCounts[a] || 0))[0] as ExerciseCategory;
   }
   
-  // Get favorite exercises by category
+  // Get favorite exercises by category with variety
   const favoriteExercises = getFavoriteExercises(logs);
   
-  // Calculate average sets
-  const averageSets = calculateAverageSets(logs);
+  // Calculate progressive sets
+  const progressiveSets = calculateProgressiveSets(logs);
   
   // Build workout plan
   const workoutExercises: WorkoutExercise[] = [];
@@ -162,7 +206,7 @@ export function generateWorkoutPlan(logs: WorkoutLog[]): WorkoutPlan | null {
       ? `exercise_${exercise.exerciseId}` 
       : `custom_${exercise.customExercise}`;
       
-    const sets = averageSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
+    const sets = progressiveSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
     
     workoutExercises.push({
       name: exercise.name,
@@ -181,7 +225,7 @@ export function generateWorkoutPlan(logs: WorkoutLog[]): WorkoutPlan | null {
         ? `exercise_${exercise.exerciseId}` 
         : `custom_${exercise.customExercise}`;
         
-      const sets = averageSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
+      const sets = progressiveSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
       
       workoutExercises.push({
         name: exercise.name,
@@ -208,7 +252,7 @@ export function generateWorkoutPlan(logs: WorkoutLog[]): WorkoutPlan | null {
           ? `exercise_${exercise.exerciseId}` 
           : `custom_${exercise.customExercise}`;
           
-        const sets = averageSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
+        const sets = progressiveSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
         
         workoutExercises.push({
           name: exercise.name,
@@ -249,10 +293,10 @@ export function generateWorkoutPlan(logs: WorkoutLog[]): WorkoutPlan | null {
   
   if (secondaryLabel) {
     planName = `${primaryLabel} & ${secondaryLabel} Workout`;
-    planDescription = `A personalized workout focusing on ${primaryLabel.toLowerCase()} and ${secondaryLabel.toLowerCase()} based on your training history.`;
+    planDescription = `A progressive workout focusing on ${primaryLabel.toLowerCase()} and ${secondaryLabel.toLowerCase()} designed to help you improve based on your training history.`;
   } else {
     planName = `${primaryLabel} Focus Workout`;
-    planDescription = `A personalized workout focusing on ${primaryLabel.toLowerCase()} based on your training history.`;
+    planDescription = `A progressive workout focusing on ${primaryLabel.toLowerCase()} designed to help you improve based on your training history.`;
   }
   
   return {
