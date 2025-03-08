@@ -34,10 +34,13 @@ export function UserRecordPopup() {
   // Reset popup state when navigating back to home page
   useEffect(() => {
     if (location.pathname === "/") {
+      setIsOpen(false); // Reset first to ensure state change
       const timer = setTimeout(() => {
         setIsOpen(true);
-      }, 1500);
+      }, 800); // Reduced delay for better user experience
       return () => clearTimeout(timer);
+    } else {
+      setIsOpen(false); // Close when navigating away
     }
   }, [location.pathname]);
 
