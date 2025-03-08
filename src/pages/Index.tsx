@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { UserRecordPopup } from "@/components/UserRecordPopup";
 
 const Index = () => {
   const { session, isLoading } = useAuth();
@@ -57,6 +58,7 @@ const Index = () => {
                 alt="Fitness Project Logo"
                 className="w-24 md:w-28 mx-auto"
               />
+              <UserRecordPopup />
             </div>
           </div>
 
