@@ -41,8 +41,8 @@ const Index = () => {
   return (
     <PageTransition>
       <div className="min-h-screen bg-black pb-16">
-        <div className="mx-auto space-y-2">
-          <div className="flex flex-col items-center justify-between gap-2 p-2">
+        <div className="mx-auto space-y-1">
+          <div className="flex flex-col items-center justify-between gap-1 p-2">
             <div className="w-full flex justify-end">
               <button
                 onClick={handleLogout}
@@ -52,11 +52,11 @@ const Index = () => {
                 <LogOut className="h-4 w-4 text-white" />
               </button>
             </div>
-            <div className="text-center">
+            <div className="text-center mb-1">
               <img 
                 src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
                 alt="Fitness Project Logo"
-                className="w-24 md:w-28 mx-auto"
+                className="w-20 md:w-24 mx-auto"
               />
               <UserRecordPopup />
             </div>

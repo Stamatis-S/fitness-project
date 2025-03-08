@@ -102,16 +102,16 @@ export function UserRecordPopup() {
   const currentRecord = records[currentIndex];
 
   return (
-    <div className="flex justify-center mt-2">
+    <div className="flex justify-center">
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-white">
-            <Trophy className="h-3.5 w-3.5 text-amber-500" />
-            <span>User Records</span>
-            {isLoading && <Loader2 className="h-3 w-3 animate-spin ml-1" />}
+            <Trophy className="h-3 w-3 text-amber-500" />
+            <span>Records</span>
+            {isLoading && <Loader2 className="h-2.5 w-2.5 animate-spin ml-1" />}
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-72 bg-[#1A1F2C] border-gray-700 text-white p-2">
+        <PopoverContent className="w-64 bg-[#1A1F2C] border-gray-700 text-white p-1.5">
           <AnimatePresence mode="wait">
             {currentRecord && (
               <motion.div
@@ -120,40 +120,40 @@ export function UserRecordPopup() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -5 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-1"
+                className="space-y-0.5"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                    <span className="font-semibold text-sm truncate">
+                  <div className="flex items-center gap-1.5">
+                    <Trophy className="h-3 w-3 text-amber-500 flex-shrink-0" />
+                    <span className="font-semibold text-xs truncate">
                       {currentRecord.username}
                     </span>
                   </div>
                   <span className="text-xs text-gray-400">{currentRecord.date}</span>
                 </div>
-                <div className="ml-6 text-sm">
+                <div className="ml-4.5 text-xs">
                   <span className="text-emerald-400">{currentRecord.exercise}</span>
-                  <span className="text-xs text-gray-300 ml-2">
+                  <span className="text-xs text-gray-300 ml-1.5">
                     {currentRecord.achievement}
                   </span>
                 </div>
-                <div className="flex justify-between items-center mt-1 pt-1 border-t border-gray-700">
+                <div className="flex justify-between items-center mt-0.5 pt-0.5 border-t border-gray-700">
                   <span className="text-xs text-gray-400">
-                    {currentIndex + 1} of {records.length} records
+                    {currentIndex + 1} of {records.length}
                   </span>
-                  <div className="flex gap-1">
+                  <div className="flex gap-0.5">
                     {records.map((_, idx) => (
                       <TooltipProvider key={idx}>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
-                              className={`h-1.5 w-1.5 rounded-full ${
+                              className={`h-1 w-1 rounded-full ${
                                 idx === currentIndex ? "bg-purple-500" : "bg-gray-600"
                               }`}
                               onClick={() => setCurrentIndex(idx)}
                             />
                           </TooltipTrigger>
-                          <TooltipContent className="py-0.5 px-2 text-xs">
+                          <TooltipContent className="py-0.5 px-1.5 text-xs">
                             {records[idx].username}
                           </TooltipContent>
                         </Tooltip>
