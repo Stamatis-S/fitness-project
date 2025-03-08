@@ -1,3 +1,4 @@
+
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import type { WorkoutPlan, WorkoutExercise, WorkoutSet } from "./types";
 import type { ExerciseCategory } from "@/lib/constants";
@@ -123,7 +124,7 @@ function getFavoriteExercises(logs: WorkoutLog[]): Record<string, Array<{ name: 
   });
   
   // Convert to array and sort by count and lastUsed
-  const result: Record<string, Array<{ name: string, exerciseId: number | null, customExercise: string | null, count: number }>> = {};
+  const result: Record<string, Array<{ name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> = {};
   
   Object.entries(categoryCounts).forEach(([category, exercises]) => {
     // Get all exercises for this category
