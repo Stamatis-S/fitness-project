@@ -33,13 +33,13 @@ export function DateSelector({ date, onDateChange }: DateSelectorProps) {
   };
 
   return (
-    <div className="space-y-2">
-      <Label>Date</Label>
+    <div className="space-y-1">
+      <Label className="text-sm">Date</Label>
       <Popover>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className="w-full justify-start text-left font-normal"
+            className="w-full h-8 justify-start text-left font-normal"
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {date ? format(date, "PPP") : <span>Pick a date</span>}

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
@@ -142,8 +143,8 @@ export function ExerciseEntryForm() {
   return (
     <Card className="mx-auto p-3 border-0 bg-[#222222] rounded-lg">
       <FormProvider {...methods}>
-        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="flex items-center justify-between mb-2">
+        <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-3">
+          <div className="flex items-center justify-between mb-1">
             {step !== 'category' && (
               <Button
                 type="button"
@@ -169,8 +170,8 @@ export function ExerciseEntryForm() {
             {step !== 'category' && <div className="w-[60px]" />}
           </div>
           
-          <Tabs value={step} className="space-y-3">
-            <TabsContent value="category" className="m-0 space-y-4">
+          <Tabs value={step} className="space-y-2">
+            <TabsContent value="category" className="m-0 space-y-3">
               <motion.div
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
