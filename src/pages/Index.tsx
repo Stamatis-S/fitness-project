@@ -62,8 +62,8 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Added a spacer div to create vertical space */}
-          <div className="h-4"></div>
+          {/* Increased vertical space to avoid overlap */}
+          <div className="h-8"></div>
 
           <div className="relative">
             {session && <ExerciseEntryForm />}
