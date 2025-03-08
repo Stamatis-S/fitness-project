@@ -33,15 +33,25 @@ export function UserRecordPopup() {
 
   // Reset popup state when navigating back to home page
   useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
     if (location.pathname === "/") {
-      setIsOpen(false); // Reset first to ensure state change
-      const timer = setTimeout(() => {
+      // Always close first to trigger a fresh open state
+      setIsOpen(false);
+      
+      // Set a small delay to ensure the state changes are processed
+      timer = setTimeout(() => {
+        console.log("Opening popup on home page");
         setIsOpen(true);
-      }, 800); // Reduced delay for better user experience
-      return () => clearTimeout(timer);
+      }, 500);
     } else {
-      setIsOpen(false); // Close when navigating away
+      setIsOpen(false);
+      console.log("Closing popup, not on home page");
     }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [location.pathname]);
 
   useEffect(() => {
