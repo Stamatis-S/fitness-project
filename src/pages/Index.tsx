@@ -56,14 +56,14 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
                 alt="Fitness Project Logo"
-                className="w-20 md:w-24 mx-auto"
+                className="w-24 md:w-28 mx-auto" /* Increased logo size */
               />
               <UserRecordPopup />
             </div>
           </div>
 
-          {/* Increased vertical space to avoid overlap */}
-          <div className="h-16"></div>
+          {/* Increased vertical space to push content down */}
+          <div className="h-24"></div>
 
           <div className="relative">
             {session && <ExerciseEntryForm />}

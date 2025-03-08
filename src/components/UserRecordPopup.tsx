@@ -36,14 +36,14 @@ export function UserRecordPopup() {
     let timer: NodeJS.Timeout;
     
     if (location.pathname === "/") {
-      // Always close first to trigger a fresh open state
+      // Close popup first
       setIsOpen(false);
       
-      // Set a small delay to ensure the state changes are processed
+      // Set a shorter delay to ensure the popup appears quickly
       timer = setTimeout(() => {
         console.log("Opening popup on home page");
         setIsOpen(true);
-      }, 500);
+      }, 300);
     } else {
       setIsOpen(false);
       console.log("Closing popup, not on home page");
