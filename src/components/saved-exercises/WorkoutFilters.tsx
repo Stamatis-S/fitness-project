@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { EXERCISE_CATEGORIES, CATEGORY_COLORS } from "@/lib/constants";
+import { CATEGORY_COLORS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -56,7 +56,7 @@ export function WorkoutFilters({
             >
               All
             </motion.button>
-            {Object.entries(EXERCISE_CATEGORIES).map(([name]) => (
+            {Object.entries(CATEGORY_COLORS).map(([name, color]) => (
               <motion.button
                 key={name}
                 whileHover={{ scale: 1.03 }}
@@ -67,9 +67,9 @@ export function WorkoutFilters({
                   categoryFilter === name && "ring-1 ring-offset-1 ring-white"
                 )}
                 style={{ 
-                  backgroundColor: CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS],
+                  backgroundColor: color,
                   boxShadow: categoryFilter === name 
-                    ? `0 0 10px ${CATEGORY_COLORS[name as keyof typeof CATEGORY_COLORS]}80`
+                    ? `0 0 10px ${color}80`
                     : 'none'
                 }}
                 onClick={() => onCategoryChange(name)}

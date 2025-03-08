@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { WorkoutLog } from "./types";
 import { Badge } from "@/components/ui/badge";
+import { CATEGORY_COLORS } from "@/lib/constants";
 
 interface WorkoutTableProps {
   logs: WorkoutLog[];
@@ -92,17 +93,11 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
                     {exercise.name}
                   </h4>
                   <Badge 
-                    className={`
-                      px-1.5 py-0 rounded-full text-xs font-medium
-                      ${exercise.category === 'ΩΜΟΙ' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : ''}
-                      ${exercise.category === 'ΠΟΔΙΑ' ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : ''}
-                      ${exercise.category === 'ΣΤΗΘΟΣ' ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30' : ''}
-                      ${exercise.category === 'ΠΛΑΤΗ' ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' : ''}
-                      ${exercise.category === 'ΔΙΚΕΦΑΛΑ' ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' : ''}
-                      ${exercise.category === 'ΤΡΙΚΕΦΑΛΑ' ? 'bg-pink-500/20 text-pink-400 hover:bg-pink-500/30' : ''}
-                      ${exercise.category === 'ΚΟΡΜΟΣ' ? 'bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30' : ''}
-                      ${exercise.category === 'CARDIO' ? 'bg-orange-500/20 text-orange-400 hover:bg-orange-500/30' : ''}
-                    `}
+                    className="px-1.5 py-0 rounded-full text-xs font-medium"
+                    style={{
+                      backgroundColor: `${CATEGORY_COLORS[exercise.category as keyof typeof CATEGORY_COLORS]}20`,
+                      color: CATEGORY_COLORS[exercise.category as keyof typeof CATEGORY_COLORS],
+                    }}
                   >
                     {exercise.category}
                   </Badge>

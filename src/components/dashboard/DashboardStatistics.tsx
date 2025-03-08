@@ -8,7 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { CustomTooltip } from "./CustomTooltip";
 import { format, subMonths } from "date-fns";
-import { EXERCISE_CATEGORIES, CATEGORY_COLORS } from "@/lib/constants";
+import { CATEGORY_COLORS } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DashboardStatisticsProps {
@@ -95,7 +95,7 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
     .slice(0, 10);
 
   const calculateBaselines = () => {
-    const categoryTotals = Object.keys(EXERCISE_CATEGORIES).reduce((acc, category) => {
+    const categoryTotals = Object.keys(CATEGORY_COLORS).reduce((acc, category) => {
       const logs = filteredLogs.filter(log => log.category === category);
       const volume = logs.reduce((sum, log) => sum + (log.weight_kg * log.reps), 0);
       acc[category] = volume;
@@ -104,9 +104,9 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
 
     const avgVolume = Object.values(categoryTotals).reduce((a, b) => a + b, 0) / Object.keys(categoryTotals).length;
 
-    return Object.keys(EXERCISE_CATEGORIES).map(category => ({
+    return Object.keys(CATEGORY_COLORS).map(category => ({
       category,
-      volume: categoryTotals[category],
+      volume: categoryTotals[category] || 0,
       baseline: avgVolume,
       color: CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS]
     }));
