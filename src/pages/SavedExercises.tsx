@@ -124,11 +124,11 @@ export default function SavedExercises() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black pb-10">
-        <div className="mx-auto space-y-2">
-          <div className="flex items-center p-2">
+      <div className="min-h-screen bg-black pb-6">
+        <div className="mx-auto max-w-md space-y-1.5">
+          <div className="flex items-center p-1.5">
             <button
-              className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-1.5 rounded"
+              className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-1 rounded"
               onClick={() => navigate("/")}
             >
               <ArrowLeft className="h-3.5 w-3.5" />
@@ -140,7 +140,7 @@ export default function SavedExercises() {
             <div className="w-[50px]" />
           </div>
 
-          <Card className="p-2 bg-[#222222] border-0 rounded-lg">
+          <Card className="p-1.5 bg-[#222222] border-0 rounded-lg">
             <WorkoutFilters
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
