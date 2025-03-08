@@ -12,12 +12,14 @@ export interface WorkoutExercise {
   exercise_id?: number | null;
   customExercise?: string | null;
   sets: WorkoutSet[];
+  lastUsed?: string | null; // Date when this exercise was last used
 }
 
 export interface WorkoutPlan {
   name: string;
   description: string;
   exercises: WorkoutExercise[];
+  targetDate?: string; // The date this plan is targeted for
 }
 
 export interface WorkoutPlanExerciseProps {

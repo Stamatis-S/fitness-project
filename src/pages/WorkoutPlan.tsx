@@ -129,7 +129,7 @@ export default function WorkoutPlan() {
               <span className="text-xs">Back</span>
             </button>
             <h1 className="text-base font-bold flex-1 text-center text-white">
-              Today's Workout Plan
+              Your Next Workout Plan
             </h1>
             <div className="w-[50px]" />
           </div>
@@ -140,7 +140,7 @@ export default function WorkoutPlan() {
                 <div className="animate-pulse rounded-full bg-[#333333] h-12 w-12 flex items-center justify-center">
                   <Dumbbell className="h-6 w-6 text-white" />
                 </div>
-                <p className="text-white text-center">Generating your personalized workout plan...</p>
+                <p className="text-white text-center">Generating your next workout plan...</p>
               </div>
             ) : generatedPlan ? (
               <div className="space-y-4">
