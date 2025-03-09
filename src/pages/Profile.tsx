@@ -8,7 +8,6 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "@/components/profile/ProfilePhoto";
 import { AccountInformation } from "@/components/profile/AccountInformation";
-import { FitnessLevel } from "@/components/profile/FitnessLevel";
 import { MuscleGrowthVisualization } from "@/components/profile/MuscleGrowthVisualization";
 
 interface ProfileData {
@@ -108,24 +107,6 @@ export default function Profile() {
             username={profile.username}
             email={session.user.email!}
             onUsernameUpdate={(newUsername) => setProfile(prev => prev ? { ...prev, username: newUsername } : null)}
-          />
-        </Card>
-
-        {/* Fitness Level Card */}
-        <Card className="p-4 space-y-3 border-0 bg-[#222222] rounded-lg">
-          <FitnessLevel
-            userId={session.user.id}
-            fitnessScore={profile.fitness_score}
-            fitnessLevel={profile.fitness_level}
-            lastScoreUpdate={profile.last_score_update}
-            onScoreUpdate={(newScore, newLevel) => 
-              setProfile(prev => prev ? { 
-                ...prev, 
-                fitness_score: newScore, 
-                fitness_level: newLevel,
-                last_score_update: new Date().toISOString()
-              } : null)
-            }
           />
         </Card>
       </div>

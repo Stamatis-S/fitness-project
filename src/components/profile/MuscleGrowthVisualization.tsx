@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import "./MuscleGrowth.css";
 import { useAuth } from "@/components/AuthProvider";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MuscleGrowthVisualizationProps {
   userId: string;
@@ -15,7 +18,9 @@ interface MuscleGrowthVisualizationProps {
 export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }: MuscleGrowthVisualizationProps) {
   const [stats, setStats] = useState<MuscleProgressStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRecalculating, setIsRecalculating] = useState(false);
   const { session } = useAuth();
+  const queryClient = useQueryClient();
 
   // Images for each level
   const levelImages = [
@@ -26,6 +31,71 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     "/lovable-uploads/f964fcc6-9348-413b-a500-1de4fca8d363.png",  // Level 4
     "/lovable-uploads/32516b6e-fe1e-44bc-a297-dda9bfe437ce.png",  // Level 5 (max)
   ];
+
+  const handleRecalculateScore = async () => {
+    setIsRecalculating(true);
+    try {
+      const { error: calcError } = await supabase.rpc(
+        'calculate_fitness_score',
+        { user_id_param: userId }
+      );
+
+      if (calcError) throw calcError;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('fitness_score, fitness_level, last_score_update')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        // Update local stats with new fitness score
+        const muscleLevel = determineLevelFromScore(data.fitness_score);
+        setStats(prev => prev ? {
+          ...prev,
+          level: muscleLevel
+        } : null);
+      }
+      
+      await queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+      await queryClient.invalidateQueries({ queryKey: ['leaderboard-stats'] });
+      
+      toast.success("Fitness score recalculated!");
+    } catch (error) {
+      toast.error("Error recalculating fitness score");
+      console.error("Error:", error);
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
+  const determineLevelFromScore = (score: number): MuscleProgressLevel => {
+    if (score >= 5500) return 5;
+    if (score >= 4501) return 4;
+    if (score >= 3001) return 3;
+    if (score >= 2001) return 2;
+    if (score >= 1001) return 1;
+    return 0;
+  };
+
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'Legend':
+        return 'text-[#FF00FF]';
+      case 'Monster':
+        return 'text-[#FF0000]';
+      case 'Elite':
+        return 'text-[#A855F7]';
+      case 'Advanced':
+        return 'text-[#4488EF]';
+      case 'Intermediate':
+        return 'text-[#22C55E]';
+      default:
+        return 'text-[#EAB308]';
+    }
+  };
 
   // Load workout data
   useEffect(() => {
@@ -47,15 +117,11 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
           const calculatedStats = calculateWorkoutStats(workoutLogs);
           
           // Override the calculated level with the one based on actual fitness score
-          const muscleLevel = fitnessScore >= 4500 ? 5 :
-                           fitnessScore >= 3500 ? 4 :
-                           fitnessScore >= 2500 ? 3 :
-                           fitnessScore >= 1500 ? 2 :
-                           fitnessScore >= 500 ? 1 : 0;
+          const muscleLevel = determineLevelFromScore(fitnessScore);
                            
           setStats({
             ...calculatedStats,
-            level: muscleLevel as MuscleProgressLevel
+            level: muscleLevel
           });
         } else {
           // Default stats for users without workout data
@@ -65,7 +131,7 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
             workoutsByCategory: {},
             totalVolume: 0,
             targetArea: "GENERAL",
-            nextLevelRequirement: "Reach 500 fitness score points"
+            nextLevelRequirement: "Reach 1,001 fitness score points"
           });
         }
       } catch (error) {
@@ -111,6 +177,26 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     return particles;
   };
 
+  // Get next level requirement text
+  const getNextLevelRequirement = (currentLevel: MuscleProgressLevel): string => {
+    switch (currentLevel) {
+      case 0:
+        return "Reach 1,001 fitness score points";
+      case 1:
+        return "Reach 2,001 fitness score points";
+      case 2:
+        return "Reach 3,001 fitness score points";
+      case 3:
+        return "Reach 4,501 fitness score points";
+      case 4:
+        return "Reach 5,500 fitness score points";
+      case 5:
+        return "You've reached the maximum level!";
+      default:
+        return "Keep working out to progress";
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="muscle-growth-container">
@@ -134,54 +220,74 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
   }
 
   return (
-    <div className="muscle-growth-container">
-      <h2>Muscle Progress</h2>
-      
-      <div className="progress-stats">
-        <div className="stat-item">
-          <span className="stat-label">Current Level</span>
-          <span className="stat-value">{stats.level}/5</span>
+    <Card className="border-0 bg-[#222222] rounded-lg overflow-hidden">
+      <div className="muscle-growth-container">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl">Muscle Progress</h2>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleRecalculateScore}
+            disabled={isRecalculating}
+            className="flex items-center gap-1 text-xs h-7 bg-[#333333] hover:bg-[#444444] text-white border-0"
+          >
+            <RefreshCw className={`h-3 w-3 ${isRecalculating ? 'animate-spin' : ''}`} />
+            Recalculate
+          </Button>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">Workouts</span>
-          <span className="stat-value">{stats.totalWorkouts}</span>
+        
+        <div className="fitness-level mb-4 text-center">
+          <span className={`text-2xl font-bold ${getLevelColor(fitnessLevel)}`}>
+            {fitnessLevel}
+          </span>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">Focus</span>
-          <span className="stat-value">{stats.targetArea}</span>
+        
+        <div className="progress-stats">
+          <div className="stat-item">
+            <span className="stat-label">Level</span>
+            <span className="stat-value">{stats.level}/5</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">Workouts</span>
+            <span className="stat-value">{stats.totalWorkouts}</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">Focus</span>
+            <span className="stat-value">{stats.targetArea}</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">Score</span>
+            <span className="stat-value">{Math.round(fitnessScore)}</span>
+          </div>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">Fitness Score</span>
-          <span className="stat-value">{Math.round(fitnessScore)}</span>
-        </div>
-      </div>
-      
-      <div className="progress-visual">
-        {renderParticles()}
-        <img 
-          src={levelImages[stats.level]} 
-          alt={`Level ${stats.level} muscle progress`} 
-          className="character-image"
-        />
-      </div>
-      
-      <div className="progress-levels">
-        {[0, 1, 2, 3, 4, 5].map(level => (
-          <div 
-            key={level}
-            className={`level-indicator ${level <= stats.level ? 'active' : ''}`}
-            title={`Level ${level}`}
+        
+        <div className="progress-visual">
+          {renderParticles()}
+          <img 
+            src={levelImages[stats.level]} 
+            alt={`Level ${stats.level} muscle progress`} 
+            className="character-image"
           />
-        ))}
+        </div>
+        
+        <div className="progress-levels">
+          {[0, 1, 2, 3, 4, 5].map(level => (
+            <div 
+              key={level}
+              className={`level-indicator ${level <= stats.level ? 'active' : ''}`}
+              title={`Level ${level}`}
+            />
+          ))}
+        </div>
+        
+        <div className="next-level-info">
+          {stats.level < 5 ? (
+            <p>Next Level: {getNextLevelRequirement(stats.level)}</p>
+          ) : (
+            <p>Maximum level reached! You're a fitness legend!</p>
+          )}
+        </div>
       </div>
-      
-      <div className="next-level-info">
-        {stats.level < 5 ? (
-          <p>Next Level: {stats.nextLevelRequirement}</p>
-        ) : (
-          <p>Maximum level reached! You're a fitness monster!</p>
-        )}
-      </div>
-    </div>
+    </Card>
   );
 }
