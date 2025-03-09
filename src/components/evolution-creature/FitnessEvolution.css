@@ -1,0 +1,168 @@
+
+/* FitnessEvolution.css */
+.fitness-evolution-container {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  color: white;
+  overflow: hidden;
+  position: relative;
+}
+
+.fitness-evolution-container h2 {
+  font-size: 22px;
+  margin-bottom: 15px;
+  font-weight: 600;
+  text-align: center;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.evolution-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.evolution-stage, .creature-type {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stage-label, .type-label {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.stage-value, .type-value {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.evolution-visualization {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+  position: relative;
+  height: 250px;
+}
+
+.evolution-svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Pulsing glow effect */
+.evolution-visualization::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%);
+  opacity: 0.7;
+  animation: pulse 3s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+  100% { opacity: 0.3; }
+}
+
+.evolution-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.color-box {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 5px;
+  border-radius: 2px;
+}
+
+.evolution-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.view-timeline-btn, .share-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  letter-spacing: 0.5px;
+  font-size: 14px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.view-timeline-btn {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.share-btn {
+  background-color: #4ade80;
+  color: #1e293b;
+}
+
+.view-timeline-btn:hover, .share-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+}
+
+/* Floating particles for higher evolution levels */
+.particle {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+@keyframes float {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+  100% { transform: translateY(0) rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .fitness-evolution-container {
+    padding: 15px;
+  }
+  
+  .evolution-actions {
+    flex-direction: column;
+  }
+}
