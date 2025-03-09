@@ -1,11 +1,10 @@
+
 import { useEffect, useState } from "react";
 import { MuscleProgressLevel, MuscleProgressStats, calculateWorkoutStats } from "./utils/progressLevelUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import "./MuscleGrowth.css";
 import { useAuth } from "@/components/AuthProvider";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 
@@ -18,7 +17,6 @@ interface MuscleGrowthVisualizationProps {
 export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }: MuscleGrowthVisualizationProps) {
   const [stats, setStats] = useState<MuscleProgressStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isRecalculating, setIsRecalculating] = useState(false);
   const { session } = useAuth();
   const queryClient = useQueryClient();
 
@@ -31,45 +29,6 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     "/lovable-uploads/f964fcc6-9348-413b-a500-1de4fca8d363.png",  // Level 4
     "/lovable-uploads/32516b6e-fe1e-44bc-a297-dda9bfe437ce.png",  // Level 5 (max)
   ];
-
-  const handleRecalculateScore = async () => {
-    setIsRecalculating(true);
-    try {
-      const { error: calcError } = await supabase.rpc(
-        'calculate_fitness_score',
-        { user_id_param: userId }
-      );
-
-      if (calcError) throw calcError;
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('fitness_score, fitness_level, last_score_update')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-      
-      if (data) {
-        // Update local stats with new fitness score
-        const muscleLevel = determineLevelFromScore(data.fitness_score);
-        setStats(prev => prev ? {
-          ...prev,
-          level: muscleLevel
-        } : null);
-      }
-      
-      await queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
-      await queryClient.invalidateQueries({ queryKey: ['leaderboard-stats'] });
-      
-      toast.success("Fitness score recalculated!");
-    } catch (error) {
-      toast.error("Error recalculating fitness score");
-      console.error("Error:", error);
-    } finally {
-      setIsRecalculating(false);
-    }
-  };
 
   const determineLevelFromScore = (score: number): MuscleProgressLevel => {
     if (score >= 5500) return 5;
@@ -200,7 +159,6 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
   if (isLoading) {
     return (
       <div className="muscle-growth-container">
-        <h2>Muscle Progress</h2>
         <div className="progress-visual">
           <p>Loading your progress...</p>
         </div>
@@ -211,7 +169,6 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
   if (!stats) {
     return (
       <div className="muscle-growth-container">
-        <h2>Muscle Progress</h2>
         <div className="progress-visual">
           <p>No progress data available</p>
         </div>
@@ -222,20 +179,6 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
   return (
     <Card className="border-0 bg-[#222222] rounded-lg overflow-hidden">
       <div className="muscle-growth-container">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl">Muscle Progress</h2>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleRecalculateScore}
-            disabled={isRecalculating}
-            className="flex items-center gap-1 text-xs h-7 bg-[#333333] hover:bg-[#444444] text-white border-0"
-          >
-            <RefreshCw className={`h-3 w-3 ${isRecalculating ? 'animate-spin' : ''}`} />
-            Recalculate
-          </Button>
-        </div>
-        
         <div className="fitness-level mb-4 text-center">
           <span className={`text-2xl font-bold ${getLevelColor(fitnessLevel)}`}>
             {fitnessLevel} <span className="text-lg font-normal text-gray-400">({Math.round(fitnessScore)} pts)</span>
