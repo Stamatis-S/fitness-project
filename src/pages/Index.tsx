@@ -56,9 +56,12 @@ const Index = () => {
               <img 
                 src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
                 alt="Fitness Project Logo"
-                className="w-24 md:w-28 mx-auto" /* Increased logo size */
+                className="w-24 md:w-28 mx-auto" 
               />
-              <UserRecordPopup />
+              {/* Fixed position for UserRecordPopup */}
+              <div className="mt-2 mb-3">
+                <UserRecordPopup />
+              </div>
             </div>
           </div>
 
