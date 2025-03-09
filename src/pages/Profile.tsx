@@ -9,7 +9,6 @@ import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "@/components/profile/ProfilePhoto";
 import { AccountInformation } from "@/components/profile/AccountInformation";
 import { FitnessLevel } from "@/components/profile/FitnessLevel";
-import { CreatureVisualizer } from "@/components/evolution-creature/CreatureVisualizer";
 
 interface ProfileData {
   username: string | null;
@@ -93,9 +92,6 @@ export default function Profile() {
             <p className="text-gray-400 text-sm">{session.user.email}</p>
           </div>
         </Card>
-
-        {/* Fitness Evolution Creature */}
-        <CreatureVisualizer userId={session.user.id} />
 
         {/* Account Information Card */}
         <Card className="p-4 space-y-3 border-0 bg-[#222222] rounded-lg">
