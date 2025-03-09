@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "@/components/profile/ProfilePhoto";
 import { AccountInformation } from "@/components/profile/AccountInformation";
 import { FitnessLevel } from "@/components/profile/FitnessLevel";
+import { FitnessDNA } from "@/components/profile/FitnessDNA";
+import type { WorkoutLog } from "@/components/saved-exercises/types";
 
 interface ProfileData {
   username: string | null;
@@ -23,6 +25,8 @@ export default function Profile() {
   const { session } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchProfile = async () => {
     try {
@@ -50,9 +54,40 @@ export default function Profile() {
     }
   };
 
+  const fetchWorkoutLogs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('workout_logs')
+        .select(`
+          id,
+          workout_date,
+          category,
+          exercise_id,
+          custom_exercise,
+          set_number,
+          weight_kg,
+          reps,
+          exercises(id, name)
+        `)
+        .eq('user_id', session?.user.id)
+        .order('workout_date', { ascending: false });
+
+      if (error) throw error;
+
+      setWorkoutLogs(data || []);
+    } catch (error) {
+      console.error("Error fetching workout logs:", error);
+      toast.error("Failed to load workout data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (session?.user.id) {
+      setIsLoading(true);
       fetchProfile();
+      fetchWorkoutLogs();
     }
   }, [session?.user.id]);
 
@@ -92,6 +127,12 @@ export default function Profile() {
             <p className="text-gray-400 text-sm">{session.user.email}</p>
           </div>
         </Card>
+
+        {/* Fitness DNA Visualization */}
+        <FitnessDNA 
+          workoutLogs={workoutLogs}
+          isLoading={isLoading}
+        />
 
         {/* Account Information Card */}
         <Card className="p-4 space-y-3 border-0 bg-[#222222] rounded-lg">
