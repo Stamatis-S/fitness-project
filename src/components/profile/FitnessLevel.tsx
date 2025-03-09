@@ -2,7 +2,7 @@
 import { format, isValid } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { RefreshCw, Trophy, Star, Medal, ArrowUp, ArrowDown } from "lucide-react";
+import { RefreshCw, Trophy, Star, Medal, ArrowUp, ArrowDown, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -171,6 +171,13 @@ export function FitnessLevel({ userId, fitnessScore, fitnessLevel, lastScoreUpda
               <p className="text-xs font-medium text-[#FF0000]">Monster</p>
             </div>
             <p className="text-xs text-gray-400">4,501+</p>
+          </div>
+          <div className="p-1 bg-[#333333] rounded">
+            <div className="flex items-center gap-1">
+              <Zap className="h-3 w-3 shrink-0 text-[#FF00FF]" />
+              <p className="text-xs font-medium text-[#FF00FF]">Legend</p>
+            </div>
+            <p className="text-xs text-gray-400">5,500+</p>
           </div>
         </div>
       </div>
