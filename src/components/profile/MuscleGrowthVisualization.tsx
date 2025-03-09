@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { MuscleProgressLevel, MuscleProgressStats, calculateWorkoutStats } from "./utils/progressLevelUtils";
 import { supabase } from "@/integrations/supabase/client";
@@ -239,27 +238,8 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
         
         <div className="fitness-level mb-4 text-center">
           <span className={`text-2xl font-bold ${getLevelColor(fitnessLevel)}`}>
-            {fitnessLevel}
+            {fitnessLevel} <span className="text-lg font-normal text-gray-400">({Math.round(fitnessScore)} pts)</span>
           </span>
-        </div>
-        
-        <div className="progress-stats">
-          <div className="stat-item">
-            <span className="stat-label">Level</span>
-            <span className="stat-value">{stats.level}/5</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Workouts</span>
-            <span className="stat-value">{stats.totalWorkouts}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Focus</span>
-            <span className="stat-value">{stats.targetArea}</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-label">Score</span>
-            <span className="stat-value">{Math.round(fitnessScore)}</span>
-          </div>
         </div>
         
         <div className="progress-visual">
