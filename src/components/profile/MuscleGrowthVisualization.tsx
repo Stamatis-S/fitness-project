@@ -8,6 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Card } from "@/components/ui/card";
 
 interface MuscleGrowthVisualizationProps {
   userId: string;
