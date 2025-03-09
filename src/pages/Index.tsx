@@ -65,8 +65,8 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Increased vertical space to push content down */}
-          <div className="h-24"></div>
+          {/* Reduced vertical space from h-24 to h-6 */}
+          <div className="h-6"></div>
 
           <div className="relative">
             {session && <ExerciseEntryForm />}
