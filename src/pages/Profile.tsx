@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "@/components/profile/ProfilePhoto";
 import { AccountInformation } from "@/components/profile/AccountInformation";
 import { FitnessLevel } from "@/components/profile/FitnessLevel";
+import { MuscleGrowthVisualization } from "@/components/profile/MuscleGrowthVisualization";
 
 interface ProfileData {
   username: string | null;
@@ -92,6 +93,13 @@ export default function Profile() {
             <p className="text-gray-400 text-sm">{session.user.email}</p>
           </div>
         </Card>
+
+        {/* Muscle Growth Visualization Card */}
+        <MuscleGrowthVisualization 
+          userId={session.user.id}
+          fitnessScore={profile.fitness_score}
+          fitnessLevel={profile.fitness_level}
+        />
 
         {/* Account Information Card */}
         <Card className="p-4 space-y-3 border-0 bg-[#222222] rounded-lg">
