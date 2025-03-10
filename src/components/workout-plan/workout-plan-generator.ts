@@ -1,4 +1,3 @@
-
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import type { WorkoutPlan, WorkoutExercise, WorkoutSet } from "./types";
 import type { ExerciseCategory } from "@/lib/constants";
@@ -22,60 +21,66 @@ function groupByExercise(logs: WorkoutLog[]): Record<string, WorkoutLog[]> {
   return grouped;
 }
 
-// Helper function to calculate progressive sets per exercise
-function calculateProgressiveSets(logs: WorkoutLog[]): Record<string, WorkoutSet[]> {
+// Updated function to calculate the most frequently used sets per exercise
+function calculateMostUsedSets(logs: WorkoutLog[]): Record<string, WorkoutSet[]> {
   const exerciseGroups = groupByExercise(logs);
   const result: Record<string, WorkoutSet[]> = {};
   
   Object.entries(exerciseGroups).forEach(([key, exerciseLogs]) => {
-    const byDate: Record<string, WorkoutLog[]> = {};
+    // Calculate most common weight-rep combinations
+    const setCounts: Record<string, { count: number, set: WorkoutSet }> = {};
+    
     exerciseLogs.forEach(log => {
-      if (!byDate[log.workout_date]) {
-        byDate[log.workout_date] = [];
+      if (log.weight_kg !== null && log.reps !== null) {
+        const setKey = `${log.weight_kg}-${log.reps}`;
+        
+        if (!setCounts[setKey]) {
+          setCounts[setKey] = {
+            count: 0,
+            set: { weight: log.weight_kg, reps: log.reps }
+          };
+        }
+        
+        setCounts[setKey].count++;
       }
-      byDate[log.workout_date].push(log);
     });
     
-    const averageSetCount = Math.round(
-      Object.values(byDate).reduce((sum, logs) => sum + logs.length, 0) / Object.keys(byDate).length
+    // Sort by frequency and get the top 3 most common sets
+    const sortedSets = Object.values(setCounts)
+      .sort((a, b) => b.count - a.count)
+      .map(item => item.set);
+    
+    // Ensure we have at least 3 sets
+    let sets = sortedSets.slice(0, 3);
+    
+    // If we don't have enough sets, duplicate the most common one
+    if (sets.length === 0) {
+      const defaultSet = { weight: 0, reps: 8 };
+      sets = [defaultSet, defaultSet, defaultSet];
+    } else if (sets.length < 3) {
+      while (sets.length < 3) {
+        sets.push({...sets[0]});
+      }
+    }
+    
+    // Apply small progressive increments if all sets are identical
+    const allIdentical = sets.every(set => 
+      set.weight === sets[0].weight && set.reps === sets[0].reps
     );
     
-    const sortedDates = Object.keys(byDate).sort().reverse();
-    if (sortedDates.length > 0) {
-      const recentLogs = byDate[sortedDates[0]];
+    if (allIdentical && sets[0].weight > 0) {
+      const baseWeight = sets[0].weight;
+      const baseReps = sets[0].reps;
       
-      let sets = recentLogs.map(log => {
-        const weight = log.weight_kg || 0;
-        const reps = log.reps || 0;
-        
-        const weightIncrement = weight > 20 ? Math.round(weight * 0.025 * 2) / 2 : 1.5;
-        
-        const increaseWeight = Math.random() > 0.5;
-        
-        if (increaseWeight && weight > 0) {
-          return {
-            weight: Math.round((weight + weightIncrement) * 2) / 2,
-            reps
-          };
-        } else {
-          return {
-            weight,
-            reps: reps + 1
-          };
-        }
-      });
-      
-      if (sets.length < averageSetCount) {
-        const lastSet = sets[sets.length - 1];
-        for (let i = sets.length; i < averageSetCount; i++) {
-          sets.push({ ...lastSet });
-        }
-      } else if (sets.length > averageSetCount) {
-        sets = sets.slice(0, averageSetCount);
-      }
-      
-      result[key] = sets;
+      // Make minor progression in either weight or reps
+      sets = [
+        { weight: baseWeight, reps: baseReps },
+        { weight: Math.round((baseWeight + 2.5) * 2) / 2, reps: baseReps }, // +2.5kg
+        { weight: Math.round((baseWeight + 5) * 2) / 2, reps: baseReps }    // +5kg
+      ];
     }
+    
+    result[key] = sets;
   });
   
   return result;
@@ -304,8 +309,8 @@ export function generateWorkoutPlan(
   // Get favorite exercises for each category, strictly excluding the specified exercise IDs
   const favoriteExercises = getFavoriteExercises(logs, excludeExerciseIds);
   
-  // Calculate progressive sets based on previous workout history
-  const progressiveSets = calculateProgressiveSets(logs);
+  // Calculate most used sets based on workout history
+  const mostUsedSets = calculateMostUsedSets(logs);
   
   // Build the workout plan with exercises
   const workoutExercises: WorkoutExercise[] = [];
@@ -323,7 +328,7 @@ export function generateWorkoutPlan(
       ? `exercise_${exercise.exerciseId}` 
       : `custom_${exercise.customExercise}`;
       
-    const sets = progressiveSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
+    const sets = mostUsedSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
     
     // Track the exercise ID being used
     if (exercise.exerciseId) {
@@ -354,7 +359,7 @@ export function generateWorkoutPlan(
         ? `exercise_${exercise.exerciseId}` 
         : `custom_${exercise.customExercise}`;
         
-      const sets = progressiveSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
+      const sets = mostUsedSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
       
       // Track the exercise ID being used
       if (exercise.exerciseId) {
@@ -395,7 +400,7 @@ export function generateWorkoutPlan(
           ? `exercise_${exercise.exerciseId}` 
           : `custom_${exercise.customExercise}`;
           
-        const sets = progressiveSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
+        const sets = mostUsedSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
         
         // Track the exercise ID being used
         if (exercise.exerciseId) {
@@ -443,7 +448,7 @@ export function generateWorkoutPlan(
           ? `exercise_${exercise.exerciseId}` 
           : `custom_${exercise.customExercise}`;
           
-        const sets = progressiveSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
+        const sets = mostUsedSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
         
         if (exercise.exerciseId) {
           planUsedExerciseIds.push(exercise.exerciseId);
@@ -551,10 +556,10 @@ export function generateWorkoutPlan(
   
   if (secondaryLabel) {
     planName = `${primaryLabel} & ${secondaryLabel} Workout`;
-    planDescription = `A progressive workout focusing on ${primaryLabel.toLowerCase()} and ${secondaryLabel.toLowerCase()} designed to help you improve based on your training history.`;
+    planDescription = `A workout focusing on ${primaryLabel.toLowerCase()} and ${secondaryLabel.toLowerCase()} designed based on your most frequently used sets.`;
   } else {
     planName = `${primaryLabel} Focus Workout`;
-    planDescription = `A progressive workout focusing on ${primaryLabel.toLowerCase()} designed to help you improve based on your training history.`;
+    planDescription = `A workout focusing on ${primaryLabel.toLowerCase()} designed based on your most frequently used sets.`;
   }
   
   // Return the complete workout plan
