@@ -1,3 +1,4 @@
+
 import { useFormContext } from "react-hook-form";
 import { ExerciseFormData } from "@/components/workout/types";
 import { Weight, RotateCw, Clock } from "lucide-react";
@@ -55,14 +56,15 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         }
       });
 
+      // Get the most frequent weight and rep values
       const weights = Object.entries(weightCounts)
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 2)
+        .slice(0, 1)  // Only get the most frequent one
         .map(([weight]) => Number(weight));
 
       const reps = Object.entries(repsCounts)
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 2)
+        .slice(0, 1)  // Only get the most frequent one
         .map(([reps]) => Number(reps));
 
       return { weights, reps };
@@ -119,26 +121,48 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     setValue(`sets.${index}.reps`, (reps || 0) + amount);
   };
 
-  const defaultWeightButtons = isCardio ? [5, 10, 15, 30] : [5, 10, 15, 20];
-  const defaultRepButtons = isCardio ? [3, 5, 7, 9] : [8, 10, 12];
+  // Prepare button values: last value and most frequent value
+  const weightButtons = [];
+  const repButtons = [];
 
-  const weightButtons = isLoadingLast ? defaultWeightButtons : (
-    lastWorkoutValues?.lastWeight !== null 
-      ? (isCardio 
-          ? [lastWorkoutValues.lastWeight, lastWorkoutValues.lastWeight + 5, lastWorkoutValues.lastWeight + 10, lastWorkoutValues.lastWeight + 15].filter(Boolean)
-          : [lastWorkoutValues.lastWeight, lastWorkoutValues.lastWeight + 2.5, lastWorkoutValues.lastWeight + 5, lastWorkoutValues.lastWeight + 7.5].filter(Boolean)
-        )
-      : (frequentValues?.weights?.length ? frequentValues.weights : defaultWeightButtons)
-  );
+  // First add last value if it exists (will be highlighted)
+  if (!isLoadingLast && lastWorkoutValues?.lastWeight !== null) {
+    weightButtons.push(lastWorkoutValues.lastWeight);
+  }
+  
+  if (!isLoadingLast && lastWorkoutValues?.lastReps !== null) {
+    repButtons.push(lastWorkoutValues.lastReps);
+  }
 
-  const repButtons = isLoadingLast ? defaultRepButtons : (
-    lastWorkoutValues?.lastReps !== null
-      ? (isCardio 
-          ? [lastWorkoutValues.lastReps, Math.min(lastWorkoutValues.lastReps + 1, 10), Math.min(lastWorkoutValues.lastReps + 2, 10)].filter(Boolean)
-          : [lastWorkoutValues.lastReps, lastWorkoutValues.lastReps + 1, lastWorkoutValues.lastReps + 2, lastWorkoutValues.lastReps + 3].filter(Boolean)
-        )
-      : (frequentValues?.reps?.length ? frequentValues.reps : defaultRepButtons)
-  );
+  // Then add the most frequent value if it exists and is different from the last value
+  if (frequentValues?.weights?.length && 
+      (weightButtons.length === 0 || frequentValues.weights[0] !== weightButtons[0])) {
+    weightButtons.push(frequentValues.weights[0]);
+  }
+  
+  if (frequentValues?.reps?.length && 
+      (repButtons.length === 0 || frequentValues.reps[0] !== repButtons[0])) {
+    repButtons.push(frequentValues.reps[0]);
+  }
+
+  // Add default values if needed to have at least 2 buttons
+  const defaultWeightValue = isCardio ? 
+    (weightButtons[0] ? weightButtons[0] + 5 : 10) : 
+    (weightButtons[0] ? weightButtons[0] + 2.5 : 20);
+  
+  const defaultRepsValue = isCardio ? 
+    (repButtons[0] ? Math.min(repButtons[0] + 1, 10) : 5) : 
+    (repButtons[0] ? repButtons[0] + 2 : 10);
+
+  // Make sure we have exactly 2 weight buttons
+  while (weightButtons.length < 2) {
+    weightButtons.push(defaultWeightValue);
+  }
+  
+  // Make sure we have exactly 2 rep buttons
+  while (repButtons.length < 2) {
+    repButtons.push(defaultRepsValue);
+  }
 
   return (
     <div className="bg-[#111111] rounded-xl p-3">
