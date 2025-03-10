@@ -1,174 +1,35 @@
 
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { PageTransition } from "@/components/PageTransition";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check, X, Dumbbell, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { WorkoutPlanExercise } from "@/components/workout-plan/WorkoutPlanExercise";
-import { toast } from "sonner";
-import { generateWorkoutPlan } from "@/components/workout-plan/workout-plan-generator";
-import type { WorkoutLog } from "@/components/saved-exercises/types";
-import type { ExerciseCategory } from "@/lib/constants";
-import type { WorkoutPlan, WorkoutExercise } from "@/components/workout-plan/types";
+import { WorkoutPlanHeader } from "@/components/workout-plan/WorkoutPlanHeader";
+import { WorkoutPlanLoading } from "@/components/workout-plan/WorkoutPlanLoading";
+import { WorkoutPlanEmpty } from "@/components/workout-plan/WorkoutPlanEmpty";
+import { WorkoutPlanContent } from "@/components/workout-plan/WorkoutPlanContent";
+import { useWorkoutPlan } from "@/components/workout-plan/use-workout-plan";
 
 export default function WorkoutPlan() {
   const { session, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [generatedPlans, setGeneratedPlans] = useState<WorkoutPlan[]>([]);
-  const [currentPlanIndex, setCurrentPlanIndex] = useState(0);
-  const [isGenerating, setIsGenerating] = useState(true);
-  const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>([]);
   
-  const currentPlan = generatedPlans[currentPlanIndex];
-
   useEffect(() => {
     if (!isLoading && !session) {
       navigate('/auth');
     }
   }, [session, isLoading, navigate]);
-
-  const { data: workoutLogs } = useQuery({
-    queryKey: ['workout_logs', session?.user.id],
-    queryFn: async () => {
-      if (!session?.user.id) {
-        throw new Error('Not authenticated');
-      }
-
-      const { data, error } = await supabase
-        .from('workout_logs')
-        .select(`
-          *,
-          exercises (
-            id,
-            name
-          )
-        `)
-        .eq('user_id', session.user.id)
-        .order('workout_date', { ascending: false });
-
-      if (error) {
-        toast.error("Failed to load workout logs");
-        throw error;
-      }
-      return data as WorkoutLog[];
-    },
-    enabled: !!session?.user.id,
-  });
-
-  useEffect(() => {
-    if (workoutLogs) {
-      // Generate multiple workout plan options
-      const plans: WorkoutPlan[] = [];
-      
-      // Generate at least 3 different plans if possible
-      for (let i = 0; i < 5; i++) {
-        const plan = generateWorkoutPlan(workoutLogs);
-        if (plan) {
-          // Check if the plan is significantly different from existing plans
-          const isDifferent = !plans.some(existingPlan => 
-            areWorkoutPlansVerySimilar(existingPlan, plan)
-          );
-          
-          if (isDifferent || plans.length < 2) {
-            plans.push(plan);
-          }
-        }
-      }
-      
-      if (plans.length > 0) {
-        setGeneratedPlans(plans);
-        setWorkoutExercises(plans[0].exercises);
-      }
-      
-      setIsGenerating(false);
-    }
-  }, [workoutLogs]);
-
-  // Helper function to determine if two workout plans are very similar
-  const areWorkoutPlansVerySimilar = (plan1: WorkoutPlan, plan2: WorkoutPlan): boolean => {
-    // Consider plans similar if they have the same primary category focus
-    // or if more than 50% of the exercises are the same
-    
-    const plan1Categories = new Set(plan1.exercises.map(ex => ex.category));
-    const plan2Categories = new Set(plan2.exercises.map(ex => ex.category));
-    
-    // Check if the primary categories match
-    const primaryCategoryMatch = plan1.name.split(' ')[0] === plan2.name.split(' ')[0];
-    
-    // Count common exercises
-    const commonExercises = plan1.exercises.filter(ex1 => 
-      plan2.exercises.some(ex2 => 
-        ex1.name === ex2.name && ex1.category === ex2.category
-      )
-    ).length;
-    
-    const similarityRatio = commonExercises / Math.max(plan1.exercises.length, plan2.exercises.length);
-    
-    return primaryCategoryMatch && similarityRatio > 0.5;
-  };
-
-  const handleExerciseUpdate = (updatedExercise: WorkoutExercise, index: number) => {
-    if (currentPlan) {
-      const updatedExercises = [...workoutExercises];
-      updatedExercises[index] = updatedExercise;
-      setWorkoutExercises(updatedExercises);
-    }
-  };
-
-  const handleSavePlan = async () => {
-    if (!session?.user.id || !currentPlan) return;
-    
-    try {
-      // Convert workout plan to workout_logs format using the updated exercises
-      const currentDate = new Date();
-      const dateString = currentDate.toISOString().split('T')[0];
-      
-      const workoutLogEntries = workoutExercises.flatMap((exercise, exerciseIndex) => {
-        return exercise.sets.map((set, setIndex) => ({
-          workout_date: dateString,
-          category: exercise.category,
-          exercise_id: exercise.exercise_id,
-          custom_exercise: exercise.customExercise || null,
-          set_number: setIndex + 1,
-          weight_kg: set.weight,
-          reps: set.reps,
-          user_id: session.user.id
-        }));
-      });
-
-      const { error } = await supabase
-        .from('workout_logs')
-        .insert(workoutLogEntries);
-
-      if (error) throw error;
-
-      toast.success("Workout plan saved successfully!");
-      navigate('/saved-exercises');
-    } catch (error: any) {
-      console.error("Error saving workout plan:", error);
-      toast.error("Failed to save workout plan");
-    }
-  };
-
-  const handleDecline = () => {
-    if (generatedPlans.length <= 1) {
-      toast.info("No alternative workout plans available");
-      return;
-    }
-    
-    // Cycle to the next workout plan
-    const nextIndex = (currentPlanIndex + 1) % generatedPlans.length;
-    setCurrentPlanIndex(nextIndex);
-    
-    // Update the workout exercises based on the new current plan
-    setWorkoutExercises(generatedPlans[nextIndex].exercises);
-    
-    toast.info("Showing alternative workout plan");
-  };
+  
+  const {
+    currentPlan,
+    workoutExercises,
+    isGenerating,
+    currentPlanIndex,
+    generatedPlans,
+    handleExerciseUpdate,
+    handleSavePlan,
+    handleDecline
+  } = useWorkoutPlan(session?.user.id);
 
   if (isLoading) {
     return <div className="flex h-screen items-center justify-center bg-black">Loading...</div>;
@@ -182,86 +43,23 @@ export default function WorkoutPlan() {
     <PageTransition>
       <div className="min-h-screen bg-black pb-16">
         <div className="mx-auto max-w-[98%] px-1 space-y-2">
-          <div className="flex items-center p-2">
-            <button
-              className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-1.5 rounded"
-              onClick={() => navigate("/")}
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              <span className="text-xs">Back</span>
-            </button>
-            <h1 className="text-base font-bold flex-1 text-center text-white">
-              Today's Workout Plan
-            </h1>
-            <div className="w-[50px]" />
-          </div>
+          <WorkoutPlanHeader title="Today's Workout Plan" />
 
           <Card className="p-3 bg-[#222222] border-0 rounded-lg">
             {isGenerating ? (
-              <div className="flex flex-col items-center justify-center p-6 space-y-4">
-                <div className="animate-pulse rounded-full bg-[#333333] h-12 w-12 flex items-center justify-center">
-                  <Dumbbell className="h-6 w-6 text-white" />
-                </div>
-                <p className="text-white text-center">Generating your workout plans...</p>
-              </div>
+              <WorkoutPlanLoading />
             ) : currentPlan ? (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-white">
-                      {currentPlan.name}
-                    </h2>
-                    {generatedPlans.length > 1 && (
-                      <div className="flex items-center gap-1 text-xs text-gray-400">
-                        <span>{currentPlanIndex + 1}/{generatedPlans.length}</span>
-                        <RefreshCw className="h-3 w-3" />
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-400">
-                    {currentPlan.description}
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  {workoutExercises.map((exercise, index) => (
-                    <WorkoutPlanExercise 
-                      key={index} 
-                      exercise={exercise} 
-                      onExerciseUpdate={(updatedExercise) => handleExerciseUpdate(updatedExercise, index)}
-                    />
-                  ))}
-                </div>
-
-                <div className="flex space-x-2 pt-2">
-                  <Button
-                    className="flex-1 bg-[#333333] hover:bg-[#444444] text-white"
-                    onClick={handleDecline}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Find Another
-                  </Button>
-                  <Button
-                    className="flex-1 bg-[#E22222] hover:bg-[#C11818] text-white"
-                    onClick={handleSavePlan}
-                  >
-                    <Check className="h-4 w-4 mr-2" />
-                    Use This Plan
-                  </Button>
-                </div>
-              </div>
+              <WorkoutPlanContent
+                currentPlan={currentPlan}
+                workoutExercises={workoutExercises}
+                currentPlanIndex={currentPlanIndex}
+                totalPlans={generatedPlans.length}
+                onExerciseUpdate={handleExerciseUpdate}
+                onDecline={handleDecline}
+                onSave={handleSavePlan}
+              />
             ) : (
-              <div className="flex flex-col items-center justify-center p-6 space-y-4">
-                <p className="text-white text-center">
-                  Unable to generate a workout plan. Please log more exercises to get personalized recommendations.
-                </p>
-                <Button
-                  onClick={() => navigate("/")}
-                  className="bg-[#333333] hover:bg-[#444444] text-white"
-                >
-                  Back to Exercise Entry
-                </Button>
-              </div>
+              <WorkoutPlanEmpty />
             )}
           </Card>
         </div>
