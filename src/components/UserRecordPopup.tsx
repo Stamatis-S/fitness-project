@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy } from "lucide-react";
@@ -21,7 +20,7 @@ export function UserRecordPopup() {
     async function fetchLatestRecords() {
       setIsLoading(true);
       try {
-        // Fetch user records from Supabase
+        // Fetch workout logs with user info and exercise details
         const { data: workoutLogs, error } = await supabase
           .from('workout_logs')
           .select(`
@@ -36,38 +35,51 @@ export function UserRecordPopup() {
             profiles(username)
           `)
           .order('weight_kg', { ascending: false })
-          .limit(20); // Increased limit to fetch more records
+          .limit(50); // Increased limit to get more potential records
 
         if (error) throw error;
 
         // Format the records
         if (workoutLogs && workoutLogs.length > 0) {
-          const formattedRecords = workoutLogs.map(log => {
+          // First, group by user and exercise to find PRs
+          const exerciseMap = new Map<string, Map<string, UserRecord>>();
+          
+          workoutLogs.forEach(log => {
             const exerciseName = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
-            return {
+            const userExerciseKey = `${log.user_id}-${exerciseName}`;
+            
+            const record = {
               user_id: log.user_id,
               username: log.profiles?.username || 'Anonymous User',
               exercise: exerciseName,
               achievement: `${log.weight_kg}kg x ${log.reps} reps`,
               date: new Date(log.workout_date).toLocaleDateString()
             };
-          });
 
-          // Get more unique user records - up to 10 users
-          const userMap = new Map<string, UserRecord>();
-          
-          formattedRecords.forEach(record => {
-            // If we don't have this user yet, or if this record is better than what we have
-            const existingRecord = userMap.get(record.user_id);
-            if (!existingRecord || (parseFloat(record.achievement) > parseFloat(existingRecord.achievement))) {
-              userMap.set(record.user_id, record);
+            // For each user-exercise combination, keep the highest weight
+            if (!exerciseMap.has(userExerciseKey) || 
+                parseFloat(record.achievement) > parseFloat(exerciseMap.get(userExerciseKey)!.get(log.user_id)!.achievement)) {
+              if (!exerciseMap.has(userExerciseKey)) {
+                exerciseMap.set(userExerciseKey, new Map());
+              }
+              exerciseMap.get(userExerciseKey)!.set(log.user_id, record);
             }
           });
-          
-          // Convert map to array, get up to 10 records
-          const uniqueUserRecords = Array.from(userMap.values()).slice(0, 10);
-          
-          setRecords(uniqueUserRecords);
+
+          // Flatten the maps to get all PRs
+          const allRecords: UserRecord[] = [];
+          exerciseMap.forEach(userMap => {
+            userMap.forEach(record => {
+              allRecords.push(record);
+            });
+          });
+
+          // Sort by achievement (weight) descending and take top 10
+          const sortedRecords = allRecords
+            .sort((a, b) => parseFloat(b.achievement) - parseFloat(a.achievement))
+            .slice(0, 10);
+
+          setRecords(sortedRecords);
         }
       } catch (error) {
         console.error('Error fetching records:', error);
