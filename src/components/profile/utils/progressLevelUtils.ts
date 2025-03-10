@@ -1,4 +1,3 @@
-
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 
 export type MuscleProgressLevel = 0 | 1 | 2 | 3 | 4 | 5;
@@ -12,29 +11,29 @@ export interface MuscleProgressStats {
   nextLevelRequirement?: string;
 }
 
-// Determine the muscle progress level based on fitness score
+// Updated function to determine muscle progress level based on fitness score
 export function determineMuscleLevel(fitnessScore: number): MuscleProgressLevel {
-  if (fitnessScore >= 5500) return 5;
-  if (fitnessScore >= 4501) return 4;
-  if (fitnessScore >= 3001) return 3;
-  if (fitnessScore >= 2001) return 2;
-  if (fitnessScore >= 1001) return 1;
-  return 0;
+  if (fitnessScore >= 6000) return 5;  // Legend
+  if (fitnessScore >= 4500) return 4;  // Elite
+  if (fitnessScore >= 3000) return 3;  // Advanced
+  if (fitnessScore >= 1500) return 2;  // Intermediate
+  if (fitnessScore >= 500) return 1;   // Novice
+  return 0;                            // Beginner
 }
 
-// Get the next level requirement text
+// Updated function to get the next level requirement text
 export function getNextLevelRequirement(currentLevel: MuscleProgressLevel): string {
   switch (currentLevel) {
     case 0:
-      return "Reach 1,001 fitness score points";
+      return "Reach 500 fitness score points";
     case 1:
-      return "Reach 2,001 fitness score points";
+      return "Reach 1,500 fitness score points";
     case 2:
-      return "Reach 3,001 fitness score points";
+      return "Reach 3,000 fitness score points";
     case 3:
-      return "Reach 4,501 fitness score points";
+      return "Reach 4,500 fitness score points";
     case 4:
-      return "Reach 5,500 fitness score points";
+      return "Reach 6,000 fitness score points";
     case 5:
       return "You've reached the maximum level!";
     default:
@@ -76,7 +75,7 @@ export function calculateWorkoutStats(workoutLogs: WorkoutLog[]): MuscleProgress
   
   // Determine level based on fitness score (simplified for this example)
   // In a real app, you'd use the user's actual fitness score
-  const estimatedFitnessScore = Math.min(5500, totalVolume / 10);
+  const estimatedFitnessScore = Math.min(6000, totalVolume / 10);
   const level = determineMuscleLevel(estimatedFitnessScore);
   
   return {

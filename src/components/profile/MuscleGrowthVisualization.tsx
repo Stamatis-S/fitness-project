@@ -20,23 +20,24 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
   const { session } = useAuth();
   const queryClient = useQueryClient();
 
-  // Images for each level
+  // Updated images for each level with the new character images
   const levelImages = [
-    "/lovable-uploads/5ae8d890-3418-4586-bc05-61c94cb0b0a3.png",  // Level 0 (starting)
-    "/lovable-uploads/5ae8d890-3418-4586-bc05-61c94cb0b0a3.png",  // Level 1
-    "/lovable-uploads/71eb6a8c-889a-4d0f-aced-7da118443f91.png",  // Level 2
-    "/lovable-uploads/09f6f597-1ebb-4ad4-93a6-848ae24c8a59.png",  // Level 3
-    "/lovable-uploads/f964fcc6-9348-413b-a500-1de4fca8d363.png",  // Level 4
-    "/lovable-uploads/32516b6e-fe1e-44bc-a297-dda9bfe437ce.png",  // Level 5 (max)
+    "/lovable-uploads/56b6729d-b1d1-4aa6-a227-b28bb9b64ee7.png",  // Level 0 (Beginner)
+    "/lovable-uploads/8e66f933-235c-4b0f-9b2b-bea1813fe641.png",  // Level 1 (Novice)
+    "/lovable-uploads/b3264d8c-3bc2-4e55-a6d6-21d106609b12.png",  // Level 2 (Intermediate)
+    "/lovable-uploads/575421f2-5e05-498f-a5a8-8371721c938c.png",  // Level 3 (Advanced)
+    "/lovable-uploads/3a070f60-9ecf-4c81-a42a-7f15c5de94b6.png",  // Level 4 (Elite)
+    "/lovable-uploads/aa44c637-013a-4d5e-b0e2-e73038e19c2b.png",  // Level 5 (Legend)
   ];
 
+  // Updated score thresholds to match the new character progression
   const determineLevelFromScore = (score: number): MuscleProgressLevel => {
-    if (score >= 5500) return 5;
-    if (score >= 4501) return 4;
-    if (score >= 3001) return 3;
-    if (score >= 2001) return 2;
-    if (score >= 1001) return 1;
-    return 0;
+    if (score >= 6000) return 5;  // Legend
+    if (score >= 4500) return 4;  // Elite
+    if (score >= 3000) return 3;  // Advanced
+    if (score >= 1500) return 2;  // Intermediate
+    if (score >= 500) return 1;   // Novice
+    return 0;                     // Beginner
   };
 
   const getLevelColor = (level: string) => {
@@ -90,7 +91,7 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
             workoutsByCategory: {},
             totalVolume: 0,
             targetArea: "GENERAL",
-            nextLevelRequirement: "Reach 1,001 fitness score points"
+            nextLevelRequirement: "Reach 500 fitness score points"
           });
         }
       } catch (error) {
@@ -136,19 +137,19 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     return particles;
   };
 
-  // Get next level requirement text
+  // Updated next level requirement text based on new thresholds
   const getNextLevelRequirement = (currentLevel: MuscleProgressLevel): string => {
     switch (currentLevel) {
       case 0:
-        return "Reach 1,001 fitness score points";
+        return "Reach 500 fitness score points";
       case 1:
-        return "Reach 2,001 fitness score points";
+        return "Reach 1,500 fitness score points";
       case 2:
-        return "Reach 3,001 fitness score points";
+        return "Reach 3,000 fitness score points";
       case 3:
-        return "Reach 4,501 fitness score points";
+        return "Reach 4,500 fitness score points";
       case 4:
-        return "Reach 5,500 fitness score points";
+        return "Reach 6,000 fitness score points";
       case 5:
         return "You've reached the maximum level!";
       default:
