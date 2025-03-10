@@ -1,3 +1,4 @@
+
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import type { WorkoutPlan, WorkoutExercise, WorkoutSet } from "./types";
 import type { ExerciseCategory } from "@/lib/constants";
@@ -152,7 +153,7 @@ function getRecentlyTrainedCategories(logs: WorkoutLog[], daysToAvoid = 3): Exer
 }
 
 // Main function to generate workout plan
-export function generateWorkoutPlan(logs: WorkoutLog[]): WorkoutPlan | null {
+export function generateWorkoutPlan(logs: WorkoutLog[], excludeCategories: ExerciseCategory[] = []): WorkoutPlan | null {
   if (!logs || logs.length === 0) {
     return null;
   }
@@ -165,8 +166,12 @@ export function generateWorkoutPlan(logs: WorkoutLog[]): WorkoutPlan | null {
     categoryCounts[log.category] = (categoryCounts[log.category] || 0) + 1;
   });
   
+  // Filter out excluded categories along with recently trained ones
+  const categoriesToExclude = [...recentlyTrainedCategories, ...excludeCategories];
+  console.log("Categories to exclude:", categoriesToExclude);
+  
   const sortedCategories = Object.entries(categoryCounts)
-    .filter(([category]) => !recentlyTrainedCategories.includes(category as ExerciseCategory))
+    .filter(([category]) => !categoriesToExclude.includes(category as ExerciseCategory))
     .sort((a, b) => b[1] - a[1]);
   
   let primaryCategory: ExerciseCategory;
@@ -182,11 +187,20 @@ export function generateWorkoutPlan(logs: WorkoutLog[]): WorkoutPlan | null {
       }
     });
     
-    const leastRecentCategory = Object.entries(categoryLastUsed)
-      .sort((a, b) => a[1].localeCompare(b[1]))[0];
-      
-    primaryCategory = leastRecentCategory[0] as ExerciseCategory;
-    console.log("All categories were recently trained. Using least recent:", primaryCategory);
+    // Sort by least recently used, excluding any explicitly excluded categories
+    const sortedByLastUsed = Object.entries(categoryLastUsed)
+      .filter(([category]) => !excludeCategories.includes(category as ExerciseCategory))
+      .sort((a, b) => a[1].localeCompare(b[1]));
+    
+    if (sortedByLastUsed.length === 0) {
+      // If all categories are excluded, fallback to least recently used without filtering
+      const leastRecentCategory = Object.entries(categoryLastUsed)
+        .sort((a, b) => a[1].localeCompare(b[1]))[0];
+      primaryCategory = leastRecentCategory[0] as ExerciseCategory;
+    } else {
+      primaryCategory = sortedByLastUsed[0][0] as ExerciseCategory;
+    }
+    console.log("Using least recent category:", primaryCategory);
   }
   
   const complementaryCategories: Record<string, string[]> = {
@@ -203,7 +217,7 @@ export function generateWorkoutPlan(logs: WorkoutLog[]): WorkoutPlan | null {
   const possibleSecondaryCategories = (complementaryCategories[primaryCategory] || [])
     .filter(category => 
       categoryCounts[category] && 
-      !recentlyTrainedCategories.includes(category as ExerciseCategory)
+      !categoriesToExclude.includes(category as ExerciseCategory)
     );
   
   let secondaryCategory: ExerciseCategory | null = null;
@@ -261,7 +275,7 @@ export function generateWorkoutPlan(logs: WorkoutLog[]): WorkoutPlan | null {
       .filter(category => 
         category !== primaryCategory && 
         category !== secondaryCategory && 
-        !recentlyTrainedCategories.includes(category as ExerciseCategory)
+        !categoriesToExclude.includes(category as ExerciseCategory)
       );
       
     if (otherCategories.length > 0) {
@@ -324,6 +338,7 @@ export function generateWorkoutPlan(logs: WorkoutLog[]): WorkoutPlan | null {
     name: planName,
     description: planDescription,
     exercises: workoutExercises,
-    targetDate: new Date().toISOString().split('T')[0]
+    targetDate: new Date().toISOString().split('T')[0],
+    primaryCategory: primaryCategory, // Add the primary category for easy filtering
   };
 }

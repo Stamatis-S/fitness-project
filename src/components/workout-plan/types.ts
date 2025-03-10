@@ -20,6 +20,7 @@ export interface WorkoutPlan {
   description: string;
   exercises: WorkoutExercise[];
   targetDate?: string; // The date this plan is targeted for
+  primaryCategory?: ExerciseCategory; // The primary category focus of this plan
 }
 
 export interface WorkoutPlanExerciseProps {

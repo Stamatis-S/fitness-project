@@ -8,6 +8,7 @@ export function WorkoutPlanLoading() {
         <Dumbbell className="h-6 w-6 text-white" />
       </div>
       <p className="text-white text-center">Generating your workout plans...</p>
+      <p className="text-gray-400 text-sm text-center">Finding variety in exercises for you</p>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { generateWorkoutPlan } from "./workout-plan-generator";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import type { WorkoutPlan, WorkoutExercise } from "./types";
+import type { ExerciseCategory } from "@/lib/constants";
 
 export function useWorkoutPlan(userId: string | undefined) {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export function useWorkoutPlan(userId: string | undefined) {
   const [currentPlanIndex, setCurrentPlanIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(true);
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>([]);
+  const [usedCategories, setUsedCategories] = useState<ExerciseCategory[]>([]); 
   
   const currentPlan = generatedPlans[currentPlanIndex];
 
@@ -47,32 +49,37 @@ export function useWorkoutPlan(userId: string | undefined) {
 
   useEffect(() => {
     if (workoutLogs) {
-      // Generate multiple workout plan options
-      const plans: WorkoutPlan[] = [];
-      
-      // Generate at least 3 different plans if possible
-      for (let i = 0; i < 5; i++) {
-        const plan = generateWorkoutPlan(workoutLogs);
-        if (plan) {
-          // Check if the plan is significantly different from existing plans
-          const isDifferent = !plans.some(existingPlan => 
-            areWorkoutPlansVerySimilar(existingPlan, plan)
-          );
-          
-          if (isDifferent || plans.length < 2) {
-            plans.push(plan);
-          }
-        }
-      }
-      
-      if (plans.length > 0) {
-        setGeneratedPlans(plans);
-        setWorkoutExercises(plans[0].exercises);
-      }
-      
-      setIsGenerating(false);
+      generateInitialPlans(workoutLogs);
     }
   }, [workoutLogs]);
+
+  const generateInitialPlans = (logs: WorkoutLog[]) => {
+    // Generate multiple workout plan options
+    const plans: WorkoutPlan[] = [];
+    const usedCats: ExerciseCategory[] = [];
+    
+    // Generate at least 3 different plans if possible
+    for (let i = 0; i < 5; i++) {
+      // Generate a plan excluding previously used categories
+      const plan = generateWorkoutPlan(logs, usedCats);
+      if (plan) {
+        plans.push(plan);
+        
+        // Track the primary category to avoid duplicates
+        if (plan.primaryCategory) {
+          usedCats.push(plan.primaryCategory);
+        }
+      }
+    }
+    
+    if (plans.length > 0) {
+      setGeneratedPlans(plans);
+      setWorkoutExercises(plans[0].exercises);
+      setUsedCategories(usedCats);
+    }
+    
+    setIsGenerating(false);
+  };
 
   const handleExerciseUpdate = (updatedExercise: WorkoutExercise, index: number) => {
     if (currentPlan) {
@@ -118,19 +125,48 @@ export function useWorkoutPlan(userId: string | undefined) {
   };
 
   const handleDecline = () => {
-    if (generatedPlans.length <= 1) {
-      toast.info("No alternative workout plans available");
-      return;
+    if (currentPlanIndex >= generatedPlans.length - 1) {
+      // If we're on the last plan, generate a new one with different categories
+      if (workoutLogs) {
+        setIsGenerating(true);
+        
+        // Generate a new plan that avoids all previously used categories
+        const newPlan = generateWorkoutPlan(workoutLogs, usedCategories);
+        
+        if (newPlan) {
+          // Add the new plan
+          const updatedPlans = [...generatedPlans, newPlan];
+          setGeneratedPlans(updatedPlans);
+          
+          // Update the current index to the new plan
+          const newIndex = updatedPlans.length - 1;
+          setCurrentPlanIndex(newIndex);
+          
+          // Update workout exercises
+          setWorkoutExercises(newPlan.exercises);
+          
+          // Track the new category
+          if (newPlan.primaryCategory) {
+            setUsedCategories([...usedCategories, newPlan.primaryCategory]);
+          }
+          
+          toast.info("Showing new workout plan");
+        } else {
+          toast.info("No more alternative workout plans available");
+        }
+        
+        setIsGenerating(false);
+      }
+    } else {
+      // Cycle to the next workout plan
+      const nextIndex = currentPlanIndex + 1;
+      setCurrentPlanIndex(nextIndex);
+      
+      // Update the workout exercises based on the new current plan
+      setWorkoutExercises(generatedPlans[nextIndex].exercises);
+      
+      toast.info("Showing alternative workout plan");
     }
-    
-    // Cycle to the next workout plan
-    const nextIndex = (currentPlanIndex + 1) % generatedPlans.length;
-    setCurrentPlanIndex(nextIndex);
-    
-    // Update the workout exercises based on the new current plan
-    setWorkoutExercises(generatedPlans[nextIndex].exercises);
-    
-    toast.info("Showing alternative workout plan");
   };
 
   return {
@@ -143,24 +179,4 @@ export function useWorkoutPlan(userId: string | undefined) {
     handleSavePlan,
     handleDecline
   };
-}
-
-// Helper function to determine if two workout plans are very similar
-function areWorkoutPlansVerySimilar(plan1: WorkoutPlan, plan2: WorkoutPlan): boolean {
-  // Consider plans similar if they have the same primary category focus
-  // or if more than 50% of the exercises are the same
-  
-  // Check if the primary categories match
-  const primaryCategoryMatch = plan1.name.split(' ')[0] === plan2.name.split(' ')[0];
-  
-  // Count common exercises
-  const commonExercises = plan1.exercises.filter(ex1 => 
-    plan2.exercises.some(ex2 => 
-      ex1.name === ex2.name && ex1.category === ex2.category
-    )
-  ).length;
-  
-  const similarityRatio = commonExercises / Math.max(plan1.exercises.length, plan2.exercises.length);
-  
-  return primaryCategoryMatch && similarityRatio > 0.5;
 }
