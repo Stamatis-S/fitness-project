@@ -14,6 +14,16 @@ import { WorkoutLog } from "./types";
 import { Badge } from "@/components/ui/badge";
 import { CATEGORY_COLORS } from "@/lib/constants";
 
+// Array of colors for date headings
+const DATE_COLORS = [
+  "#4ade80", // Green
+  "#60a5fa", // Blue
+  "#f472b6", // Pink
+  "#fb923c", // Orange
+  "#a78bfa", // Purple
+  "#fcd34d", // Yellow
+];
+
 interface WorkoutTableProps {
   logs: WorkoutLog[];
   onDelete?: (id: number) => void;
@@ -77,9 +87,12 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
 
   return (
     <div className="space-y-2">
-      {groupedLogs.map((dateGroup) => (
+      {groupedLogs.map((dateGroup, index) => (
         <div key={dateGroup.date} className="space-y-2">
-          <h3 className="font-semibold text-sm px-2 py-0.5">
+          <h3 
+            className="font-semibold text-sm px-2 py-0.5"
+            style={{ color: DATE_COLORS[index % DATE_COLORS.length] }}
+          >
             {formatDate(dateGroup.date)}
           </h3>
           {dateGroup.exercises.map((exercise) => (
