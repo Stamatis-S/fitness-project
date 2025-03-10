@@ -1,5 +1,8 @@
+
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 
+// Note: MuscleProgressLevel is now 1-6 for compatibility with existing code,
+// while the level index used in MuscleGrowthVisualization is 0-5
 export type MuscleProgressLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface MuscleProgressStats {
@@ -12,7 +15,7 @@ export interface MuscleProgressStats {
 }
 
 // Updated function to determine muscle progress level based on fitness score
-// Now levels start from 1 instead of 0
+// Returns levels 1-6 for compatibility with existing code
 export function determineMuscleLevel(fitnessScore: number): MuscleProgressLevel {
   if (fitnessScore >= 6000) return 6;  // Legend
   if (fitnessScore >= 4500) return 5;  // Elite

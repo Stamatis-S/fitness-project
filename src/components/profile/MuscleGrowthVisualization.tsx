@@ -20,41 +20,67 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
   const { session } = useAuth();
   const queryClient = useQueryClient();
 
-  // Updated images for each level with the new character images - now indexed from 1
+  // Updated images for each level with the new character images - now indexed from 0
   const levelImages = [
-    "", // Empty placeholder for index 0 (not used)
-    "/lovable-uploads/56b6729d-b1d1-4aa6-a227-b28bb9b64ee7.png",  // Level 1 (Beginner)
-    "/lovable-uploads/8e66f933-235c-4b0f-9b2b-bea1813fe641.png",  // Level 2 (Novice)
-    "/lovable-uploads/b3264d8c-3bc2-4e55-a6d6-21d106609b12.png",  // Level 3 (Intermediate)
-    "/lovable-uploads/575421f2-5e05-498f-a5a8-8371721c938c.png",  // Level 4 (Advanced)
-    "/lovable-uploads/3a070f60-9ecf-4c81-a42a-7f15c5de94b6.png",  // Level 5 (Elite)
-    "/lovable-uploads/aa44c637-013a-4d5e-b0e2-e73038e19c2b.png",  // Level 6 (Legend)
+    "/lovable-uploads/56b6729d-b1d1-4aa6-a227-b28bb9b64ee7.png",  // Level 0 (Beginner)
+    "/lovable-uploads/8e66f933-235c-4b0f-9b2b-bea1813fe641.png",  // Level 1 (Novice)
+    "/lovable-uploads/b3264d8c-3bc2-4e55-a6d6-21d106609b12.png",  // Level 2 (Intermediate)
+    "/lovable-uploads/575421f2-5e05-498f-a5a8-8371721c938c.png",  // Level 3 (Advanced)
+    "/lovable-uploads/3a070f60-9ecf-4c81-a42a-7f15c5de94b6.png",  // Level 4 (Elite)
+    "/lovable-uploads/aa44c637-013a-4d5e-b0e2-e73038e19c2b.png",  // Level 5 (Legend)
   ];
 
-  // Updated score thresholds to match the new character progression
-  const determineLevelFromScore = (score: number): MuscleProgressLevel => {
-    if (score >= 6000) return 6;  // Legend
-    if (score >= 4500) return 5;  // Elite
-    if (score >= 3000) return 4;  // Advanced
-    if (score >= 1500) return 3;  // Intermediate
-    if (score >= 500) return 2;   // Novice
-    return 1;                     // Beginner
+  // Map fitness level string to the correct level index (0-5)
+  const mapFitnessLevelToIndex = (level: string): number => {
+    switch (level.toLowerCase()) {
+      case 'beginner':
+        return 0;
+      case 'novice':
+        return 1;
+      case 'intermediate':
+        return 2;
+      case 'advanced':
+        return 3;
+      case 'elite':
+        return 4;
+      case 'legend':
+        return 5;
+      default:
+        // Fallback to determining level from score for any other values (like "Monster")
+        return determineIndexFromScore(fitnessScore);
+    }
+  };
+
+  // Updated score thresholds to match the new character progression (returns 0-5 index)
+  const determineIndexFromScore = (score: number): number => {
+    if (score >= 6000) return 5;  // Legend (Level 5)
+    if (score >= 4500) return 4;  // Elite (Level 4)
+    if (score >= 3000) return 3;  // Advanced (Level 3)
+    if (score >= 1500) return 2;  // Intermediate (Level 2)
+    if (score >= 500) return 1;   // Novice (Level 1)
+    return 0;                     // Beginner (Level 0)
+  };
+
+  // Get display name for the fitness level index (0-5)
+  const getLevelNameFromIndex = (index: number): string => {
+    const levelNames = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Elite', 'Legend'];
+    return levelNames[index] || 'Beginner';
   };
 
   // Updated to use correct fitness level names
   const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'Legend':
+    switch (level.toLowerCase()) {
+      case 'legend':
         return 'text-[#FF00FF]';
-      case 'Elite':
+      case 'elite':
         return 'text-[#A855F7]';
-      case 'Advanced':
+      case 'advanced':
         return 'text-[#4488EF]';
-      case 'Intermediate':
+      case 'intermediate':
         return 'text-[#22C55E]';
-      case 'Novice':
+      case 'novice':
         return 'text-[#EAB308]';
-      case 'Beginner':
+      case 'beginner':
       default:
         return 'text-[#EAB308]';
     }
@@ -80,14 +106,14 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
           const calculatedStats = calculateWorkoutStats(workoutLogs);
           
           // Override the calculated level with the one based on actual fitness score
-          const muscleLevel = determineLevelFromScore(fitnessScore);
+          const muscleLevel = determineIndexFromScore(fitnessScore) + 1;
                            
           setStats({
             ...calculatedStats,
-            level: muscleLevel
+            level: muscleLevel as MuscleProgressLevel
           });
         } else {
-          // Default stats for users without workout data - now starting at level 1
+          // Default stats for users without workout data
           setStats({
             level: 1,
             totalWorkouts: 0,
@@ -140,20 +166,32 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     return particles;
   };
 
+  // Get display name for the current level
+  const getCurrentLevelName = (): string => {
+    // First try to use the fitnessLevel prop directly if it matches expected values
+    if (['beginner', 'novice', 'intermediate', 'advanced', 'elite', 'legend'].includes(fitnessLevel.toLowerCase())) {
+      return fitnessLevel;
+    }
+    
+    // Fallback to determining level from score
+    const levelIndex = determineIndexFromScore(fitnessScore);
+    return getLevelNameFromIndex(levelIndex);
+  };
+
   // Updated next level requirement text based on new thresholds
-  const getNextLevelRequirement = (currentLevel: MuscleProgressLevel): string => {
-    switch (currentLevel) {
-      case 1:
+  const getNextLevelRequirement = (currentLevelIndex: number): string => {
+    switch (currentLevelIndex) {
+      case 0:
         return "Reach 500 fitness score points";
-      case 2:
+      case 1:
         return "Reach 1,500 fitness score points";
-      case 3:
+      case 2:
         return "Reach 3,000 fitness score points";
-      case 4:
+      case 3:
         return "Reach 4,500 fitness score points";
-      case 5:
+      case 4:
         return "Reach 6,000 fitness score points";
-      case 6:
+      case 5:
         return "You've reached the maximum level!";
       default:
         return "Keep working out to progress";
@@ -180,37 +218,41 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     );
   }
 
+  // Get the current level index (0-5) and name
+  const currentLevelIndex = mapFitnessLevelToIndex(fitnessLevel);
+  const displayLevelName = getCurrentLevelName();
+
   return (
     <Card className="border-0 bg-[#222222] rounded-lg overflow-hidden">
       <div className="muscle-growth-container">
         <div className="fitness-level mb-4 text-center">
-          <span className={`text-2xl font-bold ${getLevelColor(fitnessLevel)}`}>
-            {fitnessLevel} <span className="text-lg font-normal text-gray-400">({Math.round(fitnessScore)} pts)</span>
+          <span className={`text-2xl font-bold ${getLevelColor(displayLevelName)}`}>
+            {displayLevelName} <span className="text-lg font-normal text-gray-400">({Math.round(fitnessScore)} pts)</span>
           </span>
         </div>
         
         <div className="progress-visual">
           {renderParticles()}
           <img 
-            src={levelImages[stats.level]} 
-            alt={`Level ${stats.level} muscle progress`} 
+            src={levelImages[currentLevelIndex]} 
+            alt={`${displayLevelName} level character`} 
             className="character-image"
           />
         </div>
         
         <div className="progress-levels">
-          {[1, 2, 3, 4, 5, 6].map(level => (
+          {[0, 1, 2, 3, 4, 5].map(level => (
             <div 
               key={level}
-              className={`level-indicator ${level <= stats.level ? 'active' : ''}`}
-              title={`Level ${level}`}
+              className={`level-indicator ${level <= currentLevelIndex ? 'active' : ''}`}
+              title={getLevelNameFromIndex(level)}
             />
           ))}
         </div>
         
         <div className="next-level-info">
-          {stats.level < 6 ? (
-            <p>Next Level: {getNextLevelRequirement(stats.level)}</p>
+          {currentLevelIndex < 5 ? (
+            <p>Next Level: {getNextLevelRequirement(currentLevelIndex)}</p>
           ) : (
             <p>Maximum level reached! You're a fitness legend!</p>
           )}
@@ -219,4 +261,3 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     </Card>
   );
 }
-
