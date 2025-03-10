@@ -17,6 +17,7 @@ export function useWorkoutPlan(userId: string | undefined) {
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>([]);
   const [usedCategories, setUsedCategories] = useState<ExerciseCategory[]>([]);
   const [usedExerciseIds, setUsedExerciseIds] = useState<(number | string)[]>([]);
+  const [globalExerciseExclusions, setGlobalExerciseExclusions] = useState<(number | string)[]>([]);
   
   const currentPlan = generatedPlans[currentPlanIndex];
 
@@ -60,11 +61,16 @@ export function useWorkoutPlan(userId: string | undefined) {
     const plans: WorkoutPlan[] = [];
     const usedCats: ExerciseCategory[] = [];
     const usedExIds: (number | string)[] = [];
+    const globalExIds: (number | string)[] = [];
     
     // Generate at least 3 different plans if possible
     for (let i = 0; i < 5; i++) {
+      // For each plan, we exclude both global exclusions and plan-specific exercises
+      const currentExclusions = [...globalExIds];
+      
       // Generate a plan excluding previously used categories and exercises
-      const plan = generateWorkoutPlan(logs, usedCats, usedExIds);
+      const plan = generateWorkoutPlan(logs, usedCats, currentExclusions);
+      
       if (plan) {
         plans.push(plan);
         
@@ -73,8 +79,9 @@ export function useWorkoutPlan(userId: string | undefined) {
           usedCats.push(plan.primaryCategory);
         }
 
-        // Track used exercise IDs
+        // Track used exercise IDs globally to ensure variety across different plans
         if (plan.usedExerciseIds && plan.usedExerciseIds.length > 0) {
+          globalExIds.push(...plan.usedExerciseIds);
           usedExIds.push(...plan.usedExerciseIds);
         }
       }
@@ -85,6 +92,7 @@ export function useWorkoutPlan(userId: string | undefined) {
       setWorkoutExercises(plans[0].exercises);
       setUsedCategories(usedCats);
       setUsedExerciseIds(usedExIds);
+      setGlobalExerciseExclusions(globalExIds);
     }
     
     setIsGenerating(false);
@@ -139,8 +147,8 @@ export function useWorkoutPlan(userId: string | undefined) {
       if (workoutLogs) {
         setIsGenerating(true);
         
-        // Generate a new plan that avoids all previously used categories and exercises
-        const newPlan = generateWorkoutPlan(workoutLogs, usedCategories, usedExerciseIds);
+        // Generate a new plan that avoids all previously used categories AND exercises
+        const newPlan = generateWorkoutPlan(workoutLogs, usedCategories, globalExerciseExclusions);
         
         if (newPlan) {
           // Add the new plan
@@ -159,8 +167,10 @@ export function useWorkoutPlan(userId: string | undefined) {
             setUsedCategories([...usedCategories, newPlan.primaryCategory]);
           }
           
-          // Track newly used exercise IDs
+          // Add newly used exercise IDs to global exclusions to ensure complete variety
           if (newPlan.usedExerciseIds && newPlan.usedExerciseIds.length > 0) {
+            const updatedGlobalExclusions = [...globalExerciseExclusions, ...newPlan.usedExerciseIds];
+            setGlobalExerciseExclusions(updatedGlobalExclusions);
             setUsedExerciseIds([...usedExerciseIds, ...newPlan.usedExerciseIds]);
           }
           

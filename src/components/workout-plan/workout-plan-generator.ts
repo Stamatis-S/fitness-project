@@ -95,11 +95,11 @@ function getFavoriteExercises(logs: WorkoutLog[], excludeExerciseIds: (number | 
       ? `exercise_${log.exercise_id}` 
       : `custom_${log.custom_exercise}`;
     
-    // Skip if this exercise ID is in the exclude list
+    // Get the exercise ID or custom exercise name for exclusion checking
     const exerciseId = log.exercise_id || null;
     const customExercise = log.custom_exercise || null;
     
-    // Check if this exercise should be excluded
+    // Skip if this exercise ID or custom exercise name is in the exclude list
     if ((exerciseId && excludeExerciseIds.includes(exerciseId)) || 
         (customExercise && excludeExerciseIds.includes(customExercise))) {
       return;
@@ -175,6 +175,7 @@ export function generateWorkoutPlan(
   // Get recently trained categories to avoid
   const recentlyTrainedCategories = getRecentlyTrainedCategories(logs);
   console.log("Recently trained categories to avoid:", recentlyTrainedCategories);
+  console.log("Excluded exercise IDs:", excludeExerciseIds);
   
   // Count how many times each category has been used
   const categoryCounts: Record<string, number> = {};
@@ -246,7 +247,7 @@ export function generateWorkoutPlan(
       .sort((a, b) => (categoryCounts[b] || 0) - (categoryCounts[a] || 0))[0] as ExerciseCategory;
   }
   
-  // Get favorite exercises for each category, excluding specified exercise IDs
+  // Get favorite exercises for each category, strictly excluding the specified exercise IDs
   const favoriteExercises = getFavoriteExercises(logs, excludeExerciseIds);
   
   // Calculate progressive sets based on previous workout history
@@ -258,6 +259,8 @@ export function generateWorkoutPlan(
   
   // Add primary category exercises
   const primaryExercises = favoriteExercises[primaryCategory] || [];
+  console.log(`Found ${primaryExercises.length} primary exercises for category ${primaryCategory} after filtering`);
+  
   primaryExercises.slice(0, Math.min(3, primaryExercises.length)).forEach(exercise => {
     const key = exercise.exerciseId 
       ? `exercise_${exercise.exerciseId}` 
@@ -285,6 +288,8 @@ export function generateWorkoutPlan(
   // Add secondary category exercises if available
   if (secondaryCategory && favoriteExercises[secondaryCategory]) {
     const secondaryExercises = favoriteExercises[secondaryCategory] || [];
+    console.log(`Found ${secondaryExercises.length} secondary exercises for category ${secondaryCategory} after filtering`);
+    
     secondaryExercises.slice(0, Math.min(2, secondaryExercises.length)).forEach(exercise => {
       const key = exercise.exerciseId 
         ? `exercise_${exercise.exerciseId}` 
@@ -350,7 +355,49 @@ export function generateWorkoutPlan(
     }
   }
   
-  // Return null if no exercises were found
+  // If we couldn't find any exercises not in the exclude list, use a fallback
+  if (workoutExercises.length === 0) {
+    console.log("No exercises found with the given exclusions, using fallback approach");
+    
+    // Get the full list of exercises without exclusions as a fallback
+    const allExercises = getFavoriteExercises(logs, []);
+    
+    // Use the primary category but ignore exclusions
+    const primaryFallbackExercises = allExercises[primaryCategory] || [];
+    
+    if (primaryFallbackExercises.length > 0) {
+      // Take exercises that weren't most recently used
+      const sortedByLastUsed = [...primaryFallbackExercises].sort((a, b) => 
+        a.lastUsed.localeCompare(b.lastUsed)
+      );
+      
+      // Take up to 2 least recently used exercises
+      sortedByLastUsed.slice(0, 2).forEach(exercise => {
+        const key = exercise.exerciseId 
+          ? `exercise_${exercise.exerciseId}` 
+          : `custom_${exercise.customExercise}`;
+          
+        const sets = progressiveSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
+        
+        if (exercise.exerciseId) {
+          planUsedExerciseIds.push(exercise.exerciseId);
+        } else if (exercise.customExercise) {
+          planUsedExerciseIds.push(exercise.customExercise);
+        }
+        
+        workoutExercises.push({
+          name: exercise.name,
+          category: primaryCategory,
+          exercise_id: exercise.exerciseId,
+          customExercise: exercise.customExercise,
+          sets: sets,
+          lastUsed: exercise.lastUsed
+        });
+      });
+    }
+  }
+  
+  // Still no exercises? Return null
   if (workoutExercises.length === 0) {
     return null;
   }
