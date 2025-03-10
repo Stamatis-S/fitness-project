@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,7 +64,8 @@ export function useWorkoutPlan(userId: string | undefined) {
   // try to generate a different plan
   useEffect(() => {
     if (iterationCount > 0 && iterationCount < MAX_ITERATIONS && workoutLogs) {
-      const newPlan = generateWorkoutPlan(workoutLogs, usedCategories, usedExerciseIds);
+      // Pass true to explicitly force multi-category workouts
+      const newPlan = generateWorkoutPlan(workoutLogs, usedCategories, usedExerciseIds, true);
       if (newPlan) {
         // Only add the plan if it has different exercises than what we've seen
         const hasNewExercises = newPlan.exercises.some(ex => {
@@ -83,9 +85,12 @@ export function useWorkoutPlan(userId: string | undefined) {
           // Update workout exercises
           setWorkoutExercises(newPlan.exercises);
           
-          // Track the new category
+          // Track used categories
           if (newPlan.primaryCategory) {
             setUsedCategories(prev => [...prev, newPlan.primaryCategory]);
+          }
+          if (newPlan.secondaryCategory) {
+            setUsedCategories(prev => [...prev, newPlan.secondaryCategory]);
           }
           
           // Add newly used exercise IDs to the used list
@@ -121,14 +126,18 @@ export function useWorkoutPlan(userId: string | undefined) {
     // Generate several different plans if possible
     for (let i = 0; i < 5; i++) {
       // For each new plan, we exclude previously used exercises and categories
-      const plan = generateWorkoutPlan(logs, usedCats, usedExIds);
+      // Pass true to explicitly force multi-category workouts
+      const plan = generateWorkoutPlan(logs, usedCats, usedExIds, true);
       
       if (plan) {
         plans.push(plan);
         
-        // Track the primary category to avoid duplicates
+        // Track the categories to avoid duplicates
         if (plan.primaryCategory) {
           usedCats.push(plan.primaryCategory);
+        }
+        if (plan.secondaryCategory) {
+          usedCats.push(plan.secondaryCategory);
         }
 
         // Track used exercise IDs to ensure variety
@@ -148,14 +157,21 @@ export function useWorkoutPlan(userId: string | undefined) {
       setUsedExerciseIds(usedExIds);
     } else {
       // If we couldn't generate any plans with the strict filters,
-      // try again without filtering
-      const fallbackPlan = generateWorkoutPlan(logs, [], []);
+      // try again without filtering but still force multi-category
+      const fallbackPlan = generateWorkoutPlan(logs, [], [], true);
       if (fallbackPlan) {
         setGeneratedPlans([fallbackPlan]);
         setWorkoutExercises(fallbackPlan.exercises);
+        
+        const categoriesToTrack = [];
         if (fallbackPlan.primaryCategory) {
-          setUsedCategories([fallbackPlan.primaryCategory]);
+          categoriesToTrack.push(fallbackPlan.primaryCategory);
         }
+        if (fallbackPlan.secondaryCategory) {
+          categoriesToTrack.push(fallbackPlan.secondaryCategory);
+        }
+        setUsedCategories(categoriesToTrack);
+        
         if (fallbackPlan.usedExerciseIds) {
           setUsedExerciseIds(fallbackPlan.usedExerciseIds);
         }
@@ -243,3 +259,4 @@ export function useWorkoutPlan(userId: string | undefined) {
     handleDecline
   };
 }
+

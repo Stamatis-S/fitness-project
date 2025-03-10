@@ -1,3 +1,4 @@
+
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import type { WorkoutPlan, WorkoutExercise, WorkoutSet } from "./types";
 import type { ExerciseCategory } from "@/lib/constants";
@@ -171,7 +172,8 @@ function getRecentlyTrainedCategories(logs: WorkoutLog[], daysToAvoid = 3): Exer
 export function generateWorkoutPlan(
   logs: WorkoutLog[], 
   excludeCategories: ExerciseCategory[] = [],
-  excludeExerciseIds: (number | string)[] = []
+  excludeExerciseIds: (number | string)[] = [],
+  forceMultiCategory: boolean = false
 ): WorkoutPlan | null {
   if (!logs || logs.length === 0) {
     return null;
@@ -198,9 +200,65 @@ export function generateWorkoutPlan(
     .sort((a, b) => b[1] - a[1]);
   
   let primaryCategory: ExerciseCategory;
+  let secondaryCategory: ExerciseCategory | null = null;
   
   if (sortedCategories.length > 0) {
     primaryCategory = sortedCategories[0][0] as ExerciseCategory;
+    
+    // Select a secondary category (always if forceMultiCategory is true)
+    if (sortedCategories.length > 1 || forceMultiCategory) {
+      // Define complementary categories for each primary category
+      const complementaryCategories: Record<string, string[]> = {
+        "ΣΤΗΘΟΣ": ["ΤΡΙΚΕΦΑΛΑ", "ΩΜΟΙ"],
+        "ΠΛΑΤΗ": ["ΔΙΚΕΦΑΛΑ", "ΩΜΟΙ"],
+        "ΔΙΚΕΦΑΛΑ": ["ΠΛΑΤΗ", "ΣΤΗΘΟΣ"],
+        "ΤΡΙΚΕΦΑΛΑ": ["ΣΤΗΘΟΣ", "ΩΜΟΙ"],
+        "ΩΜΟΙ": ["ΣΤΗΘΟΣ", "ΠΛΑΤΗ"],
+        "ΠΟΔΙΑ": ["ΚΟΡΜΟΣ", "CARDIO"],
+        "ΚΟΡΜΟΣ": ["ΠΟΔΙΑ", "CARDIO"],
+        "CARDIO": ["ΚΟΡΜΟΣ", "ΠΟΔΙΑ"]
+      };
+      
+      // Find possible secondary categories that complement the primary one
+      const possibleSecondaryCategories = (complementaryCategories[primaryCategory] || [])
+        .filter(category => 
+          categoryCounts[category] && 
+          !categoriesToExclude.includes(category as ExerciseCategory)
+        );
+      
+      if (possibleSecondaryCategories.length > 0) {
+        secondaryCategory = possibleSecondaryCategories
+          .sort((a, b) => (categoryCounts[b] || 0) - (categoryCounts[a] || 0))[0] as ExerciseCategory;
+      } else if (forceMultiCategory) {
+        // If no complementary categories are available but we need to force multi-category,
+        // pick any other category that's not excluded
+        const otherCategories = sortedCategories
+          .filter(([category]) => category !== primaryCategory)
+          .map(([category]) => category);
+          
+        if (otherCategories.length > 0) {
+          secondaryCategory = otherCategories[0] as ExerciseCategory;
+        } else {
+          // If all categories are excluded but we need to force multi-category,
+          // pick the least recently used category from all categories
+          const categoryLastUsed: Record<string, string> = {};
+          
+          logs.forEach(log => {
+            if (log.category !== primaryCategory && 
+                (!categoryLastUsed[log.category] || log.workout_date > categoryLastUsed[log.category])) {
+              categoryLastUsed[log.category] = log.workout_date;
+            }
+          });
+          
+          const sortedByLastUsed = Object.entries(categoryLastUsed)
+            .sort((a, b) => a[1].localeCompare(b[1]));
+            
+          if (sortedByLastUsed.length > 0) {
+            secondaryCategory = sortedByLastUsed[0][0] as ExerciseCategory;
+          }
+        }
+      }
+    }
   } else {
     const categoryLastUsed: Record<string, string> = {};
     
@@ -221,35 +279,26 @@ export function generateWorkoutPlan(
         .sort((a, b) => a[1].localeCompare(b[1]))[0];
       primaryCategory = leastRecentCategory[0] as ExerciseCategory;
       console.log("Using least recent category:", primaryCategory);
+      
+      // For multi-category, find a second category
+      if (forceMultiCategory) {
+        const secondLeastRecent = Object.entries(categoryLastUsed)
+          .filter(([category]) => category !== primaryCategory)
+          .sort((a, b) => a[1].localeCompare(b[1]));
+          
+        if (secondLeastRecent.length > 0) {
+          secondaryCategory = secondLeastRecent[0][0] as ExerciseCategory;
+        }
+      }
     } else {
       primaryCategory = sortedByLastUsed[0][0] as ExerciseCategory;
       console.log("Using least recent category:", primaryCategory);
+      
+      // For multi-category, use the second least recent category
+      if (forceMultiCategory && sortedByLastUsed.length > 1) {
+        secondaryCategory = sortedByLastUsed[1][0] as ExerciseCategory;
+      }
     }
-  }
-  
-  // Define complementary categories for each primary category
-  const complementaryCategories: Record<string, string[]> = {
-    "ΣΤΗΘΟΣ": ["ΤΡΙΚΕΦΑΛΑ", "ΩΜΟΙ"],
-    "ΠΛΑΤΗ": ["ΔΙΚΕΦΑΛΑ", "ΩΜΟΙ"],
-    "ΔΙΚΕΦΑΛΑ": ["ΠΛΑΤΗ", "ΣΤΗΘΟΣ"],
-    "ΤΡΙΚΕΦΑΛΑ": ["ΣΤΗΘΟΣ", "ΩΜΟΙ"],
-    "ΩΜΟΙ": ["ΣΤΗΘΟΣ", "ΠΛΑΤΗ"],
-    "ΠΟΔΙΑ": ["ΚΟΡΜΟΣ", "CARDIO"],
-    "ΚΟΡΜΟΣ": ["ΠΟΔΙΑ", "CARDIO"],
-    "CARDIO": ["ΚΟΡΜΟΣ", "ΠΟΔΙΑ"]
-  };
-  
-  // Find possible secondary categories that complement the primary one
-  const possibleSecondaryCategories = (complementaryCategories[primaryCategory] || [])
-    .filter(category => 
-      categoryCounts[category] && 
-      !categoriesToExclude.includes(category as ExerciseCategory)
-    );
-  
-  let secondaryCategory: ExerciseCategory | null = null;
-  if (possibleSecondaryCategories.length > 0) {
-    secondaryCategory = possibleSecondaryCategories
-      .sort((a, b) => (categoryCounts[b] || 0) - (categoryCounts[a] || 0))[0] as ExerciseCategory;
   }
   
   // Get favorite exercises for each category, strictly excluding the specified exercise IDs
@@ -266,7 +315,10 @@ export function generateWorkoutPlan(
   const primaryExercises = favoriteExercises[primaryCategory] || [];
   console.log(`Found ${primaryExercises.length} primary exercises for category ${primaryCategory} after filtering`);
   
-  primaryExercises.slice(0, Math.min(3, primaryExercises.length)).forEach(exercise => {
+  // For multi-category workouts, use fewer primary exercises to make room for secondary
+  const primaryExerciseCount = secondaryCategory ? 2 : 3;
+  
+  primaryExercises.slice(0, Math.min(primaryExerciseCount, primaryExercises.length)).forEach(exercise => {
     const key = exercise.exerciseId 
       ? `exercise_${exercise.exerciseId}` 
       : `custom_${exercise.customExercise}`;
@@ -295,7 +347,9 @@ export function generateWorkoutPlan(
     const secondaryExercises = favoriteExercises[secondaryCategory] || [];
     console.log(`Found ${secondaryExercises.length} secondary exercises for category ${secondaryCategory} after filtering`);
     
-    secondaryExercises.slice(0, Math.min(2, secondaryExercises.length)).forEach(exercise => {
+    const secondaryExerciseCount = primaryExercises.length < primaryExerciseCount ? 3 : 2;
+    
+    secondaryExercises.slice(0, Math.min(secondaryExerciseCount, secondaryExercises.length)).forEach(exercise => {
       const key = exercise.exerciseId 
         ? `exercise_${exercise.exerciseId}` 
         : `custom_${exercise.customExercise}`;
@@ -322,10 +376,12 @@ export function generateWorkoutPlan(
   
   // Add a random exercise from another category if we don't have enough exercises yet
   if (workoutExercises.length < 3) {
+    const usedCategories = [primaryCategory];
+    if (secondaryCategory) usedCategories.push(secondaryCategory);
+    
     const otherCategories = Object.keys(favoriteExercises)
       .filter(category => 
-        category !== primaryCategory && 
-        category !== secondaryCategory && 
+        !usedCategories.includes(category as ExerciseCategory) && 
         !categoriesToExclude.includes(category as ExerciseCategory)
       );
       
@@ -356,6 +412,11 @@ export function generateWorkoutPlan(
           sets: sets,
           lastUsed: exercise.lastUsed
         });
+        
+        // Update secondary category if it wasn't set before
+        if (!secondaryCategory) {
+          secondaryCategory = randomCategory;
+        }
       }
     }
   }
@@ -503,6 +564,7 @@ export function generateWorkoutPlan(
     exercises: workoutExercises,
     targetDate: new Date().toISOString().split('T')[0],
     primaryCategory: primaryCategory,
+    secondaryCategory: secondaryCategory, // Include secondary category in the plan
     usedExerciseIds: planUsedExerciseIds // Track which exercises were used in this plan
   };
 }
