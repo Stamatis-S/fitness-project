@@ -18,4 +18,5 @@ export interface QuickSelectButtonsProps {
   values: number[];
   onSelect: (value: number) => void;
   unit?: string;
+  isLastValue?: (value: number) => boolean;
 }
