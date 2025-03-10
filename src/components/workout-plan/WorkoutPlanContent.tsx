@@ -43,13 +43,19 @@ export function WorkoutPlanContent({
       </div>
 
       <div className="space-y-3">
-        {workoutExercises.map((exercise, index) => (
-          <WorkoutPlanExercise 
-            key={index} 
-            exercise={exercise} 
-            onExerciseUpdate={(updatedExercise) => onExerciseUpdate(updatedExercise, index)}
-          />
-        ))}
+        {workoutExercises.length > 0 ? (
+          workoutExercises.map((exercise, index) => (
+            <WorkoutPlanExercise 
+              key={`${exercise.category}-${exercise.name}-${index}`} // Improved key for better React reconciliation
+              exercise={exercise} 
+              onExerciseUpdate={(updatedExercise) => onExerciseUpdate(updatedExercise, index)}
+            />
+          ))
+        ) : (
+          <div className="p-4 text-center text-gray-400">
+            No exercises available for this plan. Try finding another workout.
+          </div>
+        )}
       </div>
 
       <WorkoutPlanControls 

@@ -1,4 +1,3 @@
-
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import type { WorkoutPlan, WorkoutExercise, WorkoutSet } from "./types";
 import type { ExerciseCategory } from "@/lib/constants";
@@ -81,9 +80,14 @@ function calculateProgressiveSets(logs: WorkoutLog[]): Record<string, WorkoutSet
   return result;
 }
 
-// Helper function to get favorite exercises per category
-function getFavoriteExercises(logs: WorkoutLog[], excludeExerciseIds: (number | string)[] = []): Record<string, Array<{ name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> {
+// Helper function to get favorite exercises per category with strict exclusion
+function getFavoriteExercises(
+  logs: WorkoutLog[], 
+  excludeExerciseIds: (number | string)[] = []
+): Record<string, Array<{ name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> {
   const categoryCounts: Record<string, Record<string, { name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> = {};
+  
+  console.log("Filtering exercises with exclusions:", excludeExerciseIds.length);
   
   logs.forEach(log => {
     if (!categoryCounts[log.category]) {
@@ -126,6 +130,7 @@ function getFavoriteExercises(logs: WorkoutLog[], excludeExerciseIds: (number | 
   
   Object.entries(categoryCounts).forEach(([category, exercises]) => {
     const exercisesList = Object.values(exercises);
+    console.log(`Category ${category} has ${exercisesList.length} exercises after exclusion`);
     
     result[category] = exercisesList.sort((a, b) => {
       const twoDaysAgo = new Date();
@@ -397,9 +402,63 @@ export function generateWorkoutPlan(
     }
   }
   
-  // Still no exercises? Return null
+  // Still no exercises? Try with a completely different approach - no exclusions but random selection
   if (workoutExercises.length === 0) {
-    return null;
+    // Get all categories from logs
+    const allCategories = [...new Set(logs.map(log => log.category))];
+    // Pick a random category 
+    const randomCategory = allCategories[Math.floor(Math.random() * allCategories.length)] as ExerciseCategory;
+    
+    // Get all exercises for this category
+    const randomCategoryLogs = logs.filter(log => log.category === randomCategory);
+    
+    // Group by exercise
+    const exerciseGroups: Record<string, WorkoutLog[]> = {};
+    randomCategoryLogs.forEach(log => {
+      const key = log.exercise_id 
+        ? `${log.exercise_id}` 
+        : `${log.custom_exercise}`;
+      
+      if (!exerciseGroups[key]) {
+        exerciseGroups[key] = [];
+      }
+      exerciseGroups[key].push(log);
+    });
+    
+    // Pick up to 3 random exercises
+    const exerciseKeys = Object.keys(exerciseGroups);
+    for (let i = 0; i < Math.min(3, exerciseKeys.length); i++) {
+      const randomIndex = Math.floor(Math.random() * exerciseKeys.length);
+      const key = exerciseKeys[randomIndex];
+      const randomExerciseLogs = exerciseGroups[key];
+      
+      if (randomExerciseLogs && randomExerciseLogs.length > 0) {
+        const randomLog = randomExerciseLogs[0];
+        const sets = [{ weight: randomLog.weight_kg || 0, reps: randomLog.reps || 8 }, 
+                     { weight: randomLog.weight_kg || 0, reps: randomLog.reps || 8 }, 
+                     { weight: randomLog.weight_kg || 0, reps: randomLog.reps || 8 }];
+        
+        workoutExercises.push({
+          name: randomLog.exercises?.name || randomLog.custom_exercise || 'Unknown Exercise',
+          category: randomCategory,
+          exercise_id: randomLog.exercise_id,
+          customExercise: randomLog.custom_exercise,
+          sets: sets,
+          lastUsed: randomLog.workout_date
+        });
+        
+        if (randomLog.exercise_id) {
+          planUsedExerciseIds.push(randomLog.exercise_id);
+        } else if (randomLog.custom_exercise) {
+          planUsedExerciseIds.push(randomLog.custom_exercise);
+        }
+      }
+      
+      // Remove this key to avoid duplicates
+      exerciseKeys.splice(randomIndex, 1);
+    }
+    
+    primaryCategory = randomCategory;
   }
   
   // Create human-readable category labels
@@ -416,6 +475,11 @@ export function generateWorkoutPlan(
     };
     return categoryMap[category] || category;
   };
+  
+  // Still no exercises? Return null
+  if (workoutExercises.length === 0) {
+    return null;
+  }
   
   // Generate plan name and description
   const primaryLabel = getCategoryLabel(primaryCategory);

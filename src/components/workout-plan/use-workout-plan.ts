@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,8 +15,12 @@ export function useWorkoutPlan(userId: string | undefined) {
   const [isGenerating, setIsGenerating] = useState(true);
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>([]);
   const [usedCategories, setUsedCategories] = useState<ExerciseCategory[]>([]);
+  // Keep track of all exercise IDs that have been used across all generated plans
   const [usedExerciseIds, setUsedExerciseIds] = useState<(number | string)[]>([]);
   const [globalExerciseExclusions, setGlobalExerciseExclusions] = useState<(number | string)[]>([]);
+  // Add a maximum iterations counter to prevent infinite loops
+  const [iterationCount, setIterationCount] = useState(0);
+  const MAX_ITERATIONS = 20;
   
   const currentPlan = generatedPlans[currentPlanIndex];
 
@@ -56,20 +59,69 @@ export function useWorkoutPlan(userId: string | undefined) {
     }
   }, [workoutLogs]);
 
+  // When iterationCount changes and we haven't reached MAX_ITERATIONS yet, 
+  // try to generate a different plan
+  useEffect(() => {
+    if (iterationCount > 0 && iterationCount < MAX_ITERATIONS && workoutLogs) {
+      const newPlan = generateWorkoutPlan(workoutLogs, usedCategories, usedExerciseIds);
+      if (newPlan) {
+        // Only add the plan if it has different exercises than what we've seen
+        const hasNewExercises = newPlan.exercises.some(ex => {
+          const idToCheck = ex.exercise_id || ex.customExercise;
+          return idToCheck && !usedExerciseIds.includes(idToCheck);
+        });
+
+        if (hasNewExercises) {
+          // Add the new plan
+          const updatedPlans = [...generatedPlans, newPlan];
+          setGeneratedPlans(updatedPlans);
+          
+          // Update the current index to the new plan
+          const newIndex = updatedPlans.length - 1;
+          setCurrentPlanIndex(newIndex);
+          
+          // Update workout exercises
+          setWorkoutExercises(newPlan.exercises);
+          
+          // Track the new category
+          if (newPlan.primaryCategory) {
+            setUsedCategories(prev => [...prev, newPlan.primaryCategory]);
+          }
+          
+          // Add newly used exercise IDs to the used list
+          if (newPlan.usedExerciseIds && newPlan.usedExerciseIds.length > 0) {
+            setUsedExerciseIds(prev => [...prev, ...newPlan.usedExerciseIds]);
+          }
+          
+          toast.info("Showing new workout plan");
+          // Reset the iteration count since we found a good plan
+          setIterationCount(0);
+        } else {
+          // If we couldn't find new exercises, try again up to MAX_ITERATIONS
+          setIterationCount(prev => prev + 1);
+        }
+      } else {
+        // If no plan could be generated, just stop trying
+        toast.info("No more alternative workout plans available");
+        setIterationCount(0);
+      }
+    } else if (iterationCount >= MAX_ITERATIONS) {
+      // If we've tried too many times, reset and show a message
+      toast.info("Reached maximum attempts to find unique exercises");
+      setIterationCount(0);
+    }
+  }, [iterationCount, workoutLogs, usedCategories, usedExerciseIds, generatedPlans]);
+
   const generateInitialPlans = (logs: WorkoutLog[]) => {
     // Generate multiple workout plan options
     const plans: WorkoutPlan[] = [];
     const usedCats: ExerciseCategory[] = [];
     const usedExIds: (number | string)[] = [];
-    const globalExIds: (number | string)[] = [];
     
-    // Generate at least 3 different plans if possible
+    // Generate several different plans if possible
     for (let i = 0; i < 5; i++) {
-      // For each plan, we exclude both global exclusions and plan-specific exercises
-      const currentExclusions = [...globalExIds];
-      
-      // Generate a plan excluding previously used categories and exercises
-      const plan = generateWorkoutPlan(logs, usedCats, currentExclusions);
+      // For each new plan, we exclude previously used exercises and categories
+      const plan = generateWorkoutPlan(logs, usedCats, usedExIds);
       
       if (plan) {
         plans.push(plan);
@@ -79,20 +131,35 @@ export function useWorkoutPlan(userId: string | undefined) {
           usedCats.push(plan.primaryCategory);
         }
 
-        // Track used exercise IDs globally to ensure variety across different plans
+        // Track used exercise IDs to ensure variety
         if (plan.usedExerciseIds && plan.usedExerciseIds.length > 0) {
-          globalExIds.push(...plan.usedExerciseIds);
           usedExIds.push(...plan.usedExerciseIds);
         }
       }
     }
     
     if (plans.length > 0) {
+      console.log("Generated initial plans:", plans.length);
+      console.log("Used exercise IDs for initial plans:", usedExIds);
+      
       setGeneratedPlans(plans);
       setWorkoutExercises(plans[0].exercises);
       setUsedCategories(usedCats);
       setUsedExerciseIds(usedExIds);
-      setGlobalExerciseExclusions(globalExIds);
+    } else {
+      // If we couldn't generate any plans with the strict filters,
+      // try again without filtering
+      const fallbackPlan = generateWorkoutPlan(logs, [], []);
+      if (fallbackPlan) {
+        setGeneratedPlans([fallbackPlan]);
+        setWorkoutExercises(fallbackPlan.exercises);
+        if (fallbackPlan.primaryCategory) {
+          setUsedCategories([fallbackPlan.primaryCategory]);
+        }
+        if (fallbackPlan.usedExerciseIds) {
+          setUsedExerciseIds(fallbackPlan.usedExerciseIds);
+        }
+      }
     }
     
     setIsGenerating(false);
@@ -143,44 +210,9 @@ export function useWorkoutPlan(userId: string | undefined) {
 
   const handleDecline = () => {
     if (currentPlanIndex >= generatedPlans.length - 1) {
-      // If we're on the last plan, generate a new one with different categories and exercises
-      if (workoutLogs) {
-        setIsGenerating(true);
-        
-        // Generate a new plan that avoids all previously used categories AND exercises
-        const newPlan = generateWorkoutPlan(workoutLogs, usedCategories, globalExerciseExclusions);
-        
-        if (newPlan) {
-          // Add the new plan
-          const updatedPlans = [...generatedPlans, newPlan];
-          setGeneratedPlans(updatedPlans);
-          
-          // Update the current index to the new plan
-          const newIndex = updatedPlans.length - 1;
-          setCurrentPlanIndex(newIndex);
-          
-          // Update workout exercises
-          setWorkoutExercises(newPlan.exercises);
-          
-          // Track the new category
-          if (newPlan.primaryCategory) {
-            setUsedCategories([...usedCategories, newPlan.primaryCategory]);
-          }
-          
-          // Add newly used exercise IDs to global exclusions to ensure complete variety
-          if (newPlan.usedExerciseIds && newPlan.usedExerciseIds.length > 0) {
-            const updatedGlobalExclusions = [...globalExerciseExclusions, ...newPlan.usedExerciseIds];
-            setGlobalExerciseExclusions(updatedGlobalExclusions);
-            setUsedExerciseIds([...usedExerciseIds, ...newPlan.usedExerciseIds]);
-          }
-          
-          toast.info("Showing new workout plan");
-        } else {
-          toast.info("No more alternative workout plans available");
-        }
-        
-        setIsGenerating(false);
-      }
+      // If we're on the last plan, request a new exercise set by incrementing the iteration counter
+      setIsGenerating(true);
+      setIterationCount(prev => prev + 1);
     } else {
       // Cycle to the next workout plan
       const nextIndex = currentPlanIndex + 1;
