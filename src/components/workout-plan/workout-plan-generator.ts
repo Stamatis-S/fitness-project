@@ -82,7 +82,7 @@ function calculateProgressiveSets(logs: WorkoutLog[]): Record<string, WorkoutSet
 }
 
 // Helper function to get favorite exercises per category
-function getFavoriteExercises(logs: WorkoutLog[]): Record<string, Array<{ name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> {
+function getFavoriteExercises(logs: WorkoutLog[], excludeExerciseIds: (number | string)[] = []): Record<string, Array<{ name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> {
   const categoryCounts: Record<string, Record<string, { name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> = {};
   
   logs.forEach(log => {
@@ -94,6 +94,12 @@ function getFavoriteExercises(logs: WorkoutLog[]): Record<string, Array<{ name: 
     const exerciseKey = log.exercise_id 
       ? `exercise_${log.exercise_id}` 
       : `custom_${log.custom_exercise}`;
+    
+    // Skip if this exercise ID is in the exclude list
+    const exerciseId = log.exercise_id || log.custom_exercise;
+    if (exerciseId && excludeExerciseIds.includes(exerciseId)) {
+      return;
+    }
     
     if (!categoryCounts[log.category][exerciseKey]) {
       categoryCounts[log.category][exerciseKey] = {
@@ -153,7 +159,11 @@ function getRecentlyTrainedCategories(logs: WorkoutLog[], daysToAvoid = 3): Exer
 }
 
 // Main function to generate workout plan
-export function generateWorkoutPlan(logs: WorkoutLog[], excludeCategories: ExerciseCategory[] = []): WorkoutPlan | null {
+export function generateWorkoutPlan(
+  logs: WorkoutLog[], 
+  excludeCategories: ExerciseCategory[] = [],
+  excludeExerciseIds: (number | string)[] = []
+): WorkoutPlan | null {
   if (!logs || logs.length === 0) {
     return null;
   }
@@ -226,11 +236,12 @@ export function generateWorkoutPlan(logs: WorkoutLog[], excludeCategories: Exerc
       .sort((a, b) => (categoryCounts[b] || 0) - (categoryCounts[a] || 0))[0] as ExerciseCategory;
   }
   
-  const favoriteExercises = getFavoriteExercises(logs);
+  const favoriteExercises = getFavoriteExercises(logs, excludeExerciseIds);
   
   const progressiveSets = calculateProgressiveSets(logs);
   
   const workoutExercises: WorkoutExercise[] = [];
+  const planUsedExerciseIds: (number | string)[] = [];
   
   const primaryExercises = favoriteExercises[primaryCategory] || [];
   primaryExercises.slice(0, Math.min(3, primaryExercises.length)).forEach(exercise => {
@@ -239,6 +250,13 @@ export function generateWorkoutPlan(logs: WorkoutLog[], excludeCategories: Exerc
       : `custom_${exercise.customExercise}`;
       
     const sets = progressiveSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
+    
+    // Track the exercise ID being used
+    if (exercise.exerciseId) {
+      planUsedExerciseIds.push(exercise.exerciseId);
+    } else if (exercise.customExercise) {
+      planUsedExerciseIds.push(exercise.customExercise);
+    }
     
     workoutExercises.push({
       name: exercise.name,
@@ -258,6 +276,13 @@ export function generateWorkoutPlan(logs: WorkoutLog[], excludeCategories: Exerc
         : `custom_${exercise.customExercise}`;
         
       const sets = progressiveSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
+      
+      // Track the exercise ID being used
+      if (exercise.exerciseId) {
+        planUsedExerciseIds.push(exercise.exerciseId);
+      } else if (exercise.customExercise) {
+        planUsedExerciseIds.push(exercise.customExercise);
+      }
       
       workoutExercises.push({
         name: exercise.name,
@@ -289,6 +314,13 @@ export function generateWorkoutPlan(logs: WorkoutLog[], excludeCategories: Exerc
           : `custom_${exercise.customExercise}`;
           
         const sets = progressiveSets[key] || [{ weight: 0, reps: 8 }, { weight: 0, reps: 8 }, { weight: 0, reps: 8 }];
+        
+        // Track the exercise ID being used
+        if (exercise.exerciseId) {
+          planUsedExerciseIds.push(exercise.exerciseId);
+        } else if (exercise.customExercise) {
+          planUsedExerciseIds.push(exercise.customExercise);
+        }
         
         workoutExercises.push({
           name: exercise.name,
@@ -339,6 +371,7 @@ export function generateWorkoutPlan(logs: WorkoutLog[], excludeCategories: Exerc
     description: planDescription,
     exercises: workoutExercises,
     targetDate: new Date().toISOString().split('T')[0],
-    primaryCategory: primaryCategory, // Add the primary category for easy filtering
+    primaryCategory: primaryCategory,
+    usedExerciseIds: planUsedExerciseIds // Track which exercises were used in this plan
   };
 }
