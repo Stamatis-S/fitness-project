@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,15 +13,8 @@ import { WorkoutLog } from "./types";
 import { Badge } from "@/components/ui/badge";
 import { CATEGORY_COLORS } from "@/lib/constants";
 
-// Array of colors for date headings
-const DATE_COLORS = [
-  "#4ade80", // Green
-  "#60a5fa", // Blue
-  "#f472b6", // Pink
-  "#fb923c", // Orange
-  "#a78bfa", // Purple
-  "#fcd34d", // Yellow
-];
+// Single color for date headings
+const DATE_COLOR = "#60a5fa"; // Blue
 
 interface WorkoutTableProps {
   logs: WorkoutLog[];
@@ -87,11 +79,11 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
 
   return (
     <div className="space-y-2">
-      {groupedLogs.map((dateGroup, index) => (
+      {groupedLogs.map((dateGroup) => (
         <div key={dateGroup.date} className="space-y-2">
           <h3 
-            className="font-semibold text-sm px-2 py-0.5"
-            style={{ color: DATE_COLORS[index % DATE_COLORS.length] }}
+            className="font-semibold text-base px-2 py-0.5"
+            style={{ color: DATE_COLOR }}
           >
             {formatDate(dateGroup.date)}
           </h3>
