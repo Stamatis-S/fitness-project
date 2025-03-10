@@ -36,7 +36,7 @@ export function UserRecordPopup() {
             profiles(username)
           `)
           .order('weight_kg', { ascending: false })
-          .limit(10);
+          .limit(20); // Increased limit to fetch more records
 
         if (error) throw error;
 
@@ -53,11 +53,20 @@ export function UserRecordPopup() {
             };
           });
 
-          // Filter out duplicate user records to show one per user
-          const uniqueUserRecords = formattedRecords.filter((record, index, self) =>
-            index === self.findIndex((r) => r.user_id === record.user_id)
-          );
-
+          // Get more unique user records - up to 10 users
+          const userMap = new Map<string, UserRecord>();
+          
+          formattedRecords.forEach(record => {
+            // If we don't have this user yet, or if this record is better than what we have
+            const existingRecord = userMap.get(record.user_id);
+            if (!existingRecord || (parseFloat(record.achievement) > parseFloat(existingRecord.achievement))) {
+              userMap.set(record.user_id, record);
+            }
+          });
+          
+          // Convert map to array, get up to 10 records
+          const uniqueUserRecords = Array.from(userMap.values()).slice(0, 10);
+          
           setRecords(uniqueUserRecords);
         }
       } catch (error) {
