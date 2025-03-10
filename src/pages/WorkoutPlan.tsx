@@ -6,7 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { PageTransition } from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check, X, Dumbbell } from "lucide-react";
+import { ArrowLeft, Check, X, Dumbbell, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { WorkoutPlanExercise } from "@/components/workout-plan/WorkoutPlanExercise";
 import { toast } from "sonner";
@@ -18,9 +18,12 @@ import type { WorkoutPlan, WorkoutExercise } from "@/components/workout-plan/typ
 export default function WorkoutPlan() {
   const { session, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [generatedPlan, setGeneratedPlan] = useState<WorkoutPlan | null>(null);
+  const [generatedPlans, setGeneratedPlans] = useState<WorkoutPlan[]>([]);
+  const [currentPlanIndex, setCurrentPlanIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(true);
   const [workoutExercises, setWorkoutExercises] = useState<WorkoutExercise[]>([]);
+  
+  const currentPlan = generatedPlans[currentPlanIndex];
 
   useEffect(() => {
     if (!isLoading && !session) {
@@ -58,23 +61,66 @@ export default function WorkoutPlan() {
 
   useEffect(() => {
     if (workoutLogs) {
-      const plan = generateWorkoutPlan(workoutLogs);
-      setGeneratedPlan(plan);
-      if (plan) {
-        setWorkoutExercises(plan.exercises);
+      // Generate multiple workout plan options
+      const plans: WorkoutPlan[] = [];
+      
+      // Generate at least 3 different plans if possible
+      for (let i = 0; i < 5; i++) {
+        const plan = generateWorkoutPlan(workoutLogs);
+        if (plan) {
+          // Check if the plan is significantly different from existing plans
+          const isDifferent = !plans.some(existingPlan => 
+            areWorkoutPlansVerySimilar(existingPlan, plan)
+          );
+          
+          if (isDifferent || plans.length < 2) {
+            plans.push(plan);
+          }
+        }
       }
+      
+      if (plans.length > 0) {
+        setGeneratedPlans(plans);
+        setWorkoutExercises(plans[0].exercises);
+      }
+      
       setIsGenerating(false);
     }
   }, [workoutLogs]);
 
+  // Helper function to determine if two workout plans are very similar
+  const areWorkoutPlansVerySimilar = (plan1: WorkoutPlan, plan2: WorkoutPlan): boolean => {
+    // Consider plans similar if they have the same primary category focus
+    // or if more than 50% of the exercises are the same
+    
+    const plan1Categories = new Set(plan1.exercises.map(ex => ex.category));
+    const plan2Categories = new Set(plan2.exercises.map(ex => ex.category));
+    
+    // Check if the primary categories match
+    const primaryCategoryMatch = plan1.name.split(' ')[0] === plan2.name.split(' ')[0];
+    
+    // Count common exercises
+    const commonExercises = plan1.exercises.filter(ex1 => 
+      plan2.exercises.some(ex2 => 
+        ex1.name === ex2.name && ex1.category === ex2.category
+      )
+    ).length;
+    
+    const similarityRatio = commonExercises / Math.max(plan1.exercises.length, plan2.exercises.length);
+    
+    return primaryCategoryMatch && similarityRatio > 0.5;
+  };
+
   const handleExerciseUpdate = (updatedExercise: WorkoutExercise, index: number) => {
-    const updatedExercises = [...workoutExercises];
-    updatedExercises[index] = updatedExercise;
-    setWorkoutExercises(updatedExercises);
+    if (currentPlan) {
+      const updatedExercises = [...workoutExercises];
+      updatedExercises[index] = updatedExercise;
+      setWorkoutExercises(updatedExercises);
+    }
   };
 
   const handleSavePlan = async () => {
-    if (!session?.user.id || !generatedPlan) return;
+    if (!session?.user.id || !currentPlan) return;
     
     try {
       // Convert workout plan to workout_logs format using the updated exercises
@@ -108,6 +154,22 @@ export default function WorkoutPlan() {
     }
   };
 
+  const handleDecline = () => {
+    if (generatedPlans.length <= 1) {
+      toast.info("No alternative workout plans available");
+      return;
+    }
+    
+    // Cycle to the next workout plan
+    const nextIndex = (currentPlanIndex + 1) % generatedPlans.length;
+    setCurrentPlanIndex(nextIndex);
+    
+    // Update the workout exercises based on the new current plan
+    setWorkoutExercises(generatedPlans[nextIndex].exercises);
+    
+    toast.info("Showing alternative workout plan");
+  };
+
   if (isLoading) {
     return <div className="flex h-screen items-center justify-center bg-black">Loading...</div>;
   }
@@ -129,7 +191,7 @@ export default function WorkoutPlan() {
               <span className="text-xs">Back</span>
             </button>
             <h1 className="text-base font-bold flex-1 text-center text-white">
-              Your Next Workout Plan
+              Today's Workout Plan
             </h1>
             <div className="w-[50px]" />
           </div>
@@ -140,16 +202,24 @@ export default function WorkoutPlan() {
                 <div className="animate-pulse rounded-full bg-[#333333] h-12 w-12 flex items-center justify-center">
                   <Dumbbell className="h-6 w-6 text-white" />
                 </div>
-                <p className="text-white text-center">Generating your next workout plan...</p>
+                <p className="text-white text-center">Generating your workout plans...</p>
               </div>
-            ) : generatedPlan ? (
+            ) : currentPlan ? (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <h2 className="text-lg font-semibold text-white text-center">
-                    {generatedPlan.name}
-                  </h2>
-                  <p className="text-sm text-gray-400 text-center">
-                    {generatedPlan.description}
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-white">
+                      {currentPlan.name}
+                    </h2>
+                    {generatedPlans.length > 1 && (
+                      <div className="flex items-center gap-1 text-xs text-gray-400">
+                        <span>{currentPlanIndex + 1}/{generatedPlans.length}</span>
+                        <RefreshCw className="h-3 w-3" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-400">
+                    {currentPlan.description}
                   </p>
                 </div>
 
@@ -166,10 +236,10 @@ export default function WorkoutPlan() {
                 <div className="flex space-x-2 pt-2">
                   <Button
                     className="flex-1 bg-[#333333] hover:bg-[#444444] text-white"
-                    onClick={() => navigate("/")}
+                    onClick={handleDecline}
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Decline
+                    Find Another
                   </Button>
                   <Button
                     className="flex-1 bg-[#E22222] hover:bg-[#C11818] text-white"
