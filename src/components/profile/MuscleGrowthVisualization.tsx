@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { MuscleProgressLevel, MuscleProgressStats, calculateWorkoutStats } from "./utils/progressLevelUtils";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,18 +41,20 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     return 1;                     // Beginner
   };
 
+  // Updated to use correct fitness level names
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'Legend':
         return 'text-[#FF00FF]';
-      case 'Monster':
-        return 'text-[#FF0000]';
       case 'Elite':
         return 'text-[#A855F7]';
       case 'Advanced':
         return 'text-[#4488EF]';
       case 'Intermediate':
         return 'text-[#22C55E]';
+      case 'Novice':
+        return 'text-[#EAB308]';
+      case 'Beginner':
       default:
         return 'text-[#EAB308]';
     }
@@ -216,3 +219,4 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     </Card>
   );
 }
+
