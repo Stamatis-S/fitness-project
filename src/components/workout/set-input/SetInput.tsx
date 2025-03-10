@@ -74,8 +74,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     gcTime: 10 * 60 * 1000,
   });
 
+  // Modified to fetch last values based on set number
   const { data: lastWorkoutValues, isLoading: isLoadingLast } = useQuery({
-    queryKey: ['last-workout-values', session?.user.id, selectedExercise, customExercise],
+    queryKey: ['last-workout-values', session?.user.id, selectedExercise, customExercise, index + 1],
     queryFn: async () => {
       if (!session?.user.id || !selectedExercise) {
         return { lastWeight: null, lastReps: null, lastDate: null };
@@ -85,6 +86,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         .from('workout_logs')
         .select('weight_kg, reps, workout_date')
         .eq('user_id', session.user.id)
+        .eq('set_number', index + 1) // Filter by set number
         .order('workout_date', { ascending: false })
         .order('created_at', { ascending: false });
       
