@@ -27,6 +27,7 @@ export default function WorkoutPlan() {
     currentPlanIndex,
     generatedPlans,
     handleExerciseUpdate,
+    handleExerciseDelete,
     handleSavePlan,
     handleDecline
   } = useWorkoutPlan(session?.user.id);
@@ -55,6 +56,7 @@ export default function WorkoutPlan() {
                 currentPlanIndex={currentPlanIndex}
                 totalPlans={generatedPlans.length}
                 onExerciseUpdate={handleExerciseUpdate}
+                onExerciseDelete={handleExerciseDelete}
                 onDecline={handleDecline}
                 onSave={handleSavePlan}
               />

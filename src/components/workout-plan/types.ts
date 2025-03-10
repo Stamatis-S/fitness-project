@@ -28,4 +28,5 @@ export interface WorkoutPlan {
 export interface WorkoutPlanExerciseProps {
   exercise: WorkoutExercise;
   onExerciseUpdate: (updatedExercise: WorkoutExercise) => void;
+  onDelete?: () => void;  // New prop for deleting an exercise
 }

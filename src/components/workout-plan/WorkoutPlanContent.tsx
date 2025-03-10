@@ -11,6 +11,7 @@ interface WorkoutPlanContentProps {
   currentPlanIndex: number;
   totalPlans: number;
   onExerciseUpdate: (updatedExercise: WorkoutExercise, index: number) => void;
+  onExerciseDelete: (index: number) => void;
   onDecline: () => void;
   onSave: () => void;
 }
@@ -21,6 +22,7 @@ export function WorkoutPlanContent({
   currentPlanIndex,
   totalPlans,
   onExerciseUpdate,
+  onExerciseDelete,
   onDecline,
   onSave
 }: WorkoutPlanContentProps) {
@@ -96,6 +98,13 @@ export function WorkoutPlanContent({
                       ex => ex.name === exercise.name && ex.category === exercise.category
                     );
                     onExerciseUpdate(updatedExercise, globalIndex);
+                  }}
+                  onDelete={() => {
+                    // Find the actual index in the complete array
+                    const globalIndex = workoutExercises.findIndex(
+                      ex => ex.name === exercise.name && ex.category === exercise.category
+                    );
+                    onExerciseDelete(globalIndex);
                   }}
                 />
               ))}

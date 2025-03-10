@@ -189,6 +189,27 @@ export function useWorkoutPlan(userId: string | undefined) {
     }
   };
 
+  // New function to handle exercise deletion
+  const handleExerciseDelete = (index: number) => {
+    if (currentPlan && index >= 0 && index < workoutExercises.length) {
+      // Get the exercise ID to exclude in future plans
+      const exerciseToRemove = workoutExercises[index];
+      const idToExclude = exerciseToRemove.exercise_id || exerciseToRemove.customExercise;
+      
+      if (idToExclude) {
+        // Add this ID to global exclusions
+        setGlobalExerciseExclusions(prev => [...prev, idToExclude]);
+      }
+      
+      // Remove the exercise from the current workout
+      const updatedExercises = [...workoutExercises];
+      updatedExercises.splice(index, 1);
+      setWorkoutExercises(updatedExercises);
+      
+      toast.success("Exercise removed from workout plan");
+    }
+  };
+
   const handleSavePlan = async () => {
     if (!userId || !currentPlan) return;
     
@@ -247,16 +268,9 @@ export function useWorkoutPlan(userId: string | undefined) {
     isGenerating,
     currentPlanIndex,
     generatedPlans,
-    handleExerciseUpdate: (updatedExercise: WorkoutExercise) => {
-      const index = workoutExercises.findIndex(
-        ex => ex.name === updatedExercise.name && ex.category === updatedExercise.category
-      );
-      if (index !== -1) {
-        handleExerciseUpdate(updatedExercise, index);
-      }
-    },
+    handleExerciseUpdate,
+    handleExerciseDelete,
     handleSavePlan,
     handleDecline
   };
 }
-

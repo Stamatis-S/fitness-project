@@ -311,12 +311,12 @@ export function generateWorkoutPlan(
   const workoutExercises: WorkoutExercise[] = [];
   const planUsedExerciseIds: (number | string)[] = [];
   
-  // Add primary category exercises
+  // Add primary category exercises - INCREASED FROM 2-3 TO 3-4
   const primaryExercises = favoriteExercises[primaryCategory] || [];
   console.log(`Found ${primaryExercises.length} primary exercises for category ${primaryCategory} after filtering`);
   
   // For multi-category workouts, use fewer primary exercises to make room for secondary
-  const primaryExerciseCount = secondaryCategory ? 2 : 3;
+  const primaryExerciseCount = secondaryCategory ? 3 : 4; // Increased from 2/3 to 3/4
   
   primaryExercises.slice(0, Math.min(primaryExerciseCount, primaryExercises.length)).forEach(exercise => {
     const key = exercise.exerciseId 
@@ -342,12 +342,12 @@ export function generateWorkoutPlan(
     });
   });
   
-  // Add secondary category exercises if available
+  // Add secondary category exercises if available - INCREASED FROM 2-3 TO 3-4
   if (secondaryCategory && favoriteExercises[secondaryCategory]) {
     const secondaryExercises = favoriteExercises[secondaryCategory] || [];
     console.log(`Found ${secondaryExercises.length} secondary exercises for category ${secondaryCategory} after filtering`);
     
-    const secondaryExerciseCount = primaryExercises.length < primaryExerciseCount ? 3 : 2;
+    const secondaryExerciseCount = primaryExercises.length < primaryExerciseCount ? 4 : 3; // Increased from 3/2 to 4/3
     
     secondaryExercises.slice(0, Math.min(secondaryExerciseCount, secondaryExercises.length)).forEach(exercise => {
       const key = exercise.exerciseId 
