@@ -20,6 +20,7 @@ export function useWorkoutPlan(userId: string | undefined) {
   
   const currentPlan = generatedPlans[currentPlanIndex];
 
+  // Query to get workout logs
   const { data: workoutLogs } = useQuery({
     queryKey: ['workout_logs', userId],
     queryFn: async () => {
@@ -134,7 +135,7 @@ export function useWorkoutPlan(userId: string | undefined) {
 
   const handleDecline = () => {
     if (currentPlanIndex >= generatedPlans.length - 1) {
-      // If we're on the last plan, generate a new one with different categories
+      // If we're on the last plan, generate a new one with different categories and exercises
       if (workoutLogs) {
         setIsGenerating(true);
         

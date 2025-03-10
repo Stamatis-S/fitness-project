@@ -96,16 +96,20 @@ function getFavoriteExercises(logs: WorkoutLog[], excludeExerciseIds: (number | 
       : `custom_${log.custom_exercise}`;
     
     // Skip if this exercise ID is in the exclude list
-    const exerciseId = log.exercise_id || log.custom_exercise;
-    if (exerciseId && excludeExerciseIds.includes(exerciseId)) {
+    const exerciseId = log.exercise_id || null;
+    const customExercise = log.custom_exercise || null;
+    
+    // Check if this exercise should be excluded
+    if ((exerciseId && excludeExerciseIds.includes(exerciseId)) || 
+        (customExercise && excludeExerciseIds.includes(customExercise))) {
       return;
     }
     
     if (!categoryCounts[log.category][exerciseKey]) {
       categoryCounts[log.category][exerciseKey] = {
         name: exerciseName,
-        exerciseId: log.exercise_id,
-        customExercise: log.custom_exercise,
+        exerciseId: exerciseId,
+        customExercise: customExercise,
         count: 0,
         lastUsed: log.workout_date
       };
@@ -124,9 +128,9 @@ function getFavoriteExercises(logs: WorkoutLog[], excludeExerciseIds: (number | 
     const exercisesList = Object.values(exercises);
     
     result[category] = exercisesList.sort((a, b) => {
-      const twoDAysAgo = new Date();
-      twoDAysAgo.setDate(twoDAysAgo.getDate() - 2);
-      const dateStrTwoDaysAgo = twoDAysAgo.toISOString().split('T')[0];
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+      const dateStrTwoDaysAgo = twoDaysAgo.toISOString().split('T')[0];
       
       const aIsRecent = a.lastUsed >= dateStrTwoDaysAgo;
       const bIsRecent = b.lastUsed >= dateStrTwoDaysAgo;
@@ -168,9 +172,11 @@ export function generateWorkoutPlan(
     return null;
   }
   
+  // Get recently trained categories to avoid
   const recentlyTrainedCategories = getRecentlyTrainedCategories(logs);
   console.log("Recently trained categories to avoid:", recentlyTrainedCategories);
   
+  // Count how many times each category has been used
   const categoryCounts: Record<string, number> = {};
   logs.forEach(log => {
     categoryCounts[log.category] = (categoryCounts[log.category] || 0) + 1;
@@ -180,6 +186,7 @@ export function generateWorkoutPlan(
   const categoriesToExclude = [...recentlyTrainedCategories, ...excludeCategories];
   console.log("Categories to exclude:", categoriesToExclude);
   
+  // Sort categories by most used, excluding ones that should be avoided
   const sortedCategories = Object.entries(categoryCounts)
     .filter(([category]) => !categoriesToExclude.includes(category as ExerciseCategory))
     .sort((a, b) => b[1] - a[1]);
@@ -207,12 +214,14 @@ export function generateWorkoutPlan(
       const leastRecentCategory = Object.entries(categoryLastUsed)
         .sort((a, b) => a[1].localeCompare(b[1]))[0];
       primaryCategory = leastRecentCategory[0] as ExerciseCategory;
+      console.log("Using least recent category:", primaryCategory);
     } else {
       primaryCategory = sortedByLastUsed[0][0] as ExerciseCategory;
+      console.log("Using least recent category:", primaryCategory);
     }
-    console.log("Using least recent category:", primaryCategory);
   }
   
+  // Define complementary categories for each primary category
   const complementaryCategories: Record<string, string[]> = {
     "ΣΤΗΘΟΣ": ["ΤΡΙΚΕΦΑΛΑ", "ΩΜΟΙ"],
     "ΠΛΑΤΗ": ["ΔΙΚΕΦΑΛΑ", "ΩΜΟΙ"],
@@ -224,6 +233,7 @@ export function generateWorkoutPlan(
     "CARDIO": ["ΚΟΡΜΟΣ", "ΠΟΔΙΑ"]
   };
   
+  // Find possible secondary categories that complement the primary one
   const possibleSecondaryCategories = (complementaryCategories[primaryCategory] || [])
     .filter(category => 
       categoryCounts[category] && 
@@ -236,13 +246,17 @@ export function generateWorkoutPlan(
       .sort((a, b) => (categoryCounts[b] || 0) - (categoryCounts[a] || 0))[0] as ExerciseCategory;
   }
   
+  // Get favorite exercises for each category, excluding specified exercise IDs
   const favoriteExercises = getFavoriteExercises(logs, excludeExerciseIds);
   
+  // Calculate progressive sets based on previous workout history
   const progressiveSets = calculateProgressiveSets(logs);
   
+  // Build the workout plan with exercises
   const workoutExercises: WorkoutExercise[] = [];
   const planUsedExerciseIds: (number | string)[] = [];
   
+  // Add primary category exercises
   const primaryExercises = favoriteExercises[primaryCategory] || [];
   primaryExercises.slice(0, Math.min(3, primaryExercises.length)).forEach(exercise => {
     const key = exercise.exerciseId 
@@ -268,6 +282,7 @@ export function generateWorkoutPlan(
     });
   });
   
+  // Add secondary category exercises if available
   if (secondaryCategory && favoriteExercises[secondaryCategory]) {
     const secondaryExercises = favoriteExercises[secondaryCategory] || [];
     secondaryExercises.slice(0, Math.min(2, secondaryExercises.length)).forEach(exercise => {
@@ -295,6 +310,7 @@ export function generateWorkoutPlan(
     });
   }
   
+  // Add a random exercise from another category if we don't have enough exercises yet
   if (workoutExercises.length < 3) {
     const otherCategories = Object.keys(favoriteExercises)
       .filter(category => 
@@ -334,10 +350,12 @@ export function generateWorkoutPlan(
     }
   }
   
+  // Return null if no exercises were found
   if (workoutExercises.length === 0) {
     return null;
   }
   
+  // Create human-readable category labels
   const getCategoryLabel = (category: string): string => {
     const categoryMap: Record<string, string> = {
       "ΣΤΗΘΟΣ": "Chest",
@@ -352,6 +370,7 @@ export function generateWorkoutPlan(
     return categoryMap[category] || category;
   };
   
+  // Generate plan name and description
   const primaryLabel = getCategoryLabel(primaryCategory);
   const secondaryLabel = secondaryCategory ? getCategoryLabel(secondaryCategory) : null;
   
@@ -366,6 +385,7 @@ export function generateWorkoutPlan(
     planDescription = `A progressive workout focusing on ${primaryLabel.toLowerCase()} designed to help you improve based on your training history.`;
   }
   
+  // Return the complete workout plan
   return {
     name: planName,
     description: planDescription,
