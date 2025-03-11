@@ -157,6 +157,7 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
     type: 'new' | 'matched'; 
     hasHistory: boolean;
     prType: 'weight' | 'reps';
+    category?: string;
   }[] = [];
   
   recentLogs.forEach(recentLog => {
@@ -179,7 +180,8 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
           achievement: `+${(recentLog.weight_kg - previousWeightPR).toFixed(1)}kg (now ${recentLog.weight_kg}kg)`,
           type: 'new',
           hasHistory: true,
-          prType: 'weight'
+          prType: 'weight',
+          category: recentLog.category
         });
       } else if (recentLog.weight_kg === previousWeightPR) {
         // Only add matched weight PRs if there's no new PR for this exercise already
@@ -195,7 +197,8 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
             achievement: `Matched PR (${recentLog.weight_kg}kg)`,
             type: 'matched',
             hasHistory: true,
-            prType: 'weight'
+            prType: 'weight',
+            category: recentLog.category
           });
         }
       }
@@ -217,7 +220,8 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
             achievement: `+${recentLog.reps - previousRepsPR} reps at ${recentLog.weight_kg}kg`,
             type: 'new',
             hasHistory: true,
-            prType: 'reps'
+            prType: 'reps',
+            category: recentLog.category
           });
         }
       }
