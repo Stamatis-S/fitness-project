@@ -21,6 +21,7 @@ export function ExerciseEntryForm() {
   const { session } = useAuth();
   const [step, setStep] = useState<'category' | 'exercise' | 'sets'>('category');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const methods = useForm<ExerciseFormData>({
     defaultValues: {
@@ -44,23 +45,31 @@ export function ExerciseEntryForm() {
   });
 
   const onSubmit = async (data: ExerciseFormData) => {
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    
     if (!selectedCategory) {
       toast.error("Please select a category");
+      setIsSubmitting(false);
       return;
     }
 
     if (!session?.user?.id) {
       toast.error("Please log in to save exercises");
+      setIsSubmitting(false);
       return;
     }
 
     if (!data.exercise) {
       toast.error("Please select an exercise");
+      setIsSubmitting(false);
       return;
     }
 
     if (data.exercise === "custom" && !data.customExercise) {
       toast.error("Please enter a custom exercise name");
+      setIsSubmitting(false);
       return;
     }
 
@@ -70,6 +79,7 @@ export function ExerciseEntryForm() {
 
     if (hasInvalidSets) {
       toast.error("Please enter valid values. Weight must be 0 or greater, and reps must be a positive whole number.");
+      setIsSubmitting(false);
       return;
     }
 
@@ -102,6 +112,8 @@ export function ExerciseEntryForm() {
       if (error) throw error;
 
       toast.success("Exercise logged successfully!");
+      
+      // Reset form with fresh default values
       methods.reset({
         date: (() => {
           const now = new Date();
@@ -115,11 +127,15 @@ export function ExerciseEntryForm() {
         exercise: "",
         sets: [{ weight: 0, reps: 0 }]
       });
-      setStep('category');
+      
+      // Reset state in correct sequence
       setSelectedCategory(null);
+      setStep('category');
     } catch (error) {
       console.error("Error logging exercise:", error);
       toast.error("Failed to log exercise");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -151,6 +167,7 @@ export function ExerciseEntryForm() {
                 onClick={handleBack}
                 variant="ghost"
                 className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-2"
+                disabled={isSubmitting}
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back
@@ -259,6 +276,7 @@ export function ExerciseEntryForm() {
                       variant="outline"
                       className="w-full h-9 bg-[#333333] hover:bg-[#444444] text-white border-0"
                       onClick={() => append({ weight: 0, reps: 0 })}
+                      disabled={isSubmitting}
                     >
                       <PlusCircle className="h-4 w-4 mr-2" />
                       Add Set
@@ -272,9 +290,22 @@ export function ExerciseEntryForm() {
                     <Button 
                       type="submit" 
                       className="w-full h-9 text-base bg-[#E22222] hover:bg-[#C11818] text-white"
+                      disabled={isSubmitting}
                     >
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Exercise
+                      {isSubmitting ? (
+                        <span className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Saving...
+                        </span>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Exercise
+                        </>
+                      )}
                     </Button>
                   </motion.div>
                 </div>
