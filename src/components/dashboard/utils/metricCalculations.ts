@@ -151,11 +151,17 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
   const recentLogs = workoutLogs.filter(log => new Date(log.workout_date) >= oneWeekAgo);
   const historicalLogs = workoutLogs.filter(log => new Date(log.workout_date) < oneWeekAgo);
   
-  const records: { exercise: string; achievement: string; type: 'new' | 'matched'; hasHistory: boolean }[] = [];
+  const records: { 
+    exercise: string; 
+    achievement: string; 
+    type: 'new' | 'matched'; 
+    hasHistory: boolean;
+    prType: 'weight' | 'reps';
+  }[] = [];
   
   recentLogs.forEach(recentLog => {
     const exerciseName = recentLog.custom_exercise || recentLog.exercises?.name;
-    if (!exerciseName || !recentLog.weight_kg) return;
+    if (!exerciseName) return;
     
     const exerciseHistory = historicalLogs.filter(log => 
       (log.custom_exercise || log.exercises?.name) === exerciseName
@@ -163,40 +169,57 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
 
     if (exerciseHistory.length === 0) return;
     
-    const previousWeightPR = Math.max(...exerciseHistory.map(log => log.weight_kg || 0));
-    
-    const previousRepsPR = Math.max(
-      ...exerciseHistory
-        .filter(log => log.weight_kg === recentLog.weight_kg)
-        .map(log => log.reps || 0)
-    );
-    
-    if (recentLog.weight_kg > previousWeightPR) {
-      records.push({
-        exercise: exerciseName,
-        achievement: `+${(recentLog.weight_kg - previousWeightPR).toFixed(1)}kg (now ${recentLog.weight_kg}kg)`,
-        type: 'new',
-        hasHistory: true
-      });
-    } else if (recentLog.weight_kg === previousWeightPR) {
-      const isNewEntry = !records.some(r => r.exercise === exerciseName);
-      if (isNewEntry) {
+    // Check for weight PRs if weight is recorded
+    if (recentLog.weight_kg) {
+      const previousWeightPR = Math.max(...exerciseHistory.map(log => log.weight_kg || 0));
+      
+      if (recentLog.weight_kg > previousWeightPR) {
         records.push({
           exercise: exerciseName,
-          achievement: `Matched PR (${recentLog.weight_kg}kg)`,
-          type: 'matched',
-          hasHistory: true
-        });
-      }
-    } else if (recentLog.reps && recentLog.reps > previousRepsPR && previousRepsPR > 0) {
-      const isNewEntry = !records.some(r => r.exercise === exerciseName);
-      if (isNewEntry) {
-        records.push({
-          exercise: exerciseName,
-          achievement: `+${recentLog.reps - previousRepsPR} reps at ${recentLog.weight_kg}kg`,
+          achievement: `+${(recentLog.weight_kg - previousWeightPR).toFixed(1)}kg (now ${recentLog.weight_kg}kg)`,
           type: 'new',
-          hasHistory: true
+          hasHistory: true,
+          prType: 'weight'
         });
+      } else if (recentLog.weight_kg === previousWeightPR) {
+        // Only add matched weight PRs if there's no new PR for this exercise already
+        const isNewEntry = !records.some(r => 
+          r.exercise === exerciseName && 
+          r.type === 'new' && 
+          r.prType === 'weight'
+        );
+        
+        if (isNewEntry) {
+          records.push({
+            exercise: exerciseName,
+            achievement: `Matched PR (${recentLog.weight_kg}kg)`,
+            type: 'matched',
+            hasHistory: true,
+            prType: 'weight'
+          });
+        }
+      }
+    }
+    
+    // Check for rep PRs at the same weight
+    if (recentLog.reps && recentLog.weight_kg) {
+      // Find previous logs with the same weight
+      const sameWeightHistory = exerciseHistory.filter(log => 
+        log.weight_kg === recentLog.weight_kg && log.reps
+      );
+      
+      if (sameWeightHistory.length > 0) {
+        const previousRepsPR = Math.max(...sameWeightHistory.map(log => log.reps || 0));
+        
+        if (recentLog.reps > previousRepsPR) {
+          records.push({
+            exercise: exerciseName,
+            achievement: `+${recentLog.reps - previousRepsPR} reps at ${recentLog.weight_kg}kg`,
+            type: 'new',
+            hasHistory: true,
+            prType: 'reps'
+          });
+        }
       }
     }
   });
