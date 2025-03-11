@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EXERCISE_CATEGORIES } from "@/lib/constants";
+import { EXERCISE_CATEGORIES, ExerciseCategory } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 
 interface PersonalRecord {
@@ -17,7 +17,7 @@ interface PersonalRecord {
   type: 'new' | 'matched';
   hasHistory: boolean;
   prType: 'weight' | 'reps';
-  category?: keyof typeof EXERCISE_CATEGORIES;
+  category?: ExerciseCategory;
 }
 
 interface PRTrackerProps {
@@ -52,21 +52,21 @@ export function PRTracker({ records }: PRTrackerProps) {
         <Table className="border-collapse">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[180px] py-2">Exercise</TableHead>
-              <TableHead className="w-[100px] py-2">Category</TableHead>
-              <TableHead className="py-2">Achievement</TableHead>
+              <TableHead className="w-[180px] py-1.5">Exercise</TableHead>
+              <TableHead className="w-[100px] py-1.5">Category</TableHead>
+              <TableHead className="py-1.5">Achievement</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {uniqueRecords.map((record, index) => (
               <TableRow key={`pr-${index}`}>
-                <TableCell className="font-medium py-2">
+                <TableCell className="font-medium py-1.5">
                   <div className="flex items-center gap-2">
                     <Dumbbell className="h-4 w-4" />
                     {record.exercise}
                   </div>
                 </TableCell>
-                <TableCell className="py-2">
+                <TableCell className="py-1.5">
                   {record.category && (
                     <Badge 
                       className="text-xs px-2 py-0.5 rounded-full"
@@ -79,7 +79,7 @@ export function PRTracker({ records }: PRTrackerProps) {
                     </Badge>
                   )}
                 </TableCell>
-                <TableCell className="py-2">
+                <TableCell className="py-1.5">
                   <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                     {record.achievement}
                     <Badge variant="outline" className={`ml-1 px-1.5 py-0.5 text-[10px] rounded ${
@@ -96,8 +96,8 @@ export function PRTracker({ records }: PRTrackerProps) {
           </TableBody>
         </Table>
       ) : (
-        <div className="text-center py-6 text-muted-foreground">
-          <Trophy className="h-10 w-10 mx-auto mb-2 opacity-20" />
+        <div className="text-center py-4 text-muted-foreground">
+          <Trophy className="h-8 w-8 mx-auto mb-1 opacity-20" />
           <p className="text-sm">No new PRs this week. Keep pushing!</p>
         </div>
       )}

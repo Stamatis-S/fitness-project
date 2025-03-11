@@ -1,5 +1,6 @@
 
 import type { WorkoutLog } from "@/components/saved-exercises/types";
+import { ExerciseCategory } from "@/lib/constants";
 
 export function calculateExerciseStats(workoutLogs: WorkoutLog[]) {
   const now = new Date();
@@ -157,7 +158,7 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
     type: 'new' | 'matched'; 
     hasHistory: boolean;
     prType: 'weight' | 'reps';
-    category?: string;
+    category?: ExerciseCategory;
   }[] = [];
   
   recentLogs.forEach(recentLog => {
@@ -181,7 +182,7 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
           type: 'new',
           hasHistory: true,
           prType: 'weight',
-          category: recentLog.category
+          category: recentLog.category as ExerciseCategory
         });
       } else if (recentLog.weight_kg === previousWeightPR) {
         // Only add matched weight PRs if there's no new PR for this exercise already
@@ -198,7 +199,7 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
             type: 'matched',
             hasHistory: true,
             prType: 'weight',
-            category: recentLog.category
+            category: recentLog.category as ExerciseCategory
           });
         }
       }
@@ -221,7 +222,7 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
             type: 'new',
             hasHistory: true,
             prType: 'reps',
-            category: recentLog.category
+            category: recentLog.category as ExerciseCategory
           });
         }
       }
