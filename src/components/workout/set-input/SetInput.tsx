@@ -123,60 +123,90 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     setValue(`sets.${index}.reps`, (reps || 0) + amount);
   };
 
-  // Initialize empty arrays for the buttons
-  const weightButtons: number[] = [];
-  const repButtons: number[] = [];
-
-  // Only add last values if they exist and are not null
-  if (!isLoadingLast && lastWorkoutValues && lastWorkoutValues.lastWeight !== null) {
-    weightButtons.push(lastWorkoutValues.lastWeight);
-  }
-  
-  if (!isLoadingLast && lastWorkoutValues && lastWorkoutValues.lastReps !== null) {
-    repButtons.push(lastWorkoutValues.lastReps);
-  }
-
-  // Then add the most frequent value if it exists and is different from the last value
-  if (frequentValues?.weights?.length) {
-    const lastWeight = lastWorkoutValues?.lastWeight ?? null;
-    if (weightButtons.length === 0 || frequentValues.weights[0] !== lastWeight) {
-      weightButtons.push(frequentValues.weights[0]);
+  // Create button values safely without depending on potentially undefined values
+  const createButtonValues = () => {
+    // Initialize arrays
+    const weightBtns: number[] = [];
+    const repsBtns: number[] = [];
+    
+    // Safe defaults based on exercise type
+    const defaultWeight = isCardio ? 10 : 20;
+    const defaultReps = isCardio ? 5 : 10;
+    
+    // Try to add last weight if available
+    if (lastWorkoutValues && typeof lastWorkoutValues.lastWeight === 'number') {
+      weightBtns.push(lastWorkoutValues.lastWeight);
     }
-  }
-  
-  if (frequentValues?.reps?.length) {
-    const lastReps = lastWorkoutValues?.lastReps ?? null;
-    if (repButtons.length === 0 || frequentValues.reps[0] !== lastReps) {
-      repButtons.push(frequentValues.reps[0]);
+    
+    // Try to add last reps if available
+    if (lastWorkoutValues && typeof lastWorkoutValues.lastReps === 'number') {
+      repsBtns.push(lastWorkoutValues.lastReps);
     }
-  }
-
-  // Add default values if needed to have at least 2 buttons
-  const defaultWeightValue = isCardio ? 
-    (weightButtons[0] ? weightButtons[0] + 5 : 10) : 
-    (weightButtons[0] ? weightButtons[0] + 2.5 : 20);
+    
+    // Try to add frequent weight if available and different
+    if (frequentValues?.weights?.length) {
+      const freqWeight = frequentValues.weights[0];
+      if (weightBtns.length === 0 || weightBtns[0] !== freqWeight) {
+        weightBtns.push(freqWeight);
+      }
+    }
+    
+    // Try to add frequent reps if available and different
+    if (frequentValues?.reps?.length) {
+      const freqReps = frequentValues.reps[0];
+      if (repsBtns.length === 0 || repsBtns[0] !== freqReps) {
+        repsBtns.push(freqReps);
+      }
+    }
+    
+    // Ensure we have at least one weight button
+    if (weightBtns.length === 0) {
+      weightBtns.push(defaultWeight);
+    }
+    
+    // Ensure we have at least one reps button
+    if (repsBtns.length === 0) {
+      repsBtns.push(defaultReps);
+    }
+    
+    // Ensure we have a second weight button if needed
+    if (weightBtns.length === 1) {
+      const valueToAdd = isCardio ? 
+        weightBtns[0] + 5 : 
+        weightBtns[0] + 2.5;
+      weightBtns.push(valueToAdd);
+    }
+    
+    // Ensure we have a second reps button if needed
+    if (repsBtns.length === 1) {
+      const valueToAdd = isCardio ? 
+        Math.min(repsBtns[0] + 1, 10) : 
+        repsBtns[0] + 2;
+      repsBtns.push(valueToAdd);
+    }
+    
+    // Trim to max 2 buttons each
+    return {
+      weightButtons: weightBtns.slice(0, 2),
+      repButtons: repsBtns.slice(0, 2)
+    };
+  };
   
-  const defaultRepsValue = isCardio ? 
-    (repButtons[0] ? Math.min(repButtons[0] + 1, 10) : 5) : 
-    (repButtons[0] ? repButtons[0] + 2 : 10);
+  // Generate the button values safely
+  const { weightButtons, repButtons } = createButtonValues();
 
-  // Make sure we have exactly 2 weight buttons
-  while (weightButtons.length < 2) {
-    weightButtons.push(defaultWeightValue);
-  }
-  
-  // Make sure we have exactly 2 rep buttons
-  while (repButtons.length < 2) {
-    repButtons.push(defaultRepsValue);
-  }
-
+  // Safe helper functions that don't rely on possibly undefined values
   const isLastWeightValue = (val: number): boolean => {
-    if (!lastWorkoutValues) return false;
+    if (!lastWorkoutValues || typeof lastWorkoutValues.lastWeight !== 'number') {
+      return false;
+    }
     return val === lastWorkoutValues.lastWeight;
   };
 
   const isLastRepsValue = (val: number): boolean => {
-    if (!lastWorkoutValues) return false;
+    if (!lastWorkoutValues || typeof lastWorkoutValues.lastReps !== 'number') {
+      return false;
+    }
     return val === lastWorkoutValues.lastReps;
   };
 
@@ -205,7 +235,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             <span className="text-white text-xs font-medium">
               {isCardio ? `Minutes: ${weight || 0}` : `Weight: ${weight || 0} KG`}
             </span>
-            {!isLoadingLast && lastWorkoutValues?.lastWeight !== null && (
+            {!isLoadingLast && lastWorkoutValues && typeof lastWorkoutValues.lastWeight === 'number' && (
               <span className="text-xs text-gray-400 ml-auto">
                 Last: {lastWorkoutValues.lastWeight}{isCardio ? 'min' : 'kg'}
               </span>
@@ -236,7 +266,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             <span className="text-white text-xs font-medium">
               {isCardio ? "Intensity (1-10)" : "Reps"}: {reps || 0}
             </span>
-            {!isLoadingLast && lastWorkoutValues?.lastReps !== null && (
+            {!isLoadingLast && lastWorkoutValues && typeof lastWorkoutValues.lastReps === 'number' && (
               <span className="text-xs text-gray-400 ml-auto">
                 Last: {lastWorkoutValues.lastReps}
               </span>
