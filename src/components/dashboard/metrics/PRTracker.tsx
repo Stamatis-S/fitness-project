@@ -39,10 +39,17 @@ export function PRTracker({ records }: PRTrackerProps) {
       };
     }
     
-    acc[record.exercise].achievements.push({
-      achievement: record.achievement,
-      prType: record.prType
-    });
+    // Only add the achievement if it's not already in the array
+    const achievementExists = acc[record.exercise].achievements.some(
+      a => a.achievement === record.achievement
+    );
+    
+    if (!achievementExists) {
+      acc[record.exercise].achievements.push({
+        achievement: record.achievement,
+        prType: record.prType
+      });
+    }
     
     return acc;
   }, {} as Record<string, {
