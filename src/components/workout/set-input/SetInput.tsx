@@ -123,28 +123,32 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     setValue(`sets.${index}.reps`, (reps || 0) + amount);
   };
 
-  // Prepare button values: last value and most frequent value
-  const weightButtons = [];
-  const repButtons = [];
+  // Initialize empty arrays for the buttons
+  const weightButtons: number[] = [];
+  const repButtons: number[] = [];
 
-  // First add last value if it exists (will be highlighted)
-  if (!isLoadingLast && lastWorkoutValues?.lastWeight !== null) {
+  // Only add last values if they exist and are not null
+  if (!isLoadingLast && lastWorkoutValues && lastWorkoutValues.lastWeight !== null) {
     weightButtons.push(lastWorkoutValues.lastWeight);
   }
   
-  if (!isLoadingLast && lastWorkoutValues?.lastReps !== null) {
+  if (!isLoadingLast && lastWorkoutValues && lastWorkoutValues.lastReps !== null) {
     repButtons.push(lastWorkoutValues.lastReps);
   }
 
   // Then add the most frequent value if it exists and is different from the last value
-  if (frequentValues?.weights?.length && 
-      (weightButtons.length === 0 || frequentValues.weights[0] !== (lastWorkoutValues?.lastWeight ?? null))) {
-    weightButtons.push(frequentValues.weights[0]);
+  if (frequentValues?.weights?.length) {
+    const lastWeight = lastWorkoutValues?.lastWeight ?? null;
+    if (weightButtons.length === 0 || frequentValues.weights[0] !== lastWeight) {
+      weightButtons.push(frequentValues.weights[0]);
+    }
   }
   
-  if (frequentValues?.reps?.length && 
-      (repButtons.length === 0 || frequentValues.reps[0] !== (lastWorkoutValues?.lastReps ?? null))) {
-    repButtons.push(frequentValues.reps[0]);
+  if (frequentValues?.reps?.length) {
+    const lastReps = lastWorkoutValues?.lastReps ?? null;
+    if (repButtons.length === 0 || frequentValues.reps[0] !== lastReps) {
+      repButtons.push(frequentValues.reps[0]);
+    }
   }
 
   // Add default values if needed to have at least 2 buttons
@@ -165,6 +169,16 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   while (repButtons.length < 2) {
     repButtons.push(defaultRepsValue);
   }
+
+  const isLastWeightValue = (val: number): boolean => {
+    if (!lastWorkoutValues) return false;
+    return val === lastWorkoutValues.lastWeight;
+  };
+
+  const isLastRepsValue = (val: number): boolean => {
+    if (!lastWorkoutValues) return false;
+    return val === lastWorkoutValues.lastReps;
+  };
 
   return (
     <div className="bg-[#111111] rounded-xl p-3">
@@ -202,7 +216,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             values={weightButtons}
             onSelect={(value) => setValue(`sets.${index}.weight`, value)}
             unit={isCardio ? "min" : "KG"}
-            isLastValue={(val) => val === (lastWorkoutValues?.lastWeight ?? null)}
+            isLastValue={isLastWeightValue}
           />
 
           <SetControl
@@ -232,7 +246,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
           <QuickSelectButtons
             values={repButtons}
             onSelect={(value) => setValue(`sets.${index}.reps`, value)}
-            isLastValue={(val) => val === (lastWorkoutValues?.lastReps ?? null)}
+            isLastValue={isLastRepsValue}
           />
 
           <SetControl
