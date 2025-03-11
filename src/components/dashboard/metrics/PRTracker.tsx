@@ -1,5 +1,5 @@
 
-import { Trophy, Dumbbell } from "lucide-react";
+import { Trophy } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -61,10 +61,7 @@ export function PRTracker({ records }: PRTrackerProps) {
             {uniqueRecords.map((record, index) => (
               <TableRow key={`pr-${index}`}>
                 <TableCell className="font-medium py-1.5">
-                  <div className="flex items-center gap-2">
-                    <Dumbbell className="h-4 w-4" />
-                    {record.exercise}
-                  </div>
+                  {record.exercise}
                 </TableCell>
                 <TableCell className="py-1.5">
                   {record.category && (
@@ -80,15 +77,8 @@ export function PRTracker({ records }: PRTrackerProps) {
                   )}
                 </TableCell>
                 <TableCell className="py-1.5">
-                  <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <span className="text-emerald-600 dark:text-emerald-400">
                     {record.achievement}
-                    <Badge variant="outline" className={`ml-1 px-1.5 py-0.5 text-[10px] rounded ${
-                      record.prType === 'weight' 
-                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                        : 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-                    }`}>
-                      {record.prType === 'weight' ? 'WEIGHT' : 'REPS'}
-                    </Badge>
                   </span>
                 </TableCell>
               </TableRow>
