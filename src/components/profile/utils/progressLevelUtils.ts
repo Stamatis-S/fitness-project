@@ -25,6 +25,16 @@ export function determineMuscleLevel(fitnessScore: number): MuscleProgressLevel 
   return 1;                            // Beginner
 }
 
+// Helper function to get standardized fitness level name from score
+export function getFitnessLevelName(fitnessScore: number): string {
+  if (fitnessScore >= 6000) return 'Legend';
+  if (fitnessScore >= 4500) return 'Elite';
+  if (fitnessScore >= 3000) return 'Advanced';
+  if (fitnessScore >= 1500) return 'Intermediate';
+  if (fitnessScore >= 500) return 'Novice';
+  return 'Beginner';
+}
+
 // Updated function to get the next level requirement text
 export function getNextLevelRequirement(currentLevel: MuscleProgressLevel): string {
   switch (currentLevel) {
