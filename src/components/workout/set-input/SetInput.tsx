@@ -138,12 +138,12 @@ export function SetInput({ index, onRemove }: SetInputProps) {
 
   // Then add the most frequent value if it exists and is different from the last value
   if (frequentValues?.weights?.length && 
-      (weightButtons.length === 0 || frequentValues.weights[0] !== weightButtons[0])) {
+      (weightButtons.length === 0 || frequentValues.weights[0] !== (lastWorkoutValues?.lastWeight ?? null))) {
     weightButtons.push(frequentValues.weights[0]);
   }
   
   if (frequentValues?.reps?.length && 
-      (repButtons.length === 0 || frequentValues.reps[0] !== repButtons[0])) {
+      (repButtons.length === 0 || frequentValues.reps[0] !== (lastWorkoutValues?.lastReps ?? null))) {
     repButtons.push(frequentValues.reps[0]);
   }
 
@@ -202,7 +202,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
             values={weightButtons}
             onSelect={(value) => setValue(`sets.${index}.weight`, value)}
             unit={isCardio ? "min" : "KG"}
-            isLastValue={(val) => val === lastWorkoutValues?.lastWeight}
+            isLastValue={(val) => val === (lastWorkoutValues?.lastWeight ?? null)}
           />
 
           <SetControl
@@ -232,7 +232,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
           <QuickSelectButtons
             values={repButtons}
             onSelect={(value) => setValue(`sets.${index}.reps`, value)}
-            isLastValue={(val) => val === lastWorkoutValues?.lastReps}
+            isLastValue={(val) => val === (lastWorkoutValues?.lastReps ?? null)}
           />
 
           <SetControl
