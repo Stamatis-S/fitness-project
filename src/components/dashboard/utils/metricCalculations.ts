@@ -162,12 +162,24 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
   }[] = [];
   
   recentLogs.forEach(recentLog => {
-    const exerciseName = recentLog.custom_exercise || recentLog.exercises?.name;
+    let exerciseName = recentLog.custom_exercise || recentLog.exercises?.name || '';
     if (!exerciseName) return;
     
-    const exerciseHistory = historicalLogs.filter(log => 
-      (log.custom_exercise || log.exercises?.name) === exerciseName
-    );
+    // Replace "ΤΡΟΧΑΛΙΑ" with "PUSH DOWN ΤΡΟΧΑΛΙΑ" in the "ΤΡΙΚΕΦΑΛΑ" category
+    if (exerciseName === "ΤΡΟΧΑΛΙΑ" && recentLog.category === "ΤΡΙΚΕΦΑΛΑ") {
+      exerciseName = "PUSH DOWN ΤΡΟΧΑΛΙΑ";
+    }
+    
+    const exerciseHistory = historicalLogs.filter(log => {
+      let logExName = log.custom_exercise || log.exercises?.name || '';
+      
+      // Apply the same name replacement for historical logs for proper comparison
+      if (logExName === "ΤΡΟΧΑΛΙΑ" && log.category === "ΤΡΙΚΕΦΑΛΑ") {
+        logExName = "PUSH DOWN ΤΡΟΧΑΛΙΑ";
+      }
+      
+      return logExName === exerciseName;
+    });
 
     if (exerciseHistory.length === 0) return;
     

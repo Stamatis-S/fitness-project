@@ -29,17 +29,30 @@ export function PRTracker({ records }: PRTrackerProps) {
   const filteredRecords = records
     .filter(record => record.type === 'new' && record.hasHistory);
   
-  // Group records by exercise name and PR type
-  const groupedRecords = filteredRecords.reduce((acc, record) => {
-    const key = `${record.exercise}-${record.prType}`;
-    if (!acc.has(key)) {
-      acc.set(key, record);
+  // Group records by exercise name
+  const groupedByExercise = filteredRecords.reduce((acc, record) => {
+    if (!acc[record.exercise]) {
+      acc[record.exercise] = {
+        exercise: record.exercise,
+        category: record.category,
+        achievements: []
+      };
     }
+    
+    acc[record.exercise].achievements.push({
+      achievement: record.achievement,
+      prType: record.prType
+    });
+    
     return acc;
-  }, new Map<string, PersonalRecord>());
+  }, {} as Record<string, {
+    exercise: string;
+    category?: ExerciseCategory;
+    achievements: { achievement: string; prType: 'weight' | 'reps' }[];
+  }>);
 
-  // Convert map back to array
-  const uniqueRecords = Array.from(groupedRecords.values());
+  // Convert to array for rendering
+  const groupedRecords = Object.values(groupedByExercise);
 
   return (
     <div className="space-y-1">
@@ -48,38 +61,42 @@ export function PRTracker({ records }: PRTrackerProps) {
         <h2 className="text-lg font-bold">Weekly Personal Records</h2>
       </div>
 
-      {uniqueRecords.length > 0 ? (
+      {groupedRecords.length > 0 ? (
         <Table className="border-collapse">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[180px] py-1.5">Exercise</TableHead>
               <TableHead className="w-[100px] py-1.5">Category</TableHead>
-              <TableHead className="py-1.5">Achievement</TableHead>
+              <TableHead className="py-1.5">Achievements</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {uniqueRecords.map((record, index) => (
+            {groupedRecords.map((group, index) => (
               <TableRow key={`pr-${index}`}>
                 <TableCell className="font-medium py-1.5">
-                  {record.exercise}
+                  {group.exercise}
                 </TableCell>
                 <TableCell className="py-1.5">
-                  {record.category && (
+                  {group.category && (
                     <Badge 
                       className="text-xs px-2 py-0.5 rounded-full"
                       style={{ 
-                        backgroundColor: EXERCISE_CATEGORIES[record.category]?.color || '#666',
+                        backgroundColor: EXERCISE_CATEGORIES[group.category]?.color || '#666',
                         color: 'white',
                       }}
                     >
-                      {record.category}
+                      {group.category}
                     </Badge>
                   )}
                 </TableCell>
                 <TableCell className="py-1.5">
-                  <span className="text-emerald-600 dark:text-emerald-400">
-                    {record.achievement}
-                  </span>
+                  <div className="flex flex-col gap-1">
+                    {group.achievements.map((achievement, i) => (
+                      <span key={i} className="text-emerald-600 dark:text-emerald-400">
+                        {achievement.achievement}
+                      </span>
+                    ))}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
