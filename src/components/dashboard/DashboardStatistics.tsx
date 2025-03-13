@@ -4,12 +4,14 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { CustomTooltip } from "./CustomTooltip";
 import { format, subMonths } from "date-fns";
 import { CATEGORY_COLORS } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { PRTracker } from "./metrics/PRTracker";
+import { MuscleHeatmap } from "./metrics/MuscleHeatmap";
 
 interface DashboardStatisticsProps {
   workoutLogs: WorkoutLog[];
@@ -50,6 +52,31 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
   };
 
   const filteredLogs = getFilteredData();
+
+  // Calculate PRs for the tracker
+  const calculatePersonalRecords = (): Array<{
+    exercise: string;
+    achievement: string;
+    type: 'new' | 'matched';
+    hasHistory: boolean;
+    prType: 'weight' | 'reps';
+    category?: string;
+  }> => {
+    // This is just a placeholder implementation
+    // In a real app, you would analyze the workout logs to find actual PRs
+    return filteredLogs
+      .filter(log => log.is_personal_record)
+      .map(log => ({
+        exercise: log.custom_exercise || log.exercises?.name || 'Unknown',
+        achievement: `${log.weight_kg}kg × ${log.reps} reps`,
+        type: 'new',
+        hasHistory: true,
+        prType: 'weight',
+        category: log.category
+      }));
+  };
+
+  const personalRecords = calculatePersonalRecords();
 
   const categoryDistribution = filteredLogs.reduce((acc: any[], log) => {
     const existingCategory = acc.find(cat => cat.name === log.category);
@@ -93,26 +120,6 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
     }))
     .sort((a, b) => b.maxWeight - a.maxWeight)
     .slice(0, 10);
-
-  const calculateBaselines = () => {
-    const categoryTotals = Object.keys(CATEGORY_COLORS).reduce((acc, category) => {
-      const logs = filteredLogs.filter(log => log.category === category);
-      const volume = logs.reduce((sum, log) => sum + (log.weight_kg * log.reps), 0);
-      acc[category] = volume;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const avgVolume = Object.values(categoryTotals).reduce((a, b) => a + b, 0) / Object.keys(categoryTotals).length;
-
-    return Object.keys(CATEGORY_COLORS).map(category => ({
-      category,
-      volume: categoryTotals[category] || 0,
-      baseline: avgVolume,
-      color: CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS]
-    }));
-  };
-
-  const radarData = calculateBaselines();
 
   const renderCustomLabel = ({ percentage, cx, cy, midAngle, innerRadius, outerRadius }: any) => {
     const RADIAN = Math.PI / 180;
@@ -269,39 +276,17 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
           </div>
         </Card>
 
-        <Card className="p-3 bg-[#1E1E1E] border-[#333333]">
-          <h2 className="text-xl font-semibold mb-3 text-white">Muscle Group Balance</h2>
-          <div className="h-[500px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart outerRadius={isMobile ? "65%" : "85%"} data={radarData}>
-                <PolarGrid stroke="#444444" />
-                <PolarAngleAxis 
-                  dataKey="category"
-                  tick={{ fontSize: isMobile ? 10 : 12, fill: "#CCCCCC" }}
-                />
-                <PolarRadiusAxis stroke="#555555" tick={{ fill: "#CCCCCC" }} />
-                <Radar
-                  name="Volume"
-                  dataKey="volume"
-                  stroke="#8884d8"
-                  fill="#8884d8"
-                  fillOpacity={0.6}
-                />
-                <Radar
-                  name="Baseline"
-                  dataKey="baseline"
-                  stroke="#82ca9d"
-                  strokeDasharray="3 3"
-                  fill="#82ca9d"
-                  fillOpacity={0.2}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend wrapperStyle={{ fontSize: isMobile ? 10 : 12, color: "#CCCCCC" }} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+        {/* Replace the Radar chart with our new Muscle Heatmap */}
+        <MuscleHeatmap 
+          workoutLogs={filteredLogs}
+          timeRange={timeRange}
+        />
       </div>
+      
+      {/* Add the PR Tracker component */}
+      <Card className="p-3 col-span-full bg-[#1E1E1E] border-[#333333]">
+        <PRTracker records={personalRecords} />
+      </Card>
     </div>
   );
 }
