@@ -29,84 +29,84 @@ export function MuscleHeatmap({ workoutLogs, className, timeRange }: MuscleHeatm
       <h2 className="text-xl font-semibold mb-4 text-white">Muscle Heatmap</h2>
       
       <div className="relative w-full aspect-[0.85] mx-auto max-w-[400px]">
-        {/* Base muscular figure silhouette */}
+        {/* Base muscular figure silhouette - using a more realistic anatomical muscle map */}
         <div className="absolute inset-0 flex items-center justify-center">
           <img 
-            src="/lovable-uploads/5ae8d890-3418-4586-bc05-61c94cb0b0a3.png" 
-            alt="Muscle silhouette" 
-            className="h-full w-auto object-contain opacity-30"
+            src="/lovable-uploads/32516b6e-fe1e-44bc-a297-dda9bfe437ce.png" 
+            alt="Muscle anatomy" 
+            className="h-full w-auto object-contain opacity-40"
           />
         </div>
         
-        {/* Muscle group overlays */}
+        {/* Muscle group overlays - adjusted to match the realistic muscle anatomy */}
         <div className="absolute inset-0">
           {/* Chest */}
           <HeatOverlay 
             category="ΣΤΗΘΟΣ" 
             intensity={getIntensityForCategory(muscleData, "ΣΤΗΘΟΣ")}
-            className="absolute top-[18%] left-0 right-0 mx-auto w-[35%] h-[15%] rounded-full"
+            className="absolute top-[23%] left-0 right-0 mx-auto w-[40%] h-[12%] rounded-full"
           />
           
           {/* Back */}
           <HeatOverlay 
             category="ΠΛΑΤΗ" 
             intensity={getIntensityForCategory(muscleData, "ΠΛΑΤΗ")}
-            className="absolute top-[22%] left-0 right-0 mx-auto w-[42%] h-[20%] rounded-lg"
+            className="absolute top-[25%] left-0 right-0 mx-auto w-[45%] h-[18%] rounded-lg"
           />
           
           {/* Biceps */}
           <HeatOverlay 
             category="ΔΙΚΕΦΑΛΑ" 
             intensity={getIntensityForCategory(muscleData, "ΔΙΚΕΦΑΛΑ")}
-            className="absolute top-[28%] left-[10%] w-[12%] h-[18%] rounded-full"
+            className="absolute top-[30%] left-[13%] w-[10%] h-[15%] rounded-full"
           />
           <HeatOverlay 
             category="ΔΙΚΕΦΑΛΑ" 
             intensity={getIntensityForCategory(muscleData, "ΔΙΚΕΦΑΛΑ")}
-            className="absolute top-[28%] right-[10%] w-[12%] h-[18%] rounded-full"
+            className="absolute top-[30%] right-[13%] w-[10%] h-[15%] rounded-full"
           />
           
           {/* Triceps */}
           <HeatOverlay 
             category="ΤΡΙΚΕΦΑΛΑ" 
             intensity={getIntensityForCategory(muscleData, "ΤΡΙΚΕΦΑΛΑ")}
-            className="absolute top-[30%] left-[3%] w-[10%] h-[16%] rounded-full"
+            className="absolute top-[32%] left-[5%] w-[10%] h-[13%] rounded-full"
           />
           <HeatOverlay 
             category="ΤΡΙΚΕΦΑΛΑ" 
             intensity={getIntensityForCategory(muscleData, "ΤΡΙΚΕΦΑΛΑ")}
-            className="absolute top-[30%] right-[3%] w-[10%] h-[16%] rounded-full"
+            className="absolute top-[32%] right-[5%] w-[10%] h-[13%] rounded-full"
           />
           
           {/* Shoulders */}
           <HeatOverlay 
             category="ΩΜΟΙ" 
             intensity={getIntensityForCategory(muscleData, "ΩΜΟΙ")}
-            className="absolute top-[14%] left-[15%] w-[14%] h-[10%] rounded-full"
+            className="absolute top-[18%] left-[17%] w-[12%] h-[8%] rounded-full"
           />
           <HeatOverlay 
             category="ΩΜΟΙ" 
             intensity={getIntensityForCategory(muscleData, "ΩΜΟΙ")}
-            className="absolute top-[14%] right-[15%] w-[14%] h-[10%] rounded-full"
+            className="absolute top-[18%] right-[17%] w-[12%] h-[8%] rounded-full"
           />
           
           {/* Legs */}
           <HeatOverlay 
             category="ΠΟΔΙΑ" 
             intensity={getIntensityForCategory(muscleData, "ΠΟΔΙΑ")}
-            className="absolute top-[55%] left-[20%] w-[15%] h-[35%] rounded-lg"
+            className="absolute top-[57%] left-[20%] w-[15%] h-[30%] rounded-lg"
           />
           <HeatOverlay 
             category="ΠΟΔΙΑ" 
             intensity={getIntensityForCategory(muscleData, "ΠΟΔΙΑ")}
-            className="absolute top-[55%] right-[20%] w-[15%] h-[35%] rounded-lg"
+            className="absolute top-[57%] right-[20%] w-[15%] h-[30%] rounded-lg"
           />
           
           {/* Core */}
           <HeatOverlay 
             category="ΚΟΡΜΟΣ" 
             intensity={getIntensityForCategory(muscleData, "ΚΟΡΜΟΣ")}
-            className="absolute top-[35%] left-0 right-0 mx-auto w-[25%] h-[18%] rounded-lg"
+            className="absolute top-[38%] left-0 right-0 mx-auto w-[25%] h-[15%] rounded-lg"
           />
         </div>
         

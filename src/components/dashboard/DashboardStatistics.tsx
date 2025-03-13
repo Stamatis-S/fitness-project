@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,9 +10,7 @@ import { CustomTooltip } from "./CustomTooltip";
 import { format, subMonths } from "date-fns";
 import { CATEGORY_COLORS } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { PRTracker } from "./metrics/PRTracker";
 import { MuscleHeatmap } from "./metrics/MuscleHeatmap";
-import { getPersonalRecords } from "./utils/metricCalculations";
 import type { ExerciseCategory } from "@/lib/constants";
 
 interface DashboardStatisticsProps {
@@ -53,9 +52,6 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
   };
 
   const filteredLogs = getFilteredData();
-
-  // Calculate PRs using utility function instead of placeholder implementation
-  const personalRecords = getPersonalRecords(filteredLogs);
 
   const categoryDistribution = filteredLogs.reduce((acc: any[], log) => {
     const existingCategory = acc.find(cat => cat.name === log.category);
@@ -260,10 +256,6 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
           timeRange={timeRange}
         />
       </div>
-      
-      <Card className="p-3 col-span-full bg-[#1E1E1E] border-[#333333]">
-        <PRTracker records={personalRecords} />
-      </Card>
     </div>
   );
 }
