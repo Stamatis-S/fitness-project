@@ -12,4 +12,5 @@ export interface WorkoutLog {
   set_number: number;
   weight_kg: number | null;
   reps: number | null;
+  is_personal_record?: boolean;
 }

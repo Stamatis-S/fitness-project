@@ -194,7 +194,7 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
           type: 'new',
           hasHistory: true,
           prType: 'weight',
-          category: recentLog.category as ExerciseCategory
+          category: recentLog.category
         });
       } else if (recentLog.weight_kg === previousWeightPR) {
         // Only add matched weight PRs if there's no new PR for this exercise already
@@ -211,7 +211,7 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
             type: 'matched',
             hasHistory: true,
             prType: 'weight',
-            category: recentLog.category as ExerciseCategory
+            category: recentLog.category
           });
         }
       }
@@ -234,7 +234,7 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
             type: 'new',
             hasHistory: true,
             prType: 'reps',
-            category: recentLog.category as ExerciseCategory
+            category: recentLog.category
           });
         }
       }
