@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { determineMuscleLevel, getFitnessLevelName, getNextLevelRequirement } from "./utils/progressLevelUtils";
 
 interface FitnessLevelProps {
   userId: string;
@@ -54,35 +55,34 @@ export function FitnessLevel({ userId, fitnessScore, fitnessLevel, lastScoreUpda
     }
   };
 
+  // Updated to use the standardized thresholds from progressLevelUtils
   const getProgressValue = (score: number) => {
-    const levelThresholds = {
-      monster: 4501,
-      elite: 3001,
-      advanced: 2001,
-      intermediate: 1001,
-      beginner: 0
-    };
-
-    if (score >= levelThresholds.monster) return 100;
-    if (score >= levelThresholds.elite) 
-      return 80 + ((score - levelThresholds.elite) / (levelThresholds.monster - levelThresholds.elite)) * 20;
-    if (score >= levelThresholds.advanced) 
-      return 60 + ((score - levelThresholds.advanced) / (levelThresholds.elite - levelThresholds.advanced)) * 20;
-    if (score >= levelThresholds.intermediate) 
-      return 40 + ((score - levelThresholds.intermediate) / (levelThresholds.advanced - levelThresholds.intermediate)) * 20;
-    return Math.max((score / levelThresholds.intermediate) * 40, 5);
+    if (score >= 6000) return 100;
+    if (score >= 4500) 
+      return 80 + ((score - 4500) / 1500) * 20;
+    if (score >= 3000) 
+      return 60 + ((score - 3000) / 1500) * 20;
+    if (score >= 1500) 
+      return 40 + ((score - 1500) / 1500) * 20;
+    if (score >= 500) 
+      return 20 + ((score - 500) / 1000) * 20;
+    return Math.max((score / 500) * 20, 5);
   };
 
+  // Use the standardized function from progressLevelUtils
   const getLevelColor = (level: string) => {
     switch (level) {
-      case 'Monster':
-        return 'text-[#FF0000]';
+      case 'Legend':
+        return 'text-[#FF00FF]';
       case 'Elite':
         return 'text-[#A855F7]';
       case 'Advanced':
         return 'text-[#4488EF]';
       case 'Intermediate':
         return 'text-[#22C55E]';
+      case 'Novice':
+        return 'text-[#EAB308]';
+      case 'Beginner':
       default:
         return 'text-[#EAB308]';
     }
@@ -142,42 +142,42 @@ export function FitnessLevel({ userId, fitnessScore, fitnessLevel, lastScoreUpda
               <ArrowDown className="h-3 w-3 shrink-0 text-[#EAB308]" />
               <p className="text-xs font-medium text-[#EAB308]">Beginner</p>
             </div>
-            <p className="text-xs text-gray-400">0 - 1,000</p>
+            <p className="text-xs text-gray-400">0 - 499</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
-              <ArrowUp className="h-3 w-3 shrink-0 text-[#22C55E]" />
+              <ArrowUp className="h-3 w-3 shrink-0 text-[#EAB308]" />
+              <p className="text-xs font-medium text-[#EAB308]">Novice</p>
+            </div>
+            <p className="text-xs text-gray-400">500 - 1,499</p>
+          </div>
+          <div className="p-1 bg-[#333333] rounded">
+            <div className="flex items-center gap-1">
+              <Medal className="h-3 w-3 shrink-0 text-[#22C55E]" />
               <p className="text-xs font-medium text-[#22C55E]">Intermediate</p>
             </div>
-            <p className="text-xs text-gray-400">1,001 - 2,000</p>
+            <p className="text-xs text-gray-400">1,500 - 2,999</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
-              <Medal className="h-3 w-3 shrink-0 text-[#4488EF]" />
+              <Star className="h-3 w-3 shrink-0 text-[#4488EF]" />
               <p className="text-xs font-medium text-[#4488EF]">Advanced</p>
             </div>
-            <p className="text-xs text-gray-400">2,001 - 3,000</p>
+            <p className="text-xs text-gray-400">3,000 - 4,499</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
-              <Star className="h-3 w-3 shrink-0 text-[#A855F7]" />
+              <Trophy className="h-3 w-3 shrink-0 text-[#A855F7]" />
               <p className="text-xs font-medium text-[#A855F7]">Elite</p>
             </div>
-            <p className="text-xs text-gray-400">3,001 - 4,500</p>
-          </div>
-          <div className="p-1 bg-[#333333] rounded">
-            <div className="flex items-center gap-1">
-              <Trophy className="h-3 w-3 shrink-0 text-[#FF0000]" />
-              <p className="text-xs font-medium text-[#FF0000]">Monster</p>
-            </div>
-            <p className="text-xs text-gray-400">4,501+</p>
+            <p className="text-xs text-gray-400">4,500 - 5,999</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
               <Zap className="h-3 w-3 shrink-0 text-[#FF00FF]" />
               <p className="text-xs font-medium text-[#FF00FF]">Legend</p>
             </div>
-            <p className="text-xs text-gray-400">5,500+</p>
+            <p className="text-xs text-gray-400">6,000+</p>
           </div>
         </div>
       </div>

@@ -1,6 +1,5 @@
-
 import { useEffect, useState } from "react";
-import { MuscleProgressLevel, MuscleProgressStats, calculateWorkoutStats } from "./utils/progressLevelUtils";
+import { MuscleProgressLevel, MuscleProgressStats, calculateWorkoutStats, getFitnessLevelName, getNextLevelRequirement } from "./utils/progressLevelUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import "./MuscleGrowth.css";
@@ -46,12 +45,12 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
       case 'legend':
         return 5;
       default:
-        // Fallback to determining level from score for any other values (like "Monster")
+        // Fallback to determining level from score
         return determineIndexFromScore(fitnessScore);
     }
   };
 
-  // Updated score thresholds to match the new character progression (returns 0-5 index)
+  // Using the same thresholds as in progressLevelUtils but returning 0-5 index
   const determineIndexFromScore = (score: number): number => {
     if (score >= 6000) return 5;  // Legend (Level 5)
     if (score >= 4500) return 4;  // Elite (Level 4)
@@ -166,36 +165,15 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     return particles;
   };
 
-  // Get display name for the current level
+  // Get display name for the current level using standardized function
   const getCurrentLevelName = (): string => {
-    // First try to use the fitnessLevel prop directly if it matches expected values
+    // Use the fitness level provided directly if it's one of our standard levels
     if (['beginner', 'novice', 'intermediate', 'advanced', 'elite', 'legend'].includes(fitnessLevel.toLowerCase())) {
       return fitnessLevel;
     }
     
-    // Fallback to determining level from score
-    const levelIndex = determineIndexFromScore(fitnessScore);
-    return getLevelNameFromIndex(levelIndex);
-  };
-
-  // Updated next level requirement text based on new thresholds
-  const getNextLevelRequirement = (currentLevelIndex: number): string => {
-    switch (currentLevelIndex) {
-      case 0:
-        return "Reach 500 fitness score points";
-      case 1:
-        return "Reach 1,500 fitness score points";
-      case 2:
-        return "Reach 3,000 fitness score points";
-      case 3:
-        return "Reach 4,500 fitness score points";
-      case 4:
-        return "Reach 6,000 fitness score points";
-      case 5:
-        return "You've reached the maximum level!";
-      default:
-        return "Keep working out to progress";
-    }
+    // Otherwise determine it from the score
+    return getFitnessLevelName(fitnessScore);
   };
 
   if (isLoading) {
@@ -252,7 +230,7 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
         
         <div className="next-level-info">
           {currentLevelIndex < 5 ? (
-            <p>Next Level: {getNextLevelRequirement(currentLevelIndex)}</p>
+            <p>Next Level: {getNextLevelRequirement(currentLevelIndex + 1 as MuscleProgressLevel)}</p>
           ) : (
             <p>Maximum level reached! You're a fitness legend!</p>
           )}
