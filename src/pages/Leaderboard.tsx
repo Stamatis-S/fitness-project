@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageTransition } from "@/components/PageTransition";
@@ -11,6 +10,7 @@ import { Trophy, Medal, Star, ArrowLeft } from "lucide-react";
 import { LeaderboardStats } from "@/components/leaderboard/LeaderboardStats";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
+import { getFitnessLevelName } from "@/components/profile/utils/progressLevelUtils";
 
 interface Profile {
   id: string;
@@ -57,7 +57,7 @@ export default function Leaderboard() {
     return 'AN'; // For Anonymous
   };
 
-  // Function to format the fitness level display
+  // Function to format the fitness level - Now using getFitnessLevelName from progressLevelUtils
   const getFormattedFitnessLevel = (level: string, score: number): string => {
     // First check if level is already one of our expected values
     const standardLevels = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Elite', 'Legend'];
@@ -67,16 +67,11 @@ export default function Leaderboard() {
       return normalizedLevel;
     }
     
-    // Fallback to determining level from score
-    if (score >= 6000) return 'Legend';
-    if (score >= 4500) return 'Elite';
-    if (score >= 3000) return 'Advanced';
-    if (score >= 1500) return 'Intermediate';
-    if (score >= 500) return 'Novice';
-    return 'Beginner';
+    // Fallback to determining level from score using the standardized function
+    return getFitnessLevelName(score);
   };
 
-  // Get appropriate color for fitness level
+  // Get appropriate color for fitness level - keep using the same color scheme
   const getLevelColor = (level: string): string => {
     const normalizedLevel = level.toLowerCase();
     
