@@ -57,21 +57,24 @@ export default function Leaderboard() {
     return 'AN'; // For Anonymous
   };
 
-  // Function to format the fitness level - Now using getFitnessLevelName from progressLevelUtils
   const getFormattedFitnessLevel = (level: string, score: number): string => {
-    // First check if level is already one of our expected values
     const standardLevels = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Elite', 'Legend'];
     const normalizedLevel = level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
     
     if (standardLevels.includes(normalizedLevel)) {
+      const calculatedLevel = getFitnessLevelName(score);
+      
+      if (calculatedLevel !== normalizedLevel) {
+        console.log(`Level mismatch for score ${score}: stored '${normalizedLevel}', calculated '${calculatedLevel}'`);
+        return calculatedLevel;
+      }
+      
       return normalizedLevel;
     }
     
-    // Fallback to determining level from score using the standardized function
     return getFitnessLevelName(score);
   };
 
-  // Get appropriate color for fitness level - keep using the same color scheme
   const getLevelColor = (level: string): string => {
     const normalizedLevel = level.toLowerCase();
     
