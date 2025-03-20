@@ -50,13 +50,13 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     }
   };
 
-  // Using the same thresholds as in progressLevelUtils but returning 0-5 index
+  // Using the updated thresholds from progressLevelUtils but returning 0-5 index
   const determineIndexFromScore = (score: number): number => {
-    if (score >= 6000) return 5;  // Legend (Level 5)
-    if (score >= 4500) return 4;  // Elite (Level 4)
-    if (score >= 3000) return 3;  // Advanced (Level 3)
-    if (score >= 1500) return 2;  // Intermediate (Level 2)
-    if (score >= 500) return 1;   // Novice (Level 1)
+    if (score >= 5200) return 5;  // Legend (Level 5) - was 6000
+    if (score >= 3900) return 4;  // Elite (Level 4) - was 4500
+    if (score >= 2600) return 3;  // Advanced (Level 3) - was 3000
+    if (score >= 1300) return 2;  // Intermediate (Level 2) - was 1500
+    if (score >= 400) return 1;   // Novice (Level 1) - was 500
     return 0;                     // Beginner (Level 0)
   };
 

@@ -1,4 +1,3 @@
-
 import { format, isValid } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -55,21 +54,19 @@ export function FitnessLevel({ userId, fitnessScore, fitnessLevel, lastScoreUpda
     }
   };
 
-  // Updated to use the standardized thresholds from progressLevelUtils
   const getProgressValue = (score: number) => {
-    if (score >= 6000) return 100;
-    if (score >= 4500) 
-      return 80 + ((score - 4500) / 1500) * 20;
-    if (score >= 3000) 
-      return 60 + ((score - 3000) / 1500) * 20;
-    if (score >= 1500) 
-      return 40 + ((score - 1500) / 1500) * 20;
-    if (score >= 500) 
-      return 20 + ((score - 500) / 1000) * 20;
-    return Math.max((score / 500) * 20, 5);
+    if (score >= 5200) return 100;
+    if (score >= 3900) 
+      return 80 + ((score - 3900) / 1300) * 20;
+    if (score >= 2600) 
+      return 60 + ((score - 2600) / 1300) * 20;
+    if (score >= 1300) 
+      return 40 + ((score - 1300) / 1300) * 20;
+    if (score >= 400) 
+      return 20 + ((score - 400) / 900) * 20;
+    return Math.max((score / 400) * 20, 5);
   };
 
-  // Use the standardized function from progressLevelUtils
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'Legend':
@@ -142,42 +139,42 @@ export function FitnessLevel({ userId, fitnessScore, fitnessLevel, lastScoreUpda
               <ArrowDown className="h-3 w-3 shrink-0 text-[#EAB308]" />
               <p className="text-xs font-medium text-[#EAB308]">Beginner</p>
             </div>
-            <p className="text-xs text-gray-400">0 - 499</p>
+            <p className="text-xs text-gray-400">0 - 399</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
               <ArrowUp className="h-3 w-3 shrink-0 text-[#EAB308]" />
               <p className="text-xs font-medium text-[#EAB308]">Novice</p>
             </div>
-            <p className="text-xs text-gray-400">500 - 1,499</p>
+            <p className="text-xs text-gray-400">400 - 1,299</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
               <Medal className="h-3 w-3 shrink-0 text-[#22C55E]" />
               <p className="text-xs font-medium text-[#22C55E]">Intermediate</p>
             </div>
-            <p className="text-xs text-gray-400">1,500 - 2,999</p>
+            <p className="text-xs text-gray-400">1,300 - 2,599</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
               <Star className="h-3 w-3 shrink-0 text-[#4488EF]" />
               <p className="text-xs font-medium text-[#4488EF]">Advanced</p>
             </div>
-            <p className="text-xs text-gray-400">3,000 - 4,499</p>
+            <p className="text-xs text-gray-400">2,600 - 3,899</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
               <Trophy className="h-3 w-3 shrink-0 text-[#A855F7]" />
               <p className="text-xs font-medium text-[#A855F7]">Elite</p>
             </div>
-            <p className="text-xs text-gray-400">4,500 - 5,999</p>
+            <p className="text-xs text-gray-400">3,900 - 5,199</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
               <Zap className="h-3 w-3 shrink-0 text-[#FF00FF]" />
               <p className="text-xs font-medium text-[#FF00FF]">Legend</p>
             </div>
-            <p className="text-xs text-gray-400">6,000+</p>
+            <p className="text-xs text-gray-400">5,200+</p>
           </div>
         </div>
       </div>
