@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { MuscleProgressLevel, MuscleProgressStats, calculateWorkoutStats, getFitnessLevelName, getNextLevelRequirement } from "./utils/progressLevelUtils";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,11 +53,11 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
 
   // Using the updated thresholds from progressLevelUtils but returning 0-5 index
   const determineIndexFromScore = (score: number): number => {
-    if (score >= 5200) return 5;  // Legend (Level 5) - was 6000
-    if (score >= 3900) return 4;  // Elite (Level 4) - was 4500
-    if (score >= 2600) return 3;  // Advanced (Level 3) - was 3000
-    if (score >= 1300) return 2;  // Intermediate (Level 2) - was 1500
-    if (score >= 400) return 1;   // Novice (Level 1) - was 500
+    if (score >= 4940) return 5;  // Legend (Level 5) - reduced by 5% from 5200
+    if (score >= 3705) return 4;  // Elite (Level 4) - reduced by 5% from 3900
+    if (score >= 2470) return 3;  // Advanced (Level 3) - reduced by 5% from 2600
+    if (score >= 1300) return 2;  // Intermediate (Level 2) - unchanged
+    if (score >= 400) return 1;   // Novice (Level 1) - unchanged
     return 0;                     // Beginner (Level 0)
   };
 

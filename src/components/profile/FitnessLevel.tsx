@@ -1,3 +1,4 @@
+
 import { format, isValid } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -55,13 +56,13 @@ export function FitnessLevel({ userId, fitnessScore, fitnessLevel, lastScoreUpda
   };
 
   const getProgressValue = (score: number) => {
-    if (score >= 5200) return 100;
-    if (score >= 3900) 
-      return 80 + ((score - 3900) / 1300) * 20;
-    if (score >= 2600) 
-      return 60 + ((score - 2600) / 1300) * 20;
+    if (score >= 4940) return 100;
+    if (score >= 3705) 
+      return 80 + ((score - 3705) / 1235) * 20;
+    if (score >= 2470) 
+      return 60 + ((score - 2470) / 1235) * 20;
     if (score >= 1300) 
-      return 40 + ((score - 1300) / 1300) * 20;
+      return 40 + ((score - 1300) / 1170) * 20;
     if (score >= 400) 
       return 20 + ((score - 400) / 900) * 20;
     return Math.max((score / 400) * 20, 5);
@@ -153,28 +154,28 @@ export function FitnessLevel({ userId, fitnessScore, fitnessLevel, lastScoreUpda
               <Medal className="h-3 w-3 shrink-0 text-[#22C55E]" />
               <p className="text-xs font-medium text-[#22C55E]">Intermediate</p>
             </div>
-            <p className="text-xs text-gray-400">1,300 - 2,599</p>
+            <p className="text-xs text-gray-400">1,300 - 2,469</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
               <Star className="h-3 w-3 shrink-0 text-[#4488EF]" />
               <p className="text-xs font-medium text-[#4488EF]">Advanced</p>
             </div>
-            <p className="text-xs text-gray-400">2,600 - 3,899</p>
+            <p className="text-xs text-gray-400">2,470 - 3,704</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
               <Trophy className="h-3 w-3 shrink-0 text-[#A855F7]" />
               <p className="text-xs font-medium text-[#A855F7]">Elite</p>
             </div>
-            <p className="text-xs text-gray-400">3,900 - 5,199</p>
+            <p className="text-xs text-gray-400">3,705 - 4,939</p>
           </div>
           <div className="p-1 bg-[#333333] rounded">
             <div className="flex items-center gap-1">
               <Zap className="h-3 w-3 shrink-0 text-[#FF00FF]" />
               <p className="text-xs font-medium text-[#FF00FF]">Legend</p>
             </div>
-            <p className="text-xs text-gray-400">5,200+</p>
+            <p className="text-xs text-gray-400">4,940+</p>
           </div>
         </div>
       </div>

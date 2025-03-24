@@ -17,21 +17,21 @@ export interface MuscleProgressStats {
 // Updated function to determine muscle progress level based on fitness score
 // Returns levels 1-6 for compatibility with existing code
 export function determineMuscleLevel(fitnessScore: number): MuscleProgressLevel {
-  if (fitnessScore >= 5200) return 6;  // Legend (reduced from 6000)
-  if (fitnessScore >= 3900) return 5;  // Elite (reduced from 4500)
-  if (fitnessScore >= 2600) return 4;  // Advanced (reduced from 3000)
-  if (fitnessScore >= 1300) return 3;  // Intermediate (reduced from 1500)
-  if (fitnessScore >= 400) return 2;   // Novice (reduced from 500)
+  if (fitnessScore >= 4940) return 6;  // Legend (reduced by 5% from 5200)
+  if (fitnessScore >= 3705) return 5;  // Elite (reduced by 5% from 3900)
+  if (fitnessScore >= 2470) return 4;  // Advanced (reduced by 5% from 2600)
+  if (fitnessScore >= 1300) return 3;  // Intermediate (unchanged)
+  if (fitnessScore >= 400) return 2;   // Novice (unchanged)
   return 1;                            // Beginner
 }
 
 // Helper function to get standardized fitness level name from score
 export function getFitnessLevelName(fitnessScore: number): string {
-  if (fitnessScore >= 5200) return 'Legend';    // Reduced from 6000
-  if (fitnessScore >= 3900) return 'Elite';     // Reduced from 4500
-  if (fitnessScore >= 2600) return 'Advanced';  // Reduced from 3000
-  if (fitnessScore >= 1300) return 'Intermediate'; // Reduced from 1500
-  if (fitnessScore >= 400) return 'Novice';     // Reduced from 500
+  if (fitnessScore >= 4940) return 'Legend';    // Reduced by 5% from 5200
+  if (fitnessScore >= 3705) return 'Elite';     // Reduced by 5% from 3900
+  if (fitnessScore >= 2470) return 'Advanced';  // Reduced by 5% from 2600
+  if (fitnessScore >= 1300) return 'Intermediate'; // Unchanged
+  if (fitnessScore >= 400) return 'Novice';     // Unchanged
   return 'Beginner';
 }
 
@@ -39,15 +39,15 @@ export function getFitnessLevelName(fitnessScore: number): string {
 export function getNextLevelRequirement(currentLevel: MuscleProgressLevel): string {
   switch (currentLevel) {
     case 1:
-      return "Reach 400 fitness score points";    // Updated from 500
+      return "Reach 400 fitness score points";    // Unchanged
     case 2:
-      return "Reach 1,300 fitness score points";  // Updated from 1,500
+      return "Reach 1,300 fitness score points";  // Unchanged
     case 3:
-      return "Reach 2,600 fitness score points";  // Updated from 3,000
+      return "Reach 2,470 fitness score points";  // Reduced by 5% from 2,600
     case 4:
-      return "Reach 3,900 fitness score points";  // Updated from 4,500
+      return "Reach 3,705 fitness score points";  // Reduced by 5% from 3,900
     case 5:
-      return "Reach 5,200 fitness score points";  // Updated from 6,000
+      return "Reach 4,940 fitness score points";  // Reduced by 5% from 5,200
     case 6:
       return "You've reached the maximum level!";
     default:
