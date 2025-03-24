@@ -1,5 +1,4 @@
 
-
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 
 // Note: MuscleProgressLevel is now 1-6 for compatibility with existing code,
