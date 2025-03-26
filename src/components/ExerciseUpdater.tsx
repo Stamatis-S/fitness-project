@@ -36,15 +36,15 @@ export function ExerciseUpdater() {
         }
 
         if (exerciseData) {
-          // Get all workout logs with the old exercise name via custom_exercise
-          const { error: customExerciseUpdateError } = await supabase
+          // Update all workout logs with the old exercise ID
+          const { error: logsUpdateError } = await supabase
             .from('workout_logs')
             .update({ custom_exercise: 'ΓΑΛΛΙΚΕΣ ΜΕ ΑΛΤΗΡΕΣ' })
             .eq('custom_exercise', 'ΓΑΛΛΙΚΕΣ')
             .eq('category', 'ΤΡΙΚΕΦΑΛΑ');
 
-          if (customExerciseUpdateError) {
-            throw customExerciseUpdateError;
+          if (logsUpdateError) {
+            throw logsUpdateError;
           }
         }
 
