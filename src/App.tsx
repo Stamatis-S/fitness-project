@@ -17,11 +17,11 @@ export default function App() {
   const queryClient = new QueryClient();
 
   return (
-    <AuthProvider>
+    <Router>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-          <ExerciseUpdater />
-          <Router>
+          <AuthProvider>
+            <ExerciseUpdater />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
@@ -31,10 +31,10 @@ export default function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/saved-exercises" element={<SavedExercises />} />
             </Routes>
-          </Router>
-          <Toaster />
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
-    </AuthProvider>
+    </Router>
   );
 }

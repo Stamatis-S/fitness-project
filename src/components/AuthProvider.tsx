@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setIsLoading(false);
 
-      // Handle initial navigation based on session
+      // Handle navigation based on session after initial load
       const publicRoutes = ['/auth'];
       const isPublicRoute = publicRoutes.includes(location.pathname);
 
