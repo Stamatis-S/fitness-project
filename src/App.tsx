@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
+import { ExerciseUpdater } from "@/components/ExerciseUpdater";
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
@@ -21,10 +22,11 @@ function App() {
   const isMobile = useIsMobile();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <ThemeProvider>
+    <Router>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
           <AuthProvider>
+            <ExerciseUpdater />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
@@ -39,8 +41,8 @@ function App() {
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
-      </Router>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </Router>
   );
 }
 
