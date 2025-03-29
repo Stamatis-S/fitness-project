@@ -23,7 +23,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="brand">
           <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
