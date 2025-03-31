@@ -9,6 +9,7 @@ import { PlusCircle } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnimatePresence, motion } from "framer-motion";
+import { DeleteSetDialog } from "./set-input/DeleteSetDialog";
 
 export function PowerSetInfo() {
   const { watch, control } = useFormContext<ExerciseFormData>();
@@ -50,13 +51,26 @@ export function PowerSetInfo() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
+                    className="relative"
                   >
-                    <SetInput
-                      key={`${field.id}-exercise1`}
-                      index={index}
-                      onRemove={remove}
-                      exerciseLabel={`${powerSetPair.exercise1.name} - Set ${index + 1}`}
-                    />
+                    <div className="flex items-center">
+                      <div className="flex-1">
+                        <SetInput
+                          key={`${field.id}-exercise1`}
+                          index={index}
+                          onRemove={remove}
+                          exerciseLabel={`${powerSetPair.exercise1.name} - Set ${index + 1}`}
+                        />
+                      </div>
+                      {index > 0 && (
+                        <div className="absolute top-3 right-3">
+                          <DeleteSetDialog 
+                            setNumber={index + 1}
+                            onDelete={() => remove(index)}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -86,13 +100,26 @@ export function PowerSetInfo() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
+                      className="relative"
                     >
-                      <SetInput
-                        key={`${field.id}-exercise2`}
-                        index={index}
-                        onRemove={remove}
-                        exerciseLabel={`${powerSetPair.exercise2.name} - Set ${index + 1}`}
-                      />
+                      <div className="flex items-center">
+                        <div className="flex-1">
+                          <SetInput
+                            key={`${field.id}-exercise2`}
+                            index={index}
+                            onRemove={remove}
+                            exerciseLabel={`${powerSetPair.exercise2.name} - Set ${index + 1}`}
+                          />
+                        </div>
+                        {index > 0 && (
+                          <div className="absolute top-3 right-3">
+                            <DeleteSetDialog 
+                              setNumber={index + 1}
+                              onDelete={() => remove(index)}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
