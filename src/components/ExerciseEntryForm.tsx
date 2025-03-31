@@ -73,22 +73,9 @@ export function ExerciseEntryForm() {
       return;
     }
 
-    const hasInvalidSets = data.sets.some(set => {
-      const basicInvalid = set.weight < 0 || set.reps < 0 || !Number.isInteger(set.reps);
-      
-      if (selectedCategory === "POWER SETS" && set.powerSet) {
-        const powerSetInvalid = 
-          set.powerSet.exercise1.weight < 0 || 
-          set.powerSet.exercise1.reps < 0 || 
-          !Number.isInteger(set.powerSet.exercise1.reps) ||
-          set.powerSet.exercise2.weight < 0 || 
-          set.powerSet.exercise2.reps < 0 || 
-          !Number.isInteger(set.powerSet.exercise2.reps);
-        return basicInvalid || powerSetInvalid;
-      }
-      
-      return basicInvalid;
-    });
+    const hasInvalidSets = data.sets.some(set => 
+      set.weight < 0 || set.reps < 0 || !Number.isInteger(set.reps)
+    );
 
     if (hasInvalidSets) {
       toast.error("Please enter valid values. Weight must be 0 or greater, and reps must be a positive whole number.");
@@ -107,82 +94,22 @@ export function ExerciseEntryForm() {
         .toISOString()
         .split('T')[0];
       
-      // Handle different submission logic for power sets
-      if (selectedCategory === "POWER SETS") {
-        const powerSetEntries = [];
-        
-        // For each set, create two entries (one for each exercise in the power set)
-        for (let i = 0; i < data.sets.length; i++) {
-          const set = data.sets[i];
-          
-          if (set.powerSet) {
-            // Construct exercise names - if it's a custom exercise, try to parse it
-            let exercise1Name = "";
-            let exercise2Name = "";
-            
-            if (isCustomExercise && data.customExercise) {
-              const parts = data.customExercise.split('-');
-              exercise1Name = parts[0]?.trim() || data.customExercise;
-              exercise2Name = parts[1]?.trim() || "";
-            } else if (data.exerciseName) {
-              // For selected exercises, use the stored exerciseName and split it
-              const parts = data.exerciseName.split('-');
-              exercise1Name = parts[0]?.trim() || data.exerciseName;
-              exercise2Name = parts[1]?.trim() || "";
-            }
-            
-            // First exercise in power set
-            powerSetEntries.push({
-              workout_date: dateString,
-              category: selectedCategory,
-              exercise_id: isCustomExercise ? null : parseInt(data.exercise) || null,
-              custom_exercise: isCustomExercise ? exercise1Name : null,
-              set_number: (i * 2) + 1, // Odd numbers for first exercise
-              weight_kg: set.powerSet.exercise1.weight,
-              reps: set.powerSet.exercise1.reps,
-              user_id: session.user.id
-            });
-            
-            // Second exercise in power set
-            powerSetEntries.push({
-              workout_date: dateString,
-              category: selectedCategory,
-              exercise_id: isCustomExercise ? null : parseInt(data.exercise) || null,
-              custom_exercise: isCustomExercise ? exercise2Name : null,
-              set_number: (i * 2) + 2, // Even numbers for second exercise
-              weight_kg: set.powerSet.exercise2.weight,
-              reps: set.powerSet.exercise2.reps,
-              user_id: session.user.id
-            });
-          }
-        }
-        
-        if (powerSetEntries.length > 0) {
-          const { error } = await supabase
-            .from('workout_logs')
-            .insert(powerSetEntries);
+      const exerciseSets = data.sets.map((set, index) => ({
+        workout_date: dateString,
+        category: selectedCategory,
+        exercise_id: isCustomExercise ? null : parseInt(data.exercise) || null,
+        custom_exercise: isCustomExercise ? data.customExercise : null,
+        set_number: index + 1,
+        weight_kg: set.weight,
+        reps: set.reps,
+        user_id: session.user.id
+      }));
 
-          if (error) throw error;
-        }
-      } else {
-        // Regular exercise submission (non-power set)
-        const exerciseSets = data.sets.map((set, index) => ({
-          workout_date: dateString,
-          category: selectedCategory,
-          exercise_id: isCustomExercise ? null : parseInt(data.exercise) || null,
-          custom_exercise: isCustomExercise ? data.customExercise : null,
-          set_number: index + 1,
-          weight_kg: set.weight,
-          reps: set.reps,
-          user_id: session.user.id
-        }));
+      const { error } = await supabase
+        .from('workout_logs')
+        .insert(exerciseSets);
 
-        const { error } = await supabase
-          .from('workout_logs')
-          .insert(exerciseSets);
-
-        if (error) throw error;
-      }
+      if (error) throw error;
 
       toast.success("Exercise logged successfully!");
       
@@ -299,12 +226,8 @@ export function ExerciseEntryForm() {
                     <ExerciseSelector 
                       category={selectedCategory}
                       value={methods.watch("exercise")}
-                      onValueChange={(value, exerciseName) => {
+                      onValueChange={(value) => {
                         methods.setValue("exercise", value);
-                        // Store the exercise name for power sets
-                        if (exerciseName) {
-                          methods.setValue("exerciseName", exerciseName);
-                        }
                         handleNext();
                       }}
                       customExercise={methods.watch("customExercise")}

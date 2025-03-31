@@ -1,7 +1,7 @@
 
 import { useFormContext } from "react-hook-form";
 import { ExerciseFormData } from "@/components/workout/types";
-import { Weight, RotateCw, Clock, Dumbbell } from "lucide-react";
+import { Weight, RotateCw, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
@@ -19,13 +19,6 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   const customExercise = watch('customExercise');
   const selectedCategory = watch('category');
   const isCardio = selectedCategory === 'CARDIO';
-  const isPowerSet = selectedCategory === 'POWER SETS';
-  
-  // For power sets, we need to track additional fields
-  const powerSetWeight1 = watch(`sets.${index}.powerSet.exercise1.weight`) || 0;
-  const powerSetReps1 = watch(`sets.${index}.powerSet.exercise1.reps`) || 0;
-  const powerSetWeight2 = watch(`sets.${index}.powerSet.exercise2.weight`) || 0;
-  const powerSetReps2 = watch(`sets.${index}.powerSet.exercise2.reps`) || 0;
 
   const { data: frequentValues } = useQuery({
     queryKey: ['frequent-workout-values', session?.user.id, selectedExercise, customExercise],
@@ -130,27 +123,6 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     setValue(`sets.${index}.reps`, (reps || 0) + amount);
   };
 
-  // Handle power set specific changes
-  const handlePowerSetWeightChange = (exerciseNum: 1 | 2, amount: number) => {
-    if (exerciseNum === 1) {
-      const currentWeight = powerSetWeight1 || 0;
-      const newWeight = Math.max(0, Math.round((currentWeight + amount) * 2) / 2);
-      setValue(`sets.${index}.powerSet.exercise1.weight` as const, newWeight);
-    } else {
-      const currentWeight = powerSetWeight2 || 0;
-      const newWeight = Math.max(0, Math.round((currentWeight + amount) * 2) / 2);
-      setValue(`sets.${index}.powerSet.exercise2.weight` as const, newWeight);
-    }
-  };
-
-  const handlePowerSetRepsChange = (exerciseNum: 1 | 2, amount: number) => {
-    if (exerciseNum === 1) {
-      setValue(`sets.${index}.powerSet.exercise1.reps` as const, Math.max(0, powerSetReps1 + amount));
-    } else {
-      setValue(`sets.${index}.powerSet.exercise2.reps` as const, Math.max(0, powerSetReps2 + amount));
-    }
-  };
-
   // Create button values safely without depending on potentially undefined values
   const createButtonValues = () => {
     // Initialize arrays
@@ -238,40 +210,6 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     return val === lastWorkoutValues.lastReps;
   };
 
-  // Parse the exercise name to get individual exercises for power sets
-  const getPowerSetExerciseNames = () => {
-    // For custom exercises, try to split by hyphen
-    if (selectedExercise === 'custom' && customExercise) {
-      const parts = customExercise.split('-');
-      return {
-        exercise1: parts[0]?.trim() || 'Exercise 1',
-        exercise2: parts[1]?.trim() || 'Exercise 2'
-      };
-    }
-    
-    // For non-custom exercises, try to get from the database selection
-    const exerciseName = watch('exerciseName') || '';
-    const parts = exerciseName.split('-');
-    return {
-      exercise1: parts[0]?.trim() || 'Exercise 1',
-      exercise2: parts[1]?.trim() || 'Exercise 2'
-    };
-  };
-
-  // If it's a power set, initialize the fields if they don't exist
-  if (isPowerSet) {
-    // Initialize power set values if they don't exist
-    if (!powerSetWeight1 && !powerSetWeight2 && !powerSetReps1 && !powerSetReps2) {
-      setValue(`sets.${index}.powerSet` as const, {
-        exercise1: { weight: weight || 0, reps: reps || 0 },
-        exercise2: { weight: weight || 0, reps: reps || 0 }
-      });
-    }
-  }
-
-  // Get exercise names for power sets
-  const powerSetExerciseNames = isPowerSet ? getPowerSetExerciseNames() : { exercise1: '', exercise2: '' };
-
   return (
     <div className="bg-[#111111] rounded-xl p-3">
       <div className="flex items-center justify-between mb-2">
@@ -286,197 +224,72 @@ export function SetInput({ index, onRemove }: SetInputProps) {
         )}
       </div>
       
-      {isPowerSet ? (
-        <div className="space-y-4">
-          {/* First exercise in power set */}
-          <div className="border-b border-[#333333] pb-3">
-            <div className="text-sm font-medium text-white mb-2 flex items-center">
-              <Dumbbell className="h-3.5 w-3.5 text-red-500 mr-1.5" />
-              {powerSetExerciseNames.exercise1}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <div className="flex items-center gap-1 mb-2">
-                  <Weight className="h-3.5 w-3.5 text-red-500" />
-                  <span className="text-white text-xs font-medium">
-                    Weight: {powerSetWeight1 || 0} KG
-                  </span>
-                </div>
-                
-                <QuickSelectButtons
-                  values={weightButtons}
-                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise1.weight` as const, value)}
-                  unit="KG"
-                  isLastValue={isLastWeightValue}
-                />
-
-                <SetControl
-                  value={powerSetWeight1 || 0}
-                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise1.weight` as const, value)}
-                  min={0}
-                  max={200}
-                  step={0.5}
-                  onDecrement={() => handlePowerSetWeightChange(1, -0.5)}
-                  onIncrement={() => handlePowerSetWeightChange(1, 0.5)}
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center gap-1 mb-2">
-                  <RotateCw className="h-3.5 w-3.5 text-red-500" />
-                  <span className="text-white text-xs font-medium">
-                    Reps: {powerSetReps1 || 0}
-                  </span>
-                </div>
-                
-                <QuickSelectButtons
-                  values={repButtons}
-                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise1.reps` as const, value)}
-                  isLastValue={isLastRepsValue}
-                />
-
-                <SetControl
-                  value={powerSetReps1 || 0}
-                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise1.reps` as const, value)}
-                  min={0}
-                  max={50}
-                  step={1}
-                  onDecrement={() => handlePowerSetRepsChange(1, -1)}
-                  onIncrement={() => handlePowerSetRepsChange(1, 1)}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Second exercise in power set */}
-          <div>
-            <div className="text-sm font-medium text-white mb-2 flex items-center">
-              <Dumbbell className="h-3.5 w-3.5 text-red-500 mr-1.5" />
-              {powerSetExerciseNames.exercise2}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <div className="flex items-center gap-1 mb-2">
-                  <Weight className="h-3.5 w-3.5 text-red-500" />
-                  <span className="text-white text-xs font-medium">
-                    Weight: {powerSetWeight2 || 0} KG
-                  </span>
-                </div>
-                
-                <QuickSelectButtons
-                  values={weightButtons}
-                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise2.weight` as const, value)}
-                  unit="KG"
-                  isLastValue={isLastWeightValue}
-                />
-
-                <SetControl
-                  value={powerSetWeight2 || 0}
-                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise2.weight` as const, value)}
-                  min={0}
-                  max={200}
-                  step={0.5}
-                  onDecrement={() => handlePowerSetWeightChange(2, -0.5)}
-                  onIncrement={() => handlePowerSetWeightChange(2, 0.5)}
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center gap-1 mb-2">
-                  <RotateCw className="h-3.5 w-3.5 text-red-500" />
-                  <span className="text-white text-xs font-medium">
-                    Reps: {powerSetReps2 || 0}
-                  </span>
-                </div>
-                
-                <QuickSelectButtons
-                  values={repButtons}
-                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise2.reps` as const, value)}
-                  isLastValue={isLastRepsValue}
-                />
-
-                <SetControl
-                  value={powerSetReps2 || 0}
-                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise2.reps` as const, value)}
-                  min={0}
-                  max={50}
-                  step={1}
-                  onDecrement={() => handlePowerSetRepsChange(2, -1)}
-                  onIncrement={() => handlePowerSetRepsChange(2, 1)}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <div className="flex items-center gap-1 mb-2">
-              {isCardio ? (
-                <Clock className="h-3.5 w-3.5 text-red-500" />
-              ) : (
-                <Weight className="h-3.5 w-3.5 text-red-500" />
-              )}
-              <span className="text-white text-xs font-medium">
-                {isCardio ? `Minutes: ${weight || 0}` : `Weight: ${weight || 0} KG`}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <div className="flex items-center gap-1 mb-2">
+            {isCardio ? (
+              <Clock className="h-3.5 w-3.5 text-red-500" />
+            ) : (
+              <Weight className="h-3.5 w-3.5 text-red-500" />
+            )}
+            <span className="text-white text-xs font-medium">
+              {isCardio ? `Minutes: ${weight || 0}` : `Weight: ${weight || 0} KG`}
+            </span>
+            {!isLoadingLast && lastWorkoutValues && typeof lastWorkoutValues.lastWeight === 'number' && (
+              <span className="text-xs text-gray-400 ml-auto">
+                Last: {lastWorkoutValues.lastWeight}{isCardio ? 'min' : 'kg'}
               </span>
-              {!isLoadingLast && lastWorkoutValues && typeof lastWorkoutValues.lastWeight === 'number' && (
-                <span className="text-xs text-gray-400 ml-auto">
-                  Last: {lastWorkoutValues.lastWeight}{isCardio ? 'min' : 'kg'}
-                </span>
-              )}
-            </div>
-            
-            <QuickSelectButtons
-              values={weightButtons}
-              onSelect={(value) => setValue(`sets.${index}.weight`, value)}
-              unit={isCardio ? "min" : "KG"}
-              isLastValue={isLastWeightValue}
-            />
-
-            <SetControl
-              value={weight || 0}
-              onChange={(value) => setValue(`sets.${index}.weight`, value)}
-              min={0}
-              max={isCardio ? 120 : 200}
-              step={isCardio ? 1 : 0.5}
-              onDecrement={() => handleWeightChange(isCardio ? -1 : -0.5)}
-              onIncrement={() => handleWeightChange(isCardio ? 1 : 0.5)}
-            />
+            )}
           </div>
+          
+          <QuickSelectButtons
+            values={weightButtons}
+            onSelect={(value) => setValue(`sets.${index}.weight`, value)}
+            unit={isCardio ? "min" : "KG"}
+            isLastValue={isLastWeightValue}
+          />
 
-          <div>
-            <div className="flex items-center gap-1 mb-2">
-              <RotateCw className="h-3.5 w-3.5 text-red-500" />
-              <span className="text-white text-xs font-medium">
-                {isCardio ? "Intensity (1-10)" : "Reps"}: {reps || 0}
-              </span>
-              {!isLoadingLast && lastWorkoutValues && typeof lastWorkoutValues.lastReps === 'number' && (
-                <span className="text-xs text-gray-400 ml-auto">
-                  Last: {lastWorkoutValues.lastReps}
-                </span>
-              )}
-            </div>
-            
-            <QuickSelectButtons
-              values={repButtons}
-              onSelect={(value) => setValue(`sets.${index}.reps`, value)}
-              isLastValue={isLastRepsValue}
-            />
-
-            <SetControl
-              value={reps || 0}
-              onChange={(value) => setValue(`sets.${index}.reps`, value)}
-              min={0}
-              max={isCardio ? 10 : 50}
-              step={1}
-              onDecrement={() => handleRepsChange(-1)}
-              onIncrement={() => handleRepsChange(1)}
-            />
-          </div>
+          <SetControl
+            value={weight || 0}
+            onChange={(value) => setValue(`sets.${index}.weight`, value)}
+            min={0}
+            max={isCardio ? 120 : 200}
+            step={isCardio ? 1 : 0.5}
+            onDecrement={() => handleWeightChange(isCardio ? -1 : -0.5)}
+            onIncrement={() => handleWeightChange(isCardio ? 1 : 0.5)}
+          />
         </div>
-      )}
+
+        <div>
+          <div className="flex items-center gap-1 mb-2">
+            <RotateCw className="h-3.5 w-3.5 text-red-500" />
+            <span className="text-white text-xs font-medium">
+              {isCardio ? "Intensity (1-10)" : "Reps"}: {reps || 0}
+            </span>
+            {!isLoadingLast && lastWorkoutValues && typeof lastWorkoutValues.lastReps === 'number' && (
+              <span className="text-xs text-gray-400 ml-auto">
+                Last: {lastWorkoutValues.lastReps}
+              </span>
+            )}
+          </div>
+          
+          <QuickSelectButtons
+            values={repButtons}
+            onSelect={(value) => setValue(`sets.${index}.reps`, value)}
+            isLastValue={isLastRepsValue}
+          />
+
+          <SetControl
+            value={reps || 0}
+            onChange={(value) => setValue(`sets.${index}.reps`, value)}
+            min={0}
+            max={isCardio ? 10 : 50}
+            step={1}
+            onDecrement={() => handleRepsChange(-1)}
+            onIncrement={() => handleRepsChange(1)}
+          />
+        </div>
+      </div>
     </div>
   );
 }
-

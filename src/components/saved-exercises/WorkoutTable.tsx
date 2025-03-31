@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -50,86 +49,33 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
     const dateGroup = acc.find(group => group.date === log.workout_date);
     const exerciseName = getExerciseName(log);
 
-    // Detect power set format (set numbers are sequential pairs)
-    const isPowerSetEntry = log.category === 'POWER SETS';
-    
-    // If power set, use custom grouping logic
-    if (isPowerSetEntry) {
-      const powerSetIndex = Math.floor((log.set_number - 1) / 2); // 1,2->0, 3,4->1, etc.
-      const isPrimaryExercise = log.set_number % 2 === 1; // Odd numbers are primary
-      
-      if (dateGroup) {
-        // Find or create the power set exercise entry
-        let powerSetExercise = dateGroup.exercises.find(ex => 
-          ex.category === 'POWER SETS' && 
-          Math.floor((ex.sets[0]?.set_number || 1) / 2) === powerSetIndex
-        );
-        
-        if (powerSetExercise) {
-          // Add to existing power set
-          powerSetExercise.sets.push(log);
-        } else {
-          // Create new power set exercise entry
-          dateGroup.exercises.push({
-            name: `Power Set ${powerSetIndex + 1}`,
-            category: 'POWER SETS',
-            sets: [log],
-          });
-        }
+    if (dateGroup) {
+      const exerciseGroup = dateGroup.exercises.find(ex => ex.name === exerciseName);
+      if (exerciseGroup) {
+        exerciseGroup.sets.push(log);
+        exerciseGroup.sets.sort((a, b) => a.set_number - b.set_number);
       } else {
-        // Create new date group with power set
-        acc.push({
-          date: log.workout_date,
-          exercises: [{
-            name: `Power Set ${powerSetIndex + 1}`,
-            category: 'POWER SETS',
-            sets: [log],
-          }],
+        dateGroup.exercises.push({
+          name: exerciseName,
+          category: log.category,
+          sets: [log],
         });
       }
     } else {
-      // Regular exercise (not power set)
-      if (dateGroup) {
-        const exerciseGroup = dateGroup.exercises.find(ex => ex.name === exerciseName);
-        if (exerciseGroup) {
-          exerciseGroup.sets.push(log);
-          exerciseGroup.sets.sort((a, b) => a.set_number - b.set_number);
-        } else {
-          dateGroup.exercises.push({
-            name: exerciseName,
-            category: log.category,
-            sets: [log],
-          });
-        }
-      } else {
-        acc.push({
-          date: log.workout_date,
-          exercises: [{
-            name: exerciseName,
-            category: log.category,
-            sets: [log],
-          }],
-        });
-      }
+      acc.push({
+        date: log.workout_date,
+        exercises: [{
+          name: exerciseName,
+          category: log.category,
+          sets: [log],
+        }],
+      });
     }
-    
     return acc;
   }, []);
 
   // Sort by date descending
   groupedLogs.sort((a, b) => b.date.localeCompare(a.date));
-
-  const renderExerciseSet = (set: WorkoutLog, isPowerSet: boolean) => {
-    const exerciseName = getExerciseName(set);
-    
-    if (isPowerSet) {
-      return `${set.set_number % 2 === 1 ? 'A' : 'B'}: ${exerciseName}: ${set.weight_kg}kg × ${set.reps}`;
-    } else {
-      return set.category === 'CARDIO' 
-        ? `${set.set_number}: ${set.weight_kg}m × ${set.reps}`
-        : `${set.set_number}: ${set.weight_kg}kg × ${set.reps}`;
-    }
-  };
 
   return (
     <div className="space-y-2">
@@ -178,7 +124,11 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
                     key={set.id}
                     className="bg-neutral-800 px-2 py-1 rounded text-xs text-neutral-200"
                   >
-                    {renderExerciseSet(set, exercise.category === 'POWER SETS')}
+                    {
+                      exercise.category === 'CARDIO' 
+                        ? `${set.set_number}: ${set.weight_kg}m × ${set.reps}`
+                        : `${set.set_number}: ${set.weight_kg}kg × ${set.reps}`
+                    }
                   </div>
                 ))}
               </div>

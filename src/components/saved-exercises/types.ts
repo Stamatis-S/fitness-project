@@ -2,7 +2,7 @@
 export interface WorkoutLog {
   id: number;
   workout_date: string;
-  category: "ΣΤΗΘΟΣ" | "ΠΛΑΤΗ" | "ΔΙΚΕΦΑΛΑ" | "ΤΡΙΚΕΦΑΛΑ" | "ΩΜΟΙ" | "ΠΟΔΙΑ" | "ΚΟΡΜΟΣ" | "CARDIO" | "POWER SETS";
+  category: "ΣΤΗΘΟΣ" | "ΠΛΑΤΗ" | "ΔΙΚΕΦΑΛΑ" | "ΤΡΙΚΕΦΑΛΑ" | "ΩΜΟΙ" | "ΠΟΔΙΑ" | "ΚΟΡΜΟΣ" | "CARDIO";
   exercise_id: number | null;
   custom_exercise: string | null;
   exercises?: {

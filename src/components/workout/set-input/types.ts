@@ -20,14 +20,3 @@ export interface QuickSelectButtonsProps {
   unit?: string;
   isLastValue?: (value: number) => boolean;
 }
-
-export interface PowerSetData {
-  exercise1: {
-    weight: number;
-    reps: number;
-  };
-  exercise2: {
-    weight: number;
-    reps: number;
-  };
-}
