@@ -5,16 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { ExerciseCategory } from "@/lib/constants";
-import { Info } from "lucide-react";
+import { Info, Search } from "lucide-react";
 
 interface Exercise {
   id: number;
@@ -38,6 +31,7 @@ export function ExerciseSelector({
   onCustomExerciseChange,
 }: ExerciseSelectorProps) {
   const [exerciseMap, setExerciseMap] = useState<Record<number, string>>({});
+  const [searchQuery, setSearchQuery] = useState("");
   
   const { data: exercises, isLoading } = useQuery({
     queryKey: ["exercises", category],
@@ -64,46 +58,70 @@ export function ExerciseSelector({
     }
   }, [exercises]);
 
-  const handleSelectChange = (newValue: string) => {
+  const handleExerciseClick = (exerciseId: string, exerciseName?: string) => {
     // When user selects an exercise, pass both the ID and the name
-    const exerciseName = newValue !== 'custom' ? exerciseMap[parseInt(newValue)] : undefined;
-    onValueChange(newValue, exerciseName);
+    onValueChange(exerciseId, exerciseName);
   };
 
+  // Filter exercises based on search query
+  const filteredExercises = exercises?.filter(exercise => 
+    exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="space-y-3">
-      <Select
-        value={value}
-        onValueChange={handleSelectChange}
-      >
-        <SelectTrigger className="w-full bg-[#333333] border-0 text-white focus:ring-red-500">
-          <SelectValue placeholder="Select an exercise" />
-        </SelectTrigger>
-        <SelectContent className="bg-[#333333] border-[#444444] text-white">
-          <SelectGroup>
-            <ScrollArea className="h-[200px]">
-              {isLoading ? (
-                <div className="p-2 text-center text-sm">Loading exercises...</div>
-              ) : exercises && exercises.length > 0 ? (
-                exercises.map((exercise) => (
-                  <SelectItem
-                    key={exercise.id}
-                    value={exercise.id.toString()}
-                    className="hover:bg-[#444444] focus:bg-[#444444]"
-                  >
-                    {exercise.name}
-                  </SelectItem>
-                ))
-              ) : (
-                <div className="p-2 text-center text-sm">No exercises found</div>
-              )}
-              <SelectItem value="custom" className="hover:bg-[#444444] focus:bg-[#444444]">
-                Custom exercise
-              </SelectItem>
-            </ScrollArea>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+    <div className="space-y-4">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Input 
+          placeholder="Search exercises..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 bg-[#222222] border-[#444444] text-white focus-visible:ring-red-500"
+        />
+      </div>
+      
+      <ScrollArea className="h-[200px] pr-4">
+        <div className="space-y-2">
+          {isLoading ? (
+            <div className="p-2 text-center text-sm text-gray-400">Loading exercises...</div>
+          ) : filteredExercises && filteredExercises.length > 0 ? (
+            <>
+              {filteredExercises.map((exercise) => (
+                <Button
+                  key={exercise.id}
+                  onClick={() => handleExerciseClick(exercise.id.toString(), exercise.name)}
+                  variant={value === exercise.id.toString() ? "default" : "outline"}
+                  className={`w-full justify-start h-auto py-2 px-3 text-left ${
+                    value === exercise.id.toString() 
+                      ? "bg-red-600 hover:bg-red-700 text-white" 
+                      : "bg-[#333333] text-white border-0 hover:bg-[#444444]"
+                  }`}
+                >
+                  {exercise.name}
+                </Button>
+              ))}
+            </>
+          ) : (
+            <div className="p-2 text-center text-sm text-gray-400">
+              {exercises && exercises.length > 0 
+                ? "No exercises match your search" 
+                : "No exercises found"}
+            </div>
+          )}
+          
+          <Button
+            onClick={() => handleExerciseClick("custom")}
+            variant={value === "custom" ? "default" : "outline"}
+            className={`w-full justify-start h-auto py-2 px-3 text-left ${
+              value === "custom" 
+                ? "bg-red-600 hover:bg-red-700 text-white" 
+                : "bg-[#333333] text-white border-0 hover:bg-[#444444]"
+            }`}
+          >
+            Custom exercise
+          </Button>
+        </div>
+      </ScrollArea>
 
       {value === "custom" && (
         <div className="space-y-2">
