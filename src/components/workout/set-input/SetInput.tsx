@@ -132,16 +132,23 @@ export function SetInput({ index, onRemove }: SetInputProps) {
 
   // Handle power set specific changes
   const handlePowerSetWeightChange = (exerciseNum: 1 | 2, amount: number) => {
-    const field = `sets.${index}.powerSet.exercise${exerciseNum}.weight`;
-    const currentWeight = exerciseNum === 1 ? powerSetWeight1 : powerSetWeight2;
-    const newWeight = Math.max(0, Math.round((currentWeight + amount) * 2) / 2);
-    setValue(field, newWeight);
+    if (exerciseNum === 1) {
+      const currentWeight = powerSetWeight1 || 0;
+      const newWeight = Math.max(0, Math.round((currentWeight + amount) * 2) / 2);
+      setValue(`sets.${index}.powerSet.exercise1.weight` as const, newWeight);
+    } else {
+      const currentWeight = powerSetWeight2 || 0;
+      const newWeight = Math.max(0, Math.round((currentWeight + amount) * 2) / 2);
+      setValue(`sets.${index}.powerSet.exercise2.weight` as const, newWeight);
+    }
   };
 
   const handlePowerSetRepsChange = (exerciseNum: 1 | 2, amount: number) => {
-    const field = `sets.${index}.powerSet.exercise${exerciseNum}.reps`;
-    const currentReps = exerciseNum === 1 ? powerSetReps1 : powerSetReps2;
-    setValue(field, Math.max(0, currentReps + amount));
+    if (exerciseNum === 1) {
+      setValue(`sets.${index}.powerSet.exercise1.reps` as const, Math.max(0, powerSetReps1 + amount));
+    } else {
+      setValue(`sets.${index}.powerSet.exercise2.reps` as const, Math.max(0, powerSetReps2 + amount));
+    }
   };
 
   // Create button values safely without depending on potentially undefined values
@@ -255,7 +262,7 @@ export function SetInput({ index, onRemove }: SetInputProps) {
   if (isPowerSet) {
     // Initialize power set values if they don't exist
     if (!powerSetWeight1 && !powerSetWeight2 && !powerSetReps1 && !powerSetReps2) {
-      setValue(`sets.${index}.powerSet`, {
+      setValue(`sets.${index}.powerSet` as const, {
         exercise1: { weight: weight || 0, reps: reps || 0 },
         exercise2: { weight: weight || 0, reps: reps || 0 }
       });
@@ -298,14 +305,14 @@ export function SetInput({ index, onRemove }: SetInputProps) {
                 
                 <QuickSelectButtons
                   values={weightButtons}
-                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise1.weight`, value)}
+                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise1.weight` as const, value)}
                   unit="KG"
                   isLastValue={isLastWeightValue}
                 />
 
                 <SetControl
                   value={powerSetWeight1 || 0}
-                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise1.weight`, value)}
+                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise1.weight` as const, value)}
                   min={0}
                   max={200}
                   step={0.5}
@@ -324,13 +331,13 @@ export function SetInput({ index, onRemove }: SetInputProps) {
                 
                 <QuickSelectButtons
                   values={repButtons}
-                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise1.reps`, value)}
+                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise1.reps` as const, value)}
                   isLastValue={isLastRepsValue}
                 />
 
                 <SetControl
                   value={powerSetReps1 || 0}
-                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise1.reps`, value)}
+                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise1.reps` as const, value)}
                   min={0}
                   max={50}
                   step={1}
@@ -358,14 +365,14 @@ export function SetInput({ index, onRemove }: SetInputProps) {
                 
                 <QuickSelectButtons
                   values={weightButtons}
-                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise2.weight`, value)}
+                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise2.weight` as const, value)}
                   unit="KG"
                   isLastValue={isLastWeightValue}
                 />
 
                 <SetControl
                   value={powerSetWeight2 || 0}
-                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise2.weight`, value)}
+                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise2.weight` as const, value)}
                   min={0}
                   max={200}
                   step={0.5}
@@ -384,13 +391,13 @@ export function SetInput({ index, onRemove }: SetInputProps) {
                 
                 <QuickSelectButtons
                   values={repButtons}
-                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise2.reps`, value)}
+                  onSelect={(value) => setValue(`sets.${index}.powerSet.exercise2.reps` as const, value)}
                   isLastValue={isLastRepsValue}
                 />
 
                 <SetControl
                   value={powerSetReps2 || 0}
-                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise2.reps`, value)}
+                  onChange={(value) => setValue(`sets.${index}.powerSet.exercise2.reps` as const, value)}
                   min={0}
                   max={50}
                   step={1}
