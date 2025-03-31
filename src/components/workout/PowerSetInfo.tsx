@@ -3,6 +3,7 @@ import { useFormContext } from "react-hook-form";
 import { ExerciseFormData } from "./types";
 import { cn } from "@/lib/utils";
 import { Dumbbell } from "lucide-react";
+import { CATEGORY_COLORS } from "@/lib/constants";
 
 export function PowerSetInfo() {
   const { watch } = useFormContext<ExerciseFormData>();
@@ -19,7 +20,9 @@ export function PowerSetInfo() {
       
       <div className="space-y-2">
         <div className="flex gap-2 items-center">
-          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: '#f87171' }}></div>
+          <div className="h-3 w-3 rounded-full" style={{ 
+            backgroundColor: CATEGORY_COLORS[powerSetPair.exercise1.category] 
+          }}></div>
           <div className="text-xs text-white">
             <span className="text-gray-400">{powerSetPair.exercise1.category}:</span> {powerSetPair.exercise1.name}
           </div>
@@ -28,13 +31,7 @@ export function PowerSetInfo() {
         {powerSetPair.exercise2.name && (
           <div className="flex gap-2 items-center">
             <div className="h-3 w-3 rounded-full" 
-              style={{ 
-                backgroundColor: 
-                  powerSetPair.exercise2.category === "ΣΤΗΘΟΣ" ? "#f87171" :
-                  powerSetPair.exercise2.category === "ΔΙΚΕΦΑΛΑ" ? "#c084fc" :
-                  powerSetPair.exercise2.category === "ΩΜΟΙ" ? "#4ade80" :
-                  powerSetPair.exercise2.category === "ΤΡΙΚΕΦΑΛΑ" ? "#818cf8" : "#f87171"
-              }}>
+              style={{ backgroundColor: CATEGORY_COLORS[powerSetPair.exercise2.category] }}>
             </div>
             <div className="text-xs text-white">
               <span className="text-gray-400">{powerSetPair.exercise2.category}:</span> {powerSetPair.exercise2.name}
