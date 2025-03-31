@@ -98,7 +98,7 @@ export function ExerciseSelector({
                     : "bg-[#333333] text-white border-0 hover:bg-[#444444]"
                   }`}
               >
-                <span className="font-medium text-[10px] text-center w-full line-clamp-2">{exercise.name}</span>
+                <span className="font-medium text-[10px] text-center w-full break-words hyphens-auto line-clamp-2 px-0.5">{exercise.name}</span>
               </Button>
             ))
           ) : (
