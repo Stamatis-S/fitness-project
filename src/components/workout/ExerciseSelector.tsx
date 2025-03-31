@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { ExerciseCategory } from "@/lib/constants";
-import { Info, Search } from "lucide-react";
+import { Info, Plus, Search } from "lucide-react";
 
 interface Exercise {
   id: number;
@@ -30,7 +30,6 @@ export function ExerciseSelector({
   customExercise,
   onCustomExerciseChange,
 }: ExerciseSelectorProps) {
-  const [exerciseMap, setExerciseMap] = useState<Record<number, string>>({});
   const [searchQuery, setSearchQuery] = useState("");
   
   const { data: exercises, isLoading } = useQuery({
@@ -47,19 +46,7 @@ export function ExerciseSelector({
     },
   });
 
-  useEffect(() => {
-    // Build a map of exercise IDs to names for quick lookups
-    if (exercises) {
-      const newMap: Record<number, string> = {};
-      exercises.forEach(ex => {
-        newMap[ex.id] = ex.name;
-      });
-      setExerciseMap(newMap);
-    }
-  }, [exercises]);
-
   const handleExerciseClick = (exerciseId: string, exerciseName?: string) => {
-    // When user selects an exercise, pass both the ID and the name
     onValueChange(exerciseId, exerciseName);
   };
 
@@ -79,47 +66,48 @@ export function ExerciseSelector({
           className="pl-9 bg-[#222222] border-[#444444] text-white focus-visible:ring-red-500"
         />
       </div>
+
+      {/* Custom Exercise Button */}
+      <Button
+        onClick={() => handleExerciseClick("custom")}
+        variant="outline"
+        className={`w-full justify-between h-auto py-2 px-3 mb-2 ${
+          value === "custom" 
+            ? "bg-red-600 hover:bg-red-700 text-white" 
+            : "bg-[#333333] text-white border-0 hover:bg-[#444444]"
+        }`}
+      >
+        <span>Add new custom exercise...</span>
+        <Plus className="h-4 w-4" />
+      </Button>
       
-      <ScrollArea className="h-[200px] pr-4">
-        <div className="space-y-2">
+      <ScrollArea className="h-[250px]">
+        <div className="grid grid-cols-2 gap-1.5 pr-2">
           {isLoading ? (
-            <div className="p-2 text-center text-sm text-gray-400">Loading exercises...</div>
+            <div className="col-span-2 p-2 text-center text-sm text-gray-400">Loading exercises...</div>
           ) : filteredExercises && filteredExercises.length > 0 ? (
-            <>
-              {filteredExercises.map((exercise) => (
-                <Button
-                  key={exercise.id}
-                  onClick={() => handleExerciseClick(exercise.id.toString(), exercise.name)}
-                  variant={value === exercise.id.toString() ? "default" : "outline"}
-                  className={`w-full justify-start h-auto py-2 px-3 text-left ${
-                    value === exercise.id.toString() 
-                      ? "bg-red-600 hover:bg-red-700 text-white" 
-                      : "bg-[#333333] text-white border-0 hover:bg-[#444444]"
+            filteredExercises.map((exercise) => (
+              <Button
+                key={exercise.id}
+                onClick={() => handleExerciseClick(exercise.id.toString(), exercise.name)}
+                variant="outline"
+                className={`w-full h-[50px] py-1 px-2 text-xs transition-all duration-200 
+                  hover:scale-[1.02] active:scale-[0.98]
+                  ${value === exercise.id.toString() 
+                    ? "bg-red-600 hover:bg-red-700 text-white" 
+                    : "bg-[#333333] text-white border-0 hover:bg-[#444444]"
                   }`}
-                >
-                  {exercise.name}
-                </Button>
-              ))}
-            </>
+              >
+                <span className="font-medium text-sm text-center w-full">{exercise.name}</span>
+              </Button>
+            ))
           ) : (
-            <div className="p-2 text-center text-sm text-gray-400">
+            <div className="col-span-2 p-2 text-center text-sm text-gray-400">
               {exercises && exercises.length > 0 
                 ? "No exercises match your search" 
                 : "No exercises found"}
             </div>
           )}
-          
-          <Button
-            onClick={() => handleExerciseClick("custom")}
-            variant={value === "custom" ? "default" : "outline"}
-            className={`w-full justify-start h-auto py-2 px-3 text-left ${
-              value === "custom" 
-                ? "bg-red-600 hover:bg-red-700 text-white" 
-                : "bg-[#333333] text-white border-0 hover:bg-[#444444]"
-            }`}
-          >
-            Custom exercise
-          </Button>
         </div>
       </ScrollArea>
 
