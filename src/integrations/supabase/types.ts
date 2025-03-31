@@ -303,6 +303,7 @@ export type Database = {
         | "ΠΟΔΙΑ"
         | "ΚΟΡΜΟΣ"
         | "CARDIO"
+        | "POWER SETS"
       user_role: "admin" | "user"
     }
     CompositeTypes: {
