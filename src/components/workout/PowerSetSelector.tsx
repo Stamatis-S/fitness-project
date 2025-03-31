@@ -115,8 +115,8 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
       </div>
 
       <div className={cn(
-        "grid gap-1.5",
-        isMobile ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 gap-1.5"
+        "grid gap-2", // Increased gap from 1.5 to 2
+        isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 gap-2" // Changed to single column on mobile, 2 columns on larger screens
       )}>
         {filteredPowerSets.map((powerSet) => (
           <motion.button
@@ -125,13 +125,13 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
             whileTap={{ scale: 0.98 }}
             onClick={() => onValueChange(powerSet.id, powerSet.exercises)}
             className={cn(
-              "w-full px-2 py-1.5 rounded-lg font-medium",
+              "w-full px-3 py-2.5 rounded-lg font-medium", // Increased padding
               "transition-all duration-200",
               "text-center break-words hyphens-auto bg-[#333333] dark:bg-slate-800",
               isMobile ? (
-                "min-h-[40px] text-[10px] leading-tight"
+                "min-h-[60px] text-xs leading-tight" // Increased height from 40px to 60px and font size on mobile
               ) : (
-                "min-h-[46px] text-xs"
+                "min-h-[70px] text-sm" // Increased height from 46px to 70px on desktop
               ),
               value === powerSet.id
                 ? "ring-2 ring-primary"
@@ -139,7 +139,7 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
               "text-white dark:text-white"
             )}
           >
-            <div className="line-clamp-2 break-words hyphens-auto px-0.5">
+            <div className="line-clamp-3 break-words hyphens-auto px-1"> {/* Increased line-clamp from 2 to 3 */}
               {powerSet.name}
             </div>
           </motion.button>
