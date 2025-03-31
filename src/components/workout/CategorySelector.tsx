@@ -23,7 +23,8 @@ const categories: Array<{
   { label: "Ώμοι", value: "ΩΜΟΙ" },
   { label: "Πόδια", value: "ΠΟΔΙΑ" },
   { label: "Κορμός", value: "ΚΟΡΜΟΣ" },
-  { label: "Cardio", value: "CARDIO" }
+  { label: "Cardio", value: "CARDIO" },
+  { label: "Power Sets", value: "POWER SETS" }
 ];
 
 export function CategorySelector({

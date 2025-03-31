@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { ExerciseSelector } from "@/components/workout/ExerciseSelector";
+import { PowerSetSelector } from "@/components/workout/PowerSetSelector";
+import { PowerSetInfo } from "@/components/workout/PowerSetInfo";
 import { SetInput } from "@/components/workout/set-input/SetInput";
 import { DateSelector } from "@/components/workout/DateSelector";
 import { CategorySelector } from "@/components/workout/CategorySelector";
@@ -10,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { PlusCircle, ArrowLeft, Save } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { ExerciseFormData } from "@/components/workout/types";
+import { ExerciseFormData, ExercisePair } from "@/components/workout/types";
 import { useAuth } from "@/components/AuthProvider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnimatePresence, motion } from "framer-motion";
@@ -61,13 +63,19 @@ export function ExerciseEntryForm() {
       return;
     }
 
-    if (!data.exercise) {
+    if (!data.exercise && selectedCategory !== "POWER SETS") {
       toast.error("Please select an exercise");
       setIsSubmitting(false);
       return;
     }
 
-    if (data.exercise === "custom" && !data.customExercise) {
+    if (selectedCategory === "POWER SETS" && !data.powerSetPair) {
+      toast.error("Please select a power set");
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (data.exercise === "custom" && !data.customExercise && selectedCategory !== "POWER SETS") {
       toast.error("Please enter a custom exercise name");
       setIsSubmitting(false);
       return;
@@ -94,16 +102,50 @@ export function ExerciseEntryForm() {
         .toISOString()
         .split('T')[0];
       
-      const exerciseSets = data.sets.map((set, index) => ({
-        workout_date: dateString,
-        category: selectedCategory,
-        exercise_id: isCustomExercise ? null : parseInt(data.exercise) || null,
-        custom_exercise: isCustomExercise ? data.customExercise : null,
-        set_number: index + 1,
-        weight_kg: set.weight,
-        reps: set.reps,
-        user_id: session.user.id
-      }));
+      let exerciseSets = [];
+      
+      if (selectedCategory === "POWER SETS" && data.powerSetPair) {
+        // For power sets, create entries for each exercise in the pair with the same set data
+        for (let i = 0; i < data.sets.length; i++) {
+          const set = data.sets[i];
+          
+          // First exercise in the pair
+          exerciseSets.push({
+            workout_date: dateString,
+            category: "POWER SETS",
+            custom_exercise: data.powerSetPair.exercise1.name,
+            set_number: i + 1,
+            weight_kg: set.weight,
+            reps: set.reps,
+            user_id: session.user.id
+          });
+          
+          // Second exercise in the pair if it exists
+          if (data.powerSetPair.exercise2.name) {
+            exerciseSets.push({
+              workout_date: dateString,
+              category: "POWER SETS",
+              custom_exercise: data.powerSetPair.exercise2.name,
+              set_number: i + 1,
+              weight_kg: set.weight,
+              reps: set.reps,
+              user_id: session.user.id
+            });
+          }
+        }
+      } else {
+        // Standard exercise logic
+        exerciseSets = data.sets.map((set, index) => ({
+          workout_date: dateString,
+          category: selectedCategory,
+          exercise_id: isCustomExercise ? null : parseInt(data.exercise) || null,
+          custom_exercise: isCustomExercise ? data.customExercise : null,
+          set_number: index + 1,
+          weight_kg: set.weight,
+          reps: set.reps,
+          user_id: session.user.id
+        }));
+      }
 
       const { error } = await supabase
         .from('workout_logs')
@@ -151,9 +193,21 @@ export function ExerciseEntryForm() {
   const handleNext = () => {
     if (step === 'category' && selectedCategory) {
       setStep('exercise');
-    } else if (step === 'exercise' && methods.watch('exercise')) {
-      setStep('sets');
+    } else if (step === 'exercise') {
+      if (selectedCategory === "POWER SETS" && methods.getValues('powerSetPair')) {
+        setStep('sets');
+      } else if (methods.watch('exercise')) {
+        setStep('sets');
+      }
     }
+  };
+
+  const handlePowerSetChange = (value: string, pair?: ExercisePair) => {
+    methods.setValue("exercise", value);
+    if (pair) {
+      methods.setValue("powerSetPair", pair);
+    }
+    handleNext();
   };
 
   return (
@@ -221,7 +275,14 @@ export function ExerciseEntryForm() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -5 }}
               >
-                {selectedCategory && (
+                {selectedCategory === "POWER SETS" ? (
+                  <div className="px-1">
+                    <PowerSetSelector 
+                      value={methods.watch("exercise")}
+                      onValueChange={handlePowerSetChange}
+                    />
+                  </div>
+                ) : selectedCategory && (
                   <div className="px-1">
                     <ExerciseSelector 
                       category={selectedCategory}
@@ -245,6 +306,10 @@ export function ExerciseEntryForm() {
                 exit={{ opacity: 0, x: -5 }}
                 className="flex flex-col h-[calc(100vh-14rem)]"
               >
+                {selectedCategory === "POWER SETS" && (
+                  <PowerSetInfo />
+                )}
+                
                 <ScrollArea className="flex-1 px-1 pb-1 overflow-hidden">
                   <div className="space-y-1 touch-pan-y">
                     <AnimatePresence>
