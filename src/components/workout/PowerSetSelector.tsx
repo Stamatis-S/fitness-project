@@ -43,7 +43,7 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
     },
     {
       id: "power-set-2",
-      name: "ΠΙΕΣΕΙΣ ΜΕ ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ",
+      name: "ΠΙΕΣΕΙΣ ΜΕ ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ - ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ",
       exercises: {
         exercise1: { 
           id: "pieseis-altires-epiklini", 
@@ -51,9 +51,9 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
           category: "ΣΤΗΘΟΣ" 
         },
         exercise2: { 
-          id: "none", 
-          name: "", 
-          category: "ΣΤΗΘΟΣ" 
+          id: "altires-epiklini", 
+          name: "ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ", 
+          category: "ΔΙΚΕΦΑΛΑ" 
         }
       }
     },
