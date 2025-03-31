@@ -1,273 +1,138 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
-import type { ExerciseCategory } from "@/lib/constants";
-import { Search, Plus, Trash2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { toast } from "sonner";
-import { useAuth } from "@/components/AuthProvider";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ExerciseCategory } from "@/lib/constants";
+import { Info } from "lucide-react";
 
 interface Exercise {
   id: number;
   name: string;
-  category: ExerciseCategory;
-  isCustom?: boolean;
+  category: string;
 }
 
 interface ExerciseSelectorProps {
   category: ExerciseCategory;
   value: string;
-  onValueChange: (value: string) => void;
+  onValueChange: (value: string, exerciseName?: string) => void;
   customExercise?: string;
   onCustomExerciseChange: (value: string) => void;
 }
 
-export function ExerciseSelector({ 
+export function ExerciseSelector({
   category,
   value,
   onValueChange,
   customExercise,
   onCustomExerciseChange,
 }: ExerciseSelectorProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [newCustomExercise, setNewCustomExercise] = useState("");
-  const isMobile = useIsMobile();
-  const queryClient = useQueryClient();
-  const { session } = useAuth();
-
-  // Fetch standard exercises
-  const { data: standardExercises = [], isLoading: isLoadingStandard } = useQuery({
-    queryKey: ['exercises', category],
+  const [exerciseMap, setExerciseMap] = useState<Record<number, string>>({});
+  
+  const { data: exercises, isLoading } = useQuery({
+    queryKey: ["exercises", category],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('exercises')
-        .select('id, name, category')
-        .eq('category', category);
-      
-      if (error) throw error;
-      return (data || []).map(exercise => ({
-        ...exercise,
-        isCustom: false
-      })) as Exercise[];
-    }
-  });
-
-  // Fetch custom exercises
-  const { data: customExercises = [], isLoading: isLoadingCustom } = useQuery({
-    queryKey: ['custom_exercises', category],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('custom_exercises')
-        .select('id, name, category')
-        .eq('category', category);
-      
-      if (error) throw error;
-      return (data || []).map(exercise => ({
-        id: exercise.id,
-        name: exercise.name,
-        category: exercise.category,
-        isCustom: true
-      })) as Exercise[];
-    }
-  });
-
-  // Mutation for adding custom exercises
-  const addCustomExercise = useMutation({
-    mutationFn: async (name: string) => {
-      if (!session?.user?.id) {
-        throw new Error("User must be logged in to add custom exercises");
-      }
-
-      const { data, error } = await supabase
-        .from('custom_exercises')
-        .insert({
-          name: name.toUpperCase().trim(),
-          category,
-          user_id: session.user.id
-        })
-        .select('id, name, category')
-        .single();
+        .from("exercises")
+        .select("*")
+        .eq("category", category)
+        .order("name");
 
       if (error) throw error;
-      return data;
+      return data as Exercise[];
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom_exercises'] });
-      toast.success("Custom exercise added successfully!");
-      setNewCustomExercise("");
-    },
-    onError: (error) => {
-      console.error('Error adding custom exercise:', error);
-      toast.error("Failed to add custom exercise");
-    }
   });
 
-  // Mutation for deleting custom exercises
-  const deleteCustomExercise = useMutation({
-    mutationFn: async (id: number) => {
-      const { error } = await supabase
-        .from('custom_exercises')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['custom_exercises'] });
-      toast.success("Custom exercise deleted successfully!");
-      onValueChange("");
-    },
-    onError: (error) => {
-      console.error('Error deleting custom exercise:', error);
-      toast.error("Failed to delete custom exercise");
+  useEffect(() => {
+    // Build a map of exercise IDs to names for quick lookups
+    if (exercises) {
+      const newMap: Record<number, string> = {};
+      exercises.forEach(ex => {
+        newMap[ex.id] = ex.name;
+      });
+      setExerciseMap(newMap);
     }
-  });
+  }, [exercises]);
 
-  // Combine and filter exercises
-  const allExercises = [...standardExercises, ...customExercises].filter(exercise =>
-    exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleAddCustomExercise = () => {
-    if (!newCustomExercise.trim()) {
-      toast.error("Please enter an exercise name");
-      return;
-    }
-    addCustomExercise.mutate(newCustomExercise);
+  const handleSelectChange = (newValue: string) => {
+    // When user selects an exercise, pass both the ID and the name
+    const exerciseName = newValue !== 'custom' ? exerciseMap[parseInt(newValue)] : undefined;
+    onValueChange(newValue, exerciseName);
   };
 
   return (
     <div className="space-y-3">
-      <div className="relative">
-        <Search className={cn(
-          "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground",
-          isMobile ? "h-3 w-3" : "h-4 w-4"
-        )} />
-        <Input
-          placeholder="Search exercises..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className={cn(
-            "pl-9 pr-4",
-            isMobile ? "h-8 text-xs" : "h-9 text-sm"
-          )}
-        />
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center gap-1">
-          <Input
-            placeholder="Add new custom exercise..."
-            value={newCustomExercise}
-            onChange={(e) => setNewCustomExercise(e.target.value)}
-            className={cn(
-              isMobile ? "h-8 text-xs" : "h-9 text-sm"
-            )}
-          />
-          <Button
-            onClick={handleAddCustomExercise}
-            size={isMobile ? "sm" : "sm"}
-            className="shrink-0"
-          >
-            <Plus className={cn(
-              isMobile ? "h-3 w-3" : "h-4 w-4"
-            )} />
-          </Button>
-        </div>
-
-        <div className={cn(
-          "grid gap-1",
-          isMobile ? "grid-cols-3" : "grid-cols-3 sm:grid-cols-4 gap-1.5"
-        )}>
-          {(isLoadingStandard || isLoadingCustom) ? (
-            <div className="col-span-full text-center py-2 text-sm">Loading exercises...</div>
-          ) : (
-            <>
-              {allExercises.map((exercise) => (
-                <div key={`${exercise.isCustom ? 'custom' : 'standard'}-${exercise.id}`} className="relative group">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => onValueChange(exercise.id.toString())}
-                    className={cn(
-                      "w-full px-2 py-1 rounded-lg font-medium",
-                      "transition-all duration-200",
-                      "text-center break-words bg-[#333333] dark:bg-slate-800",
-                      isMobile ? (
-                        "min-h-[30px] text-xs leading-tight"
-                      ) : (
-                        "min-h-[36px] text-xs px-2 py-1.5"
-                      ),
-                      value === exercise.id.toString()
-                        ? "ring-2 ring-primary"
-                        : "hover:bg-[#444444] dark:hover:bg-slate-700",
-                      "text-white dark:text-white"
-                    )}
+      <Select
+        value={value}
+        onValueChange={handleSelectChange}
+      >
+        <SelectTrigger className="w-full bg-[#333333] border-0 text-white focus:ring-red-500">
+          <SelectValue placeholder="Select an exercise" />
+        </SelectTrigger>
+        <SelectContent className="bg-[#333333] border-[#444444] text-white">
+          <SelectGroup>
+            <ScrollArea className="h-[200px]">
+              {isLoading ? (
+                <div className="p-2 text-center text-sm">Loading exercises...</div>
+              ) : exercises && exercises.length > 0 ? (
+                exercises.map((exercise) => (
+                  <SelectItem
+                    key={exercise.id}
+                    value={exercise.id.toString()}
+                    className="hover:bg-[#444444] focus:bg-[#444444]"
                   >
                     {exercise.name}
-                  </motion.button>
-                  
-                  {exercise.isCustom && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute -right-1 -top-1 h-5 w-5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          <Trash2 className="h-2.5 w-2.5" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Custom Exercise</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{exercise.name}"? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteCustomExercise.mutate(exercise.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </div>
-              ))}
-              {!isLoadingStandard && !isLoadingCustom && allExercises.length === 0 && (
-                <div className={cn(
-                  "col-span-full text-center py-2 text-muted-foreground",
-                  isMobile && "text-xs"
-                )}>
-                  No exercises found
-                </div>
+                  </SelectItem>
+                ))
+              ) : (
+                <div className="p-2 text-center text-sm">No exercises found</div>
               )}
-            </>
-          )}
+              <SelectItem value="custom" className="hover:bg-[#444444] focus:bg-[#444444]">
+                Custom exercise
+              </SelectItem>
+            </ScrollArea>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+
+      {value === "custom" && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-1">
+            <Label htmlFor="customExercise" className="text-xs text-gray-400">
+              Enter exercise name
+            </Label>
+            {category === 'POWER SETS' && (
+              <div className="group relative">
+                <Info className="h-3 w-3 text-gray-400 cursor-help" />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 w-48 p-2 bg-black/90 border border-gray-700 rounded-md text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none mb-1 z-10">
+                  For power sets, separate exercise names with a hyphen (e.g. "Exercise 1 - Exercise 2")
+                </div>
+              </div>
+            )}
+          </div>
+          <Input
+            id="customExercise"
+            value={customExercise || ""}
+            onChange={(e) => onCustomExerciseChange(e.target.value)}
+            className="bg-[#222222] border-[#444444] text-white focus-visible:ring-red-500"
+            placeholder={
+              category === 'POWER SETS'
+                ? "e.g. Bench Press - Bicep Curl"
+                : "Enter exercise name"
+            }
+          />
         </div>
-      </div>
+      )}
     </div>
   );
 }
