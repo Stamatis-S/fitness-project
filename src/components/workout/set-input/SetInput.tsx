@@ -10,7 +10,7 @@ import { SetControl } from "./SetControl";
 import { QuickSelectButtons } from "./QuickSelectButtons";
 import { DeleteSetDialog } from "./DeleteSetDialog";
 
-export function SetInput({ index, onRemove }: SetInputProps) {
+export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
   const { session } = useAuth();
   const { watch, setValue } = useFormContext<ExerciseFormData>();
   const weight = watch(`sets.${index}.weight`);
@@ -214,9 +214,9 @@ export function SetInput({ index, onRemove }: SetInputProps) {
     <div className="bg-[#111111] rounded-xl p-3">
       <div className="flex items-center justify-between mb-2">
         <div className="text-red-500 text-sm font-semibold">
-          Set {index + 1}
+          {exerciseLabel ? exerciseLabel : `Set ${index + 1}`}
         </div>
-        {index > 0 && (
+        {index > 0 && !exerciseLabel && (
           <DeleteSetDialog 
             setNumber={index + 1}
             onDelete={() => onRemove(index)}

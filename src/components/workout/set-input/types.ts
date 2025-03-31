@@ -2,6 +2,7 @@
 export interface SetInputProps {
   index: number;
   onRemove: (index: number) => void;
+  exerciseLabel?: string;
 }
 
 export interface SetControlProps {

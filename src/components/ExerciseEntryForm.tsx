@@ -306,48 +306,52 @@ export function ExerciseEntryForm() {
                 exit={{ opacity: 0, x: -5 }}
                 className="flex flex-col h-[calc(100vh-14rem)]"
               >
-                {selectedCategory === "POWER SETS" && (
+                {selectedCategory === "POWER SETS" ? (
                   <PowerSetInfo />
+                ) : (
+                  <>
+                    <ScrollArea className="flex-1 px-1 pb-1 overflow-hidden">
+                      <div className="space-y-1 touch-pan-y">
+                        <AnimatePresence>
+                          {fields.map((field, index) => (
+                            <motion.div
+                              key={field.id}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                            >
+                              <SetInput
+                                key={field.id}
+                                index={index}
+                                onRemove={remove}
+                              />
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
+                      </div>
+                    </ScrollArea>
+                    
+                    <div className="space-y-1.5 pt-1.5 border-t border-[#333333] bg-[#222222]/95">
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                      >
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full h-9 bg-[#333333] hover:bg-[#444444] text-white border-0"
+                          onClick={() => append({ weight: 0, reps: 0 })}
+                          disabled={isSubmitting}
+                        >
+                          <PlusCircle className="h-4 w-4 mr-2" />
+                          Add Set
+                        </Button>
+                      </motion.div>
+                    </div>
+                  </>
                 )}
                 
-                <ScrollArea className="flex-1 px-1 pb-1 overflow-hidden">
-                  <div className="space-y-1 touch-pan-y">
-                    <AnimatePresence>
-                      {fields.map((field, index) => (
-                        <motion.div
-                          key={field.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                        >
-                          <SetInput
-                            key={field.id}
-                            index={index}
-                            onRemove={remove}
-                          />
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                </ScrollArea>
-                
-                <div className="space-y-1.5 pt-1.5 border-t border-[#333333] bg-[#222222]/95">
-                  <motion.div
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                  >
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full h-9 bg-[#333333] hover:bg-[#444444] text-white border-0"
-                      onClick={() => append({ weight: 0, reps: 0 })}
-                      disabled={isSubmitting}
-                    >
-                      <PlusCircle className="h-4 w-4 mr-2" />
-                      Add Set
-                    </Button>
-                  </motion.div>
-
+                <div className="mt-auto pt-1.5 border-t border-[#333333] bg-[#222222]/95">
                   <motion.div
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
