@@ -37,7 +37,9 @@ export function ExerciseEntryForm() {
         ));
       })(),
       exercise: "",
-      sets: [{ weight: 0, reps: 0 }]
+      sets: [{ weight: 0, reps: 0 }],
+      exercise1Sets: [{ weight: 0, reps: 0 }],
+      exercise2Sets: [{ weight: 0, reps: 0 }]
     }
   });
 
@@ -81,14 +83,33 @@ export function ExerciseEntryForm() {
       return;
     }
 
-    const hasInvalidSets = data.sets.some(set => 
-      set.weight < 0 || set.reps < 0 || !Number.isInteger(set.reps)
-    );
+    // Validate sets based on exercise type
+    let setsToValidate = data.sets;
+    if (selectedCategory === "POWER SETS") {
+      // For power sets, validate both exercise sets
+      const hasInvalidExercise1Sets = data.exercise1Sets.some(set => 
+        set.weight < 0 || set.reps < 0 || !Number.isInteger(set.reps)
+      );
+      const hasInvalidExercise2Sets = data.exercise2Sets.some(set => 
+        set.weight < 0 || set.reps < 0 || !Number.isInteger(set.reps)
+      );
+      
+      if (hasInvalidExercise1Sets || hasInvalidExercise2Sets) {
+        toast.error("Please enter valid values. Weight must be 0 or greater, and reps must be a positive whole number.");
+        setIsSubmitting(false);
+        return;
+      }
+    } else {
+      // For regular exercises, validate the standard sets
+      const hasInvalidSets = data.sets.some(set => 
+        set.weight < 0 || set.reps < 0 || !Number.isInteger(set.reps)
+      );
 
-    if (hasInvalidSets) {
-      toast.error("Please enter valid values. Weight must be 0 or greater, and reps must be a positive whole number.");
-      setIsSubmitting(false);
-      return;
+      if (hasInvalidSets) {
+        toast.error("Please enter valid values. Weight must be 0 or greater, and reps must be a positive whole number.");
+        setIsSubmitting(false);
+        return;
+      }
     }
 
     try {
@@ -105,11 +126,12 @@ export function ExerciseEntryForm() {
       let exerciseSets = [];
       
       if (selectedCategory === "POWER SETS" && data.powerSetPair) {
-        // For power sets, create entries for each exercise in the pair with the same set data
-        for (let i = 0; i < data.sets.length; i++) {
-          const set = data.sets[i];
+        // For power sets, create entries for each exercise in the pair with their own set data
+        
+        // First exercise in the pair with its sets
+        for (let i = 0; i < data.exercise1Sets.length; i++) {
+          const set = data.exercise1Sets[i];
           
-          // First exercise in the pair
           exerciseSets.push({
             workout_date: dateString,
             category: "POWER SETS",
@@ -119,9 +141,13 @@ export function ExerciseEntryForm() {
             reps: set.reps,
             user_id: session.user.id
           });
-          
-          // Second exercise in the pair if it exists
-          if (data.powerSetPair.exercise2.name) {
+        }
+        
+        // Second exercise in the pair if it exists
+        if (data.powerSetPair.exercise2.name) {
+          for (let i = 0; i < data.exercise2Sets.length; i++) {
+            const set = data.exercise2Sets[i];
+            
             exerciseSets.push({
               workout_date: dateString,
               category: "POWER SETS",
@@ -167,7 +193,9 @@ export function ExerciseEntryForm() {
           ));
         })(),
         exercise: "",
-        sets: [{ weight: 0, reps: 0 }]
+        sets: [{ weight: 0, reps: 0 }],
+        exercise1Sets: [{ weight: 0, reps: 0 }],
+        exercise2Sets: [{ weight: 0, reps: 0 }]
       });
       
       // Reset state in correct sequence

@@ -15,10 +15,49 @@ export function PowerSetInfo() {
   const { watch, control } = useFormContext<ExerciseFormData>();
   const powerSetPair = watch('powerSetPair');
   
-  const { fields, append, remove } = useFieldArray({
+  // Create separate field arrays for each exercise in the power set
+  const { fields: exercise1Sets, append: appendExercise1, remove: removeExercise1 } = useFieldArray({
+    control,
+    name: "exercise1Sets"
+  });
+  
+  const { fields: exercise2Sets, append: appendExercise2, remove: removeExercise2 } = useFieldArray({
+    control,
+    name: "exercise2Sets"
+  });
+  
+  // Fallback to the original sets field array if the specific exercise arrays are empty
+  const { fields, append } = useFieldArray({
     control,
     name: "sets"
   });
+  
+  // Initialize exercise-specific sets if they don't exist yet
+  const initializeSets = () => {
+    if ((exercise1Sets.length === 0 || exercise2Sets.length === 0) && fields.length > 0) {
+      // Copy sets from the common sets array to the exercise-specific arrays
+      if (exercise1Sets.length === 0) {
+        fields.forEach(set => {
+          appendExercise1({ weight: set.weight, reps: set.reps });
+        });
+      }
+      
+      if (exercise2Sets.length === 0) {
+        fields.forEach(set => {
+          appendExercise2({ weight: set.weight, reps: set.reps });
+        });
+      }
+    } else if (exercise1Sets.length === 0 && exercise2Sets.length === 0) {
+      // If both arrays are empty, initialize with one default set
+      appendExercise1({ weight: 0, reps: 0 });
+      appendExercise2({ weight: 0, reps: 0 });
+    }
+  };
+  
+  // Call initialization function when component renders
+  if (powerSetPair) {
+    initializeSets();
+  }
   
   if (!powerSetPair) return null;
   
@@ -45,7 +84,7 @@ export function PowerSetInfo() {
           <ScrollArea className="max-h-[300px] px-1 pb-1 overflow-hidden">
             <div className="space-y-1 touch-pan-y">
               <AnimatePresence>
-                {fields.map((field, index) => (
+                {exercise1Sets.map((field, index) => (
                   <motion.div
                     key={`${field.id}-exercise1`}
                     initial={{ opacity: 0, y: 10 }}
@@ -58,7 +97,7 @@ export function PowerSetInfo() {
                         <SetInput
                           key={`${field.id}-exercise1`}
                           index={index}
-                          onRemove={remove}
+                          onRemove={removeExercise1}
                           exerciseLabel={`${powerSetPair.exercise1.name} - Set ${index + 1}`}
                         />
                       </div>
@@ -66,7 +105,7 @@ export function PowerSetInfo() {
                         <div className="absolute top-3 right-3">
                           <DeleteSetDialog 
                             setNumber={index + 1}
-                            onDelete={() => remove(index)}
+                            onDelete={() => removeExercise1(index)}
                           />
                         </div>
                       )}
@@ -76,9 +115,26 @@ export function PowerSetInfo() {
               </AnimatePresence>
             </div>
           </ScrollArea>
+          
+          <div className="mt-2">
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+            >
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-9 bg-[#333333] hover:bg-[#444444] text-white border-0"
+                onClick={() => appendExercise1({ weight: 0, reps: 0 })}
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Add Set to {powerSetPair.exercise1.name}
+              </Button>
+            </motion.div>
+          </div>
         </div>
         
-        {/* Second Exercise with the same sets */}
+        {/* Second Exercise with its own sets */}
         {powerSetPair.exercise2.name && (
           <div>
             <div className="flex gap-2 items-center mb-2 bg-[#222222] p-2 rounded-lg">
@@ -94,7 +150,7 @@ export function PowerSetInfo() {
             <ScrollArea className="max-h-[300px] px-1 pb-1 overflow-hidden">
               <div className="space-y-1 touch-pan-y">
                 <AnimatePresence>
-                  {fields.map((field, index) => (
+                  {exercise2Sets.map((field, index) => (
                     <motion.div
                       key={`${field.id}-exercise2`}
                       initial={{ opacity: 0, y: 10 }}
@@ -107,7 +163,7 @@ export function PowerSetInfo() {
                           <SetInput
                             key={`${field.id}-exercise2`}
                             index={index}
-                            onRemove={remove}
+                            onRemove={removeExercise2}
                             exerciseLabel={`${powerSetPair.exercise2.name} - Set ${index + 1}`}
                           />
                         </div>
@@ -115,7 +171,7 @@ export function PowerSetInfo() {
                           <div className="absolute top-3 right-3">
                             <DeleteSetDialog 
                               setNumber={index + 1}
-                              onDelete={() => remove(index)}
+                              onDelete={() => removeExercise2(index)}
                             />
                           </div>
                         )}
@@ -125,25 +181,25 @@ export function PowerSetInfo() {
                 </AnimatePresence>
               </div>
             </ScrollArea>
+            
+            <div className="mt-2">
+              <motion.div
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+              >
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-9 bg-[#333333] hover:bg-[#444444] text-white border-0"
+                  onClick={() => appendExercise2({ weight: 0, reps: 0 })}
+                >
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Add Set to {powerSetPair.exercise2.name}
+                </Button>
+              </motion.div>
+            </div>
           </div>
         )}
-        
-        <div className="mt-4">
-          <motion.div
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-          >
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-9 bg-[#333333] hover:bg-[#444444] text-white border-0"
-              onClick={() => append({ weight: 0, reps: 0 })}
-            >
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Add Set
-            </Button>
-          </motion.div>
-        </div>
       </div>
     </div>
   );
