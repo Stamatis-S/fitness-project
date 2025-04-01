@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -105,6 +106,20 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
         exercise2: { 
           name: "ΕΚΤΑΣΕΙΣ ΠΛΑΓΙΕΣ ΣΕ ΠΑΓΚΟ", 
           category: "ΩΜΟΙ" 
+        }
+      }
+    },
+    {
+      id: "power-set-7",
+      name: "SHRUGS ΜΕ ΑΛΤΗΡΕΣ - ΚΩΠΗΛΑΤΙΚΗ ΜΕ ΜΠΑΡΑ",
+      exercises: {
+        exercise1: { 
+          name: "SHRUGS ΜΕ ΑΛΤΗΡΕΣ", 
+          category: "ΩΜΟΙ" 
+        },
+        exercise2: { 
+          name: "ΚΩΠΗΛΑΤΙΚΗ ΜΕ ΜΠΑΡΑ", 
+          category: "ΠΛΑΤΗ" 
         }
       }
     }
