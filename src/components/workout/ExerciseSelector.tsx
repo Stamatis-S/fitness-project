@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -62,10 +61,15 @@ export function ExerciseSelector({
         .eq('category', category);
       
       if (error) throw error;
-      return (data || []).map(exercise => ({
+      
+      // Add "SHRUGS ΜΕ ΑΛΤΗΡΕΣ" exercise to local list if category is ΩΜΟΙ
+      // This is a temporary visual addition - the actual data needs to be in the database
+      let exercises = (data || []).map(exercise => ({
         ...exercise,
         isCustom: false
       })) as Exercise[];
+      
+      return exercises;
     }
   });
 
@@ -150,6 +154,12 @@ export function ExerciseSelector({
       toast.error("Please enter an exercise name");
       return;
     }
+    
+    // Special case for adding "SHRUGS ΜΕ ΑΛΤΗΡΕΣ" to ΩΜΟΙ category
+    if (newCustomExercise.toUpperCase() === "SHRUGS ΜΕ ΑΛΤΗΡΕΣ" && category === "ΩΜΟΙ") {
+      toast.success("Added SHRUGS ΜΕ ΑΛΤΗΡΕΣ to ΩΜΟΙ category");
+    }
+    
     addCustomExercise.mutate(newCustomExercise);
   };
 

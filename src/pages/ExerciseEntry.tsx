@@ -3,7 +3,8 @@ import { useState } from "react";
 import { ExerciseEntryForm } from "@/components/ExerciseEntryForm";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function ExerciseEntry() {
   const navigate = useNavigate();
@@ -28,6 +29,14 @@ export default function ExerciseEntry() {
               <ChevronLeft className="h-4 w-4" />
               Back to Home
             </Button>
+          </div>
+        </div>
+        
+        <div className="bg-amber-100 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-amber-800 dark:text-amber-300 flex items-start gap-3">
+          <Info className="h-5 w-5 flex-shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="font-medium">Adding New Exercises</p>
+            <p className="mt-1">To add a new exercise like "SHRUGS ΜΕ ΑΛΤΗΡΕΣ" to the "ΩΜΟΙ" category, use the search box and custom exercise field in the exercise selection step.</p>
           </div>
         </div>
 
