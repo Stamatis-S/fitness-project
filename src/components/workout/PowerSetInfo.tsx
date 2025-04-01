@@ -62,7 +62,7 @@ export function PowerSetInfo() {
   if (!powerSetPair) return null;
   
   return (
-    <div className="space-y-4 pb-4"> {/* Reduced bottom padding from pb-16 to pb-4 */}
+    <div className="space-y-4 mb-20"> {/* Changed from pb-4 to mb-20 to ensure content is visible above navbar */}
       <div className="bg-[#191919] rounded-lg p-3 mb-3">
         <div className="flex items-center gap-2 mb-3">
           <Dumbbell className="h-4 w-4 text-red-500" />
