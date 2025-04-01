@@ -32,7 +32,8 @@ export function ExerciseEntryForm() {
       exercise: "",
       sets: [{ weight: 0, reps: 0 }],
       exercise1Sets: [{ weight: 0, reps: 0 }],
-      exercise2Sets: [{ weight: 0, reps: 0 }]
+      exercise2Sets: [{ weight: 0, reps: 0 }],
+      isSubmitting: false
     }
   });
 
@@ -44,6 +45,7 @@ export function ExerciseEntryForm() {
   const onSubmit = async (data: ExerciseFormData) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
+    methods.setValue("isSubmitting", true);
     
     const success = await saveExercise(
       data,
@@ -67,7 +69,8 @@ export function ExerciseEntryForm() {
         exercise: "",
         sets: [{ weight: 0, reps: 0 }],
         exercise1Sets: [{ weight: 0, reps: 0 }],
-        exercise2Sets: [{ weight: 0, reps: 0 }]
+        exercise2Sets: [{ weight: 0, reps: 0 }],
+        isSubmitting: false
       });
       
       // Reset state in correct sequence
@@ -75,6 +78,7 @@ export function ExerciseEntryForm() {
       setStep('category');
     } else {
       setIsSubmitting(false);
+      methods.setValue("isSubmitting", false);
     }
   };
 

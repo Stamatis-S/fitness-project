@@ -1,224 +1,76 @@
 
-import { useFormContext } from "react-hook-form";
+import { useFormContext, useFieldArray } from "react-hook-form";
 import { ExerciseFormData } from "./types";
-import { Dumbbell, PlusCircle, Save } from "lucide-react";
-import { CATEGORY_COLORS } from "@/lib/constants";
-import { SetInput } from "./set-input/SetInput";
-import { Button } from "@/components/ui/button";
-import { useFieldArray } from "react-hook-form";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { AnimatePresence, motion } from "framer-motion";
-import { DeleteSetDialog } from "./set-input/DeleteSetDialog";
+import { useEffect } from "react";
+import { initializePowerSetPair } from "./power-set/utils";
+import { PowerSetHeader } from "./power-set/PowerSetHeader";
+import { PowerSetExercise } from "./power-set/PowerSetExercise";
+import { PowerSetSaveButton } from "./power-set/PowerSetSaveButton";
 
 export function PowerSetInfo() {
   const { watch, control } = useFormContext<ExerciseFormData>();
   const powerSetPair = watch('powerSetPair');
+  const isSubmitting = watch('isSubmitting') || false;
   
   // Create separate field arrays for each exercise in the power set
-  const { fields: exercise1Sets, append: appendExercise1, remove: removeExercise1 } = useFieldArray({
+  const { fields: exercise1Sets, append: appendExercise1 } = useFieldArray({
     control,
     name: "exercise1Sets"
   });
   
-  const { fields: exercise2Sets, append: appendExercise2, remove: removeExercise2 } = useFieldArray({
+  const { fields: exercise2Sets, append: appendExercise2 } = useFieldArray({
     control,
     name: "exercise2Sets"
   });
   
   // Fallback to the original sets field array if the specific exercise arrays are empty
-  const { fields, append } = useFieldArray({
+  const { fields } = useFieldArray({
     control,
     name: "sets"
   });
   
-  // Initialize exercise-specific sets if they don't exist yet
-  const initializeSets = () => {
-    if ((exercise1Sets.length === 0 || exercise2Sets.length === 0) && fields.length > 0) {
-      // Copy sets from the common sets array to the exercise-specific arrays
-      if (exercise1Sets.length === 0) {
-        fields.forEach(set => {
-          appendExercise1({ weight: set.weight, reps: set.reps });
-        });
-      }
-      
-      if (exercise2Sets.length === 0) {
-        fields.forEach(set => {
-          appendExercise2({ weight: set.weight, reps: set.reps });
-        });
-      }
-    } else if (exercise1Sets.length === 0 && exercise2Sets.length === 0) {
-      // If both arrays are empty, initialize with one default set
-      appendExercise1({ weight: 0, reps: 0 });
-      appendExercise2({ weight: 0, reps: 0 });
+  // Use effect to initialize the sets when the component mounts or when powerSetPair changes
+  useEffect(() => {
+    if (powerSetPair) {
+      initializePowerSetPair(
+        exercise1Sets,
+        exercise2Sets,
+        fields,
+        appendExercise1,
+        appendExercise2
+      );
     }
-  };
-  
-  // Call initialization function when component renders
-  if (powerSetPair) {
-    initializeSets();
-  }
+  }, [powerSetPair, exercise1Sets.length, exercise2Sets.length, fields.length]);
   
   if (!powerSetPair) return null;
   
   return (
     <div className="space-y-4 h-full flex flex-col">
       <div className="bg-[#191919] rounded-lg p-3 mb-3 flex-1 flex flex-col">
-        <div className="flex items-center gap-2 mb-3">
-          <Dumbbell className="h-4 w-4 text-red-500" />
-          <h3 className="text-white text-sm font-semibold">Power Set</h3>
-        </div>
+        <PowerSetHeader />
         
         <div className="flex-1 overflow-auto space-y-4">
           {/* First Exercise with its sets */}
-          <div className="mb-4">
-            <div className="flex gap-2 items-center mb-2 bg-[#222222] p-2 rounded-lg">
-              <div 
-                className="h-3 w-3 rounded-full" 
-                style={{ backgroundColor: CATEGORY_COLORS[powerSetPair.exercise1.category] }}
-              />
-              <div className="text-xs text-white">
-                <span className="text-gray-400">{powerSetPair.exercise1.category}:</span> {powerSetPair.exercise1.name}
-              </div>
-            </div>
-            
-            <ScrollArea className="max-h-[200px] px-1 pb-1 overflow-hidden">
-              <div className="space-y-1 touch-pan-y">
-                <AnimatePresence>
-                  {exercise1Sets.map((field, index) => (
-                    <motion.div
-                      key={`${field.id}-exercise1`}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="relative"
-                    >
-                      <div className="flex items-center">
-                        <div className="flex-1">
-                          <SetInput
-                            key={field.id}
-                            index={index}
-                            onRemove={removeExercise1}
-                            exerciseLabel={`${powerSetPair.exercise1.name} - Set ${index + 1}`}
-                            fieldArrayPath="exercise1Sets"
-                          />
-                        </div>
-                        {index > 0 && (
-                          <div className="absolute top-3 right-3">
-                            <DeleteSetDialog 
-                              setNumber={index + 1}
-                              onDelete={() => removeExercise1(index)}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </ScrollArea>
-            
-            <div className="mt-2">
-              <motion.div
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-              >
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full h-9 bg-[#333333] hover:bg-[#444444] text-white border-0"
-                  onClick={() => appendExercise1({ weight: 0, reps: 0 })}
-                >
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Add Set to {powerSetPair.exercise1.name}
-                </Button>
-              </motion.div>
-            </div>
-          </div>
+          <PowerSetExercise
+            exerciseName={powerSetPair.exercise1.name}
+            exerciseCategory={powerSetPair.exercise1.category}
+            fieldArrayPath="exercise1Sets"
+            exerciseIndex={1}
+          />
           
           {/* Second Exercise with its own sets */}
           {powerSetPair.exercise2.name && (
-            <div>
-              <div className="flex gap-2 items-center mb-2 bg-[#222222] p-2 rounded-lg">
-                <div 
-                  className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: CATEGORY_COLORS[powerSetPair.exercise2.category] }}
-                />
-                <div className="text-xs text-white">
-                  <span className="text-gray-400">{powerSetPair.exercise2.category}:</span> {powerSetPair.exercise2.name}
-                </div>
-              </div>
-              
-              <ScrollArea className="max-h-[200px] px-1 pb-1 overflow-hidden">
-                <div className="space-y-1 touch-pan-y">
-                  <AnimatePresence>
-                    {exercise2Sets.map((field, index) => (
-                      <motion.div
-                        key={`${field.id}-exercise2`}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="relative"
-                      >
-                        <div className="flex items-center">
-                          <div className="flex-1">
-                            <SetInput
-                              key={field.id}
-                              index={index}
-                              onRemove={removeExercise2}
-                              exerciseLabel={`${powerSetPair.exercise2.name} - Set ${index + 1}`}
-                              fieldArrayPath="exercise2Sets"
-                            />
-                          </div>
-                          {index > 0 && (
-                            <div className="absolute top-3 right-3">
-                              <DeleteSetDialog 
-                                setNumber={index + 1}
-                                onDelete={() => removeExercise2(index)}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </ScrollArea>
-              
-              <div className="mt-2">
-                <motion.div
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                >
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full h-9 bg-[#333333] hover:bg-[#444444] text-white border-0"
-                    onClick={() => appendExercise2({ weight: 0, reps: 0 })}
-                  >
-                    <PlusCircle className="h-4 w-4 mr-2" />
-                    Add Set to {powerSetPair.exercise2.name}
-                  </Button>
-                </motion.div>
-              </div>
-            </div>
+            <PowerSetExercise
+              exerciseName={powerSetPair.exercise2.name}
+              exerciseCategory={powerSetPair.exercise2.category}
+              fieldArrayPath="exercise2Sets"
+              exerciseIndex={2}
+            />
           )}
         </div>
         
-        {/* Save Exercise button within the power set container - placed at the bottom */}
-        <div className="mt-auto pt-4">
-          <motion.div
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-          >
-            <Button 
-              type="submit" 
-              className="w-full h-9 text-base bg-[#E22222] hover:bg-[#C11818] text-white"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save Exercise
-            </Button>
-          </motion.div>
-        </div>
+        {/* Save Exercise button within the power set container */}
+        <PowerSetSaveButton isSubmitting={isSubmitting} />
       </div>
     </div>
   );

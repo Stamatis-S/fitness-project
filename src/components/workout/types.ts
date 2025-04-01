@@ -10,6 +10,7 @@ export interface ExerciseFormData {
   sets: SetData[];
   exercise1Sets: SetData[];  // Sets specific to first exercise in power set
   exercise2Sets: SetData[];  // Sets specific to second exercise in power set
+  isSubmitting?: boolean;    // Track submission state for UI feedback
 }
 
 export interface SetData {
