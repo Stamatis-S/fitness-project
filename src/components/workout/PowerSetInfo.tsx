@@ -202,8 +202,8 @@ export function PowerSetInfo() {
           </div>
         )}
         
-        {/* Save Exercise button - added directly under Add Set button */}
-        <div className="mt-6 mb-2">
+        {/* Save Exercise button within the power set container */}
+        <div className="mt-6">
           <motion.div
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
@@ -377,6 +376,7 @@ export function ExerciseEntryForm() {
                       </motion.div>
                     </div>
                     
+                    {/* Save Exercise button for regular exercises */}
                     <div className="mt-auto pt-1.5 border-t border-[#333333] bg-[#222222]/95">
                       <motion.div
                         whileHover={{ scale: 1.01 }}
