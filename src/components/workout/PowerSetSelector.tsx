@@ -93,6 +93,20 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
           category: "ΤΡΙΚΕΦΑΛΑ" 
         }
       }
+    },
+    {
+      id: "power-set-6",
+      name: "ΚΩΠΗΛΑΤΙΚΗ ΤΡΟΧΑΛΙΑ 1 ΧΕΡΙ - ΕΚΤΑΣΕΙΣ ΠΛΑΓΙΕΣ ΣΕ ΠΑΓΚΟ",
+      exercises: {
+        exercise1: { 
+          name: "ΚΩΠΗΛΑΤΙΚΗ ΤΡΟΧΑΛΙΑ 1 ΧΕΡΙ", 
+          category: "ΠΛΑΤΗ" 
+        },
+        exercise2: { 
+          name: "ΕΚΤΑΣΕΙΣ ΠΛΑΓΙΕΣ ΣΕ ΠΑΓΚΟ", 
+          category: "ΩΜΟΙ" 
+        }
+      }
     }
   ];
 
