@@ -6,6 +6,7 @@ import { initializePowerSetPair } from "./power-set/utils";
 import { PowerSetHeader } from "./power-set/PowerSetHeader";
 import { PowerSetExercise } from "./power-set/PowerSetExercise";
 import { PowerSetSaveButton } from "./power-set/PowerSetSaveButton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function PowerSetInfo() {
   const { watch, control } = useFormContext<ExerciseFormData>();
@@ -46,30 +47,32 @@ export function PowerSetInfo() {
   
   return (
     <div className="space-y-4 h-full flex flex-col">
-      <div className="bg-[#191919] rounded-lg p-3 mb-3 flex-1 flex flex-col">
+      <div className="bg-[#191919] rounded-lg p-3 flex flex-col h-full">
         <PowerSetHeader />
         
-        <div className="flex-1 overflow-auto space-y-4">
-          {/* First Exercise with its sets */}
-          <PowerSetExercise
-            exerciseName={powerSetPair.exercise1.name}
-            exerciseCategory={powerSetPair.exercise1.category}
-            fieldArrayPath="exercise1Sets"
-            exerciseIndex={1}
-          />
-          
-          {/* Second Exercise with its own sets */}
-          {powerSetPair.exercise2.name && (
+        <ScrollArea className="flex-1 overflow-auto pr-2 mb-4">
+          <div className="space-y-4">
+            {/* First Exercise with its sets */}
             <PowerSetExercise
-              exerciseName={powerSetPair.exercise2.name}
-              exerciseCategory={powerSetPair.exercise2.category}
-              fieldArrayPath="exercise2Sets"
-              exerciseIndex={2}
+              exerciseName={powerSetPair.exercise1.name}
+              exerciseCategory={powerSetPair.exercise1.category}
+              fieldArrayPath="exercise1Sets"
+              exerciseIndex={1}
             />
-          )}
-        </div>
+            
+            {/* Second Exercise with its own sets */}
+            {powerSetPair.exercise2.name && (
+              <PowerSetExercise
+                exerciseName={powerSetPair.exercise2.name}
+                exerciseCategory={powerSetPair.exercise2.category}
+                fieldArrayPath="exercise2Sets"
+                exerciseIndex={2}
+              />
+            )}
+          </div>
+        </ScrollArea>
         
-        {/* Save Exercise button within the power set container */}
+        {/* Save Exercise button positioned at the bottom within the container */}
         <PowerSetSaveButton isSubmitting={isSubmitting} />
       </div>
     </div>

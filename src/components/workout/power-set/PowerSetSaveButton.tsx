@@ -9,7 +9,7 @@ interface PowerSetSaveButtonProps {
 
 export function PowerSetSaveButton({ isSubmitting }: PowerSetSaveButtonProps) {
   return (
-    <div className="mt-auto pt-4">
+    <div className="mt-auto">
       <motion.div
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
