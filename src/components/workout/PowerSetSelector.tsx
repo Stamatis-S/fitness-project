@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -30,12 +29,10 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
       name: "PEC FLY - ΣΦΥΡΙΑ",
       exercises: {
         exercise1: { 
-          id: "pec-fly", 
           name: "PEC FLY", 
           category: "ΣΤΗΘΟΣ" 
         },
         exercise2: { 
-          id: "sfyria", 
           name: "ΣΦΥΡΙΑ", 
           category: "ΔΙΚΕΦΑΛΑ" 
         }
@@ -46,12 +43,10 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
       name: "ΠΙΕΣΕΙΣ ΜΕ ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ - ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ",
       exercises: {
         exercise1: { 
-          id: "pieseis-altires-epiklini", 
           name: "ΠΙΕΣΕΙΣ ΜΕ ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ", 
           category: "ΣΤΗΘΟΣ" 
         },
         exercise2: { 
-          id: "altires-epiklini", 
           name: "ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ", 
           category: "ΔΙΚΕΦΑΛΑ" 
         }
@@ -62,12 +57,10 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
       name: "ΠΙΕΣΕΙΣ ΜΕ ΜΠΑΡΑ - ΕΚΤΑΣΕΙΣ ΠΛΑΓΙΑ",
       exercises: {
         exercise1: { 
-          id: "pieseis-mpara", 
           name: "ΠΙΕΣΕΙΣ ΜΕ ΜΠΑΡΑ", 
           category: "ΣΤΗΘΟΣ" 
         },
         exercise2: { 
-          id: "ektaseis-plagia", 
           name: "ΕΚΤΑΣΕΙΣ ΠΛΑΓΙΑ", 
           category: "ΩΜΟΙ" 
         }
@@ -78,14 +71,26 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
       name: "PUSH DOWN ΤΡΟΧΑΛΙΑ - ΕΚΤΑΣΕΙΣ ΨΗΛΑ ΣΕ ΕΠΙΚΛΙΝΗ",
       exercises: {
         exercise1: { 
-          id: "push-down-troxalia", 
           name: "PUSH DOWN ΤΡΟΧΑΛΙΑ", 
           category: "ΤΡΙΚΕΦΑΛΑ" 
         },
         exercise2: { 
-          id: "ektaseis-psila-epiklini", 
           name: "ΕΚΤΑΣΕΙΣ ΨΗΛΑ ΣΕ ΕΠΙΚΛΙΝΗ", 
           category: "ΩΜΟΙ" 
+        }
+      }
+    },
+    {
+      id: "power-set-5",
+      name: "ΜΟΝΟΖΥΓΟ - ΓΑΛΛΙΚΕΣ ΜΕ ΑΛΤΗΡΕΣ",
+      exercises: {
+        exercise1: { 
+          name: "ΜΟΝΟΖΥΓΟ", 
+          category: "ΠΛΑΤΗ" 
+        },
+        exercise2: { 
+          name: "ΓΑΛΛΙΚΕΣ ΜΕ ΑΛΤΗΡΕΣ", 
+          category: "ΤΡΙΚΕΦΑΛΑ" 
         }
       }
     }
