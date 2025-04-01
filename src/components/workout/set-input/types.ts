@@ -3,7 +3,7 @@ export interface SetInputProps {
   index: number;
   onRemove: (index: number) => void;
   exerciseLabel?: string;
-  fieldArrayPath?: string;
+  fieldArrayPath?: "sets" | "exercise1Sets" | "exercise2Sets"; // Update to specify exact allowed values
 }
 
 export interface SetControlProps {

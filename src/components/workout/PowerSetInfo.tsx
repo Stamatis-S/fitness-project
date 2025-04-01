@@ -62,7 +62,7 @@ export function PowerSetInfo() {
   if (!powerSetPair) return null;
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-16"> {/* Added pb-16 to create space at bottom */}
       <div className="bg-[#191919] rounded-lg p-3 mb-3">
         <div className="flex items-center gap-2 mb-3">
           <Dumbbell className="h-4 w-4 text-red-500" />
@@ -95,7 +95,7 @@ export function PowerSetInfo() {
                     <div className="flex items-center">
                       <div className="flex-1">
                         <SetInput
-                          key={`${field.id}-exercise1`}
+                          key={field.id}
                           index={index}
                           onRemove={removeExercise1}
                           exerciseLabel={`${powerSetPair.exercise1.name} - Set ${index + 1}`}
@@ -162,7 +162,7 @@ export function PowerSetInfo() {
                       <div className="flex items-center">
                         <div className="flex-1">
                           <SetInput
-                            key={`${field.id}-exercise2`}
+                            key={field.id}
                             index={index}
                             onRemove={removeExercise2}
                             exerciseLabel={`${powerSetPair.exercise2.name} - Set ${index + 1}`}

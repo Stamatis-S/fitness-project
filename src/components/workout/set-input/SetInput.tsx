@@ -12,8 +12,11 @@ import { DeleteSetDialog } from "./DeleteSetDialog";
 export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "sets" }: SetInputProps) {
   const { session } = useAuth();
   const { watch, setValue } = useFormContext<ExerciseFormData>();
-  const weight = watch(`${fieldArrayPath}.${index}.weight`);
-  const reps = watch(`${fieldArrayPath}.${index}.reps`);
+  
+  const fieldPath = `${fieldArrayPath}.${index}` as const;
+  const weight = watch(`${fieldArrayPath}.${index}.weight` as const);
+  const reps = watch(`${fieldArrayPath}.${index}.reps` as const);
+  
   const selectedExercise = watch('exercise');
   const customExercise = watch('customExercise');
   const selectedCategory = watch('category');
@@ -109,15 +112,16 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
   });
 
   const handleWeightChange = (amount: number) => {
-    const currentWeight = weight || 0;
+    const currentWeight = typeof weight === 'number' ? weight : 0;
     const newWeight = isCardio 
       ? Math.max(0, (currentWeight + amount))
       : Math.max(0, Math.round((currentWeight + amount) * 2) / 2);
-    setValue(`${fieldArrayPath}.${index}.weight`, newWeight);
+    setValue(`${fieldArrayPath}.${index}.weight` as any, newWeight);
   };
 
   const handleRepsChange = (amount: number) => {
-    setValue(`${fieldArrayPath}.${index}.reps`, (reps || 0) + amount);
+    const currentReps = typeof reps === 'number' ? reps : 0;
+    setValue(`${fieldArrayPath}.${index}.reps` as any, currentReps + amount);
   };
 
   const createButtonValues = () => {
@@ -193,6 +197,9 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
     return val === lastWorkoutValues.lastReps;
   };
 
+  const displayWeight = typeof weight === 'number' ? weight : 0;
+  const displayReps = typeof reps === 'number' ? reps : 0;
+
   return (
     <div className="bg-[#111111] rounded-xl p-3">
       <div className="flex items-center justify-between mb-2">
@@ -216,7 +223,7 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
               <Weight className="h-3.5 w-3.5 text-red-500" />
             )}
             <span className="text-white text-xs font-medium">
-              {isCardio ? `Minutes: ${weight || 0}` : `Weight: ${weight || 0} KG`}
+              {isCardio ? `Minutes: ${displayWeight}` : `Weight: ${displayWeight} KG`}
             </span>
             {!isLoadingLast && lastWorkoutValues && typeof lastWorkoutValues.lastWeight === 'number' && (
               <span className="text-xs text-gray-400 ml-auto">
@@ -227,14 +234,14 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
           
           <QuickSelectButtons
             values={weightButtons}
-            onSelect={(value) => setValue(`${fieldArrayPath}.${index}.weight`, value)}
+            onSelect={(value) => setValue(`${fieldArrayPath}.${index}.weight` as any, value)}
             unit={isCardio ? "min" : "KG"}
             isLastValue={isLastWeightValue}
           />
 
           <SetControl
-            value={weight || 0}
-            onChange={(value) => setValue(`${fieldArrayPath}.${index}.weight`, value)}
+            value={displayWeight}
+            onChange={(value) => setValue(`${fieldArrayPath}.${index}.weight` as any, value)}
             min={0}
             max={isCardio ? 120 : 200}
             step={isCardio ? 1 : 0.5}
@@ -247,7 +254,7 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
           <div className="flex items-center gap-1 mb-2">
             <RotateCw className="h-3.5 w-3.5 text-red-500" />
             <span className="text-white text-xs font-medium">
-              {isCardio ? "Intensity (1-10)" : "Reps"}: {reps || 0}
+              {isCardio ? "Intensity (1-10)" : "Reps"}: {displayReps}
             </span>
             {!isLoadingLast && lastWorkoutValues && typeof lastWorkoutValues.lastReps === 'number' && (
               <span className="text-xs text-gray-400 ml-auto">
@@ -258,13 +265,13 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
           
           <QuickSelectButtons
             values={repButtons}
-            onSelect={(value) => setValue(`${fieldArrayPath}.${index}.reps`, value)}
+            onSelect={(value) => setValue(`${fieldArrayPath}.${index}.reps` as any, value)}
             isLastValue={isLastRepsValue}
           />
 
           <SetControl
-            value={reps || 0}
-            onChange={(value) => setValue(`${fieldArrayPath}.${index}.reps`, value)}
+            value={displayReps}
+            onChange={(value) => setValue(`${fieldArrayPath}.${index}.reps` as any, value)}
             min={0}
             max={isCardio ? 10 : 50}
             step={1}
