@@ -40,7 +40,7 @@ const Index = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black pb-16">
+      <div className="min-h-screen bg-black pb-24"> {/* Increased bottom padding to make room for navigation */}
         <div className="mx-auto space-y-1">
           <div className="flex flex-col items-center justify-between gap-1 p-2">
             <div className="w-full flex justify-end">
@@ -65,7 +65,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Reduced vertical space from h-24 to h-6 */}
+          {/* Reduced vertical space */}
           <div className="h-6"></div>
 
           <div className="relative">

@@ -62,7 +62,7 @@ export function PowerSetInfo() {
   if (!powerSetPair) return null;
   
   return (
-    <div className="space-y-4 pb-16"> {/* Added pb-16 to create space at bottom */}
+    <div className="space-y-4 pb-4"> {/* Reduced bottom padding from pb-16 to pb-4 */}
       <div className="bg-[#191919] rounded-lg p-3 mb-3">
         <div className="flex items-center gap-2 mb-3">
           <Dumbbell className="h-4 w-4 text-red-500" />
