@@ -1,11 +1,10 @@
 
 import { useFormContext } from "react-hook-form";
 import { ExerciseFormData } from "./types";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, PlusCircle, Save } from "lucide-react";
 import { CATEGORY_COLORS } from "@/lib/constants";
 import { SetInput } from "./set-input/SetInput";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnimatePresence, motion } from "framer-motion";
@@ -62,7 +61,7 @@ export function PowerSetInfo() {
   if (!powerSetPair) return null;
   
   return (
-    <div className="space-y-4 mb-20"> {/* Changed from pb-4 to mb-20 to ensure content is visible above navbar */}
+    <div className="space-y-4">
       <div className="bg-[#191919] rounded-lg p-3 mb-3">
         <div className="flex items-center gap-2 mb-3">
           <Dumbbell className="h-4 w-4 text-red-500" />
@@ -202,6 +201,22 @@ export function PowerSetInfo() {
             </div>
           </div>
         )}
+        
+        {/* Save Exercise button - added directly under Add Set button */}
+        <div className="mt-6 mb-2">
+          <motion.div
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <Button 
+              type="submit" 
+              className="w-full h-9 text-base bg-[#E22222] hover:bg-[#C11818] text-white"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save Exercise
+            </Button>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

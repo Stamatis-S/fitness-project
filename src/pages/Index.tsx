@@ -40,7 +40,7 @@ const Index = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black pb-28"> {/* Increased bottom padding from pb-24 to pb-28 */}
+      <div className="min-h-screen bg-black pb-20"> {/* Reduced bottom padding for better spacing with new button position */}
         <div className="mx-auto space-y-1">
           <div className="flex flex-col items-center justify-between gap-1 p-2">
             <div className="w-full flex justify-end">
