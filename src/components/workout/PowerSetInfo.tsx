@@ -99,6 +99,7 @@ export function PowerSetInfo() {
                           index={index}
                           onRemove={removeExercise1}
                           exerciseLabel={`${powerSetPair.exercise1.name} - Set ${index + 1}`}
+                          fieldArrayPath="exercise1Sets"
                         />
                       </div>
                       {index > 0 && (
@@ -165,6 +166,7 @@ export function PowerSetInfo() {
                             index={index}
                             onRemove={removeExercise2}
                             exerciseLabel={`${powerSetPair.exercise2.name} - Set ${index + 1}`}
+                            fieldArrayPath="exercise2Sets"
                           />
                         </div>
                         {index > 0 && (

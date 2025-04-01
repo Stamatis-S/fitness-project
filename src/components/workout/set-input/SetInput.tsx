@@ -1,4 +1,3 @@
-
 import { useFormContext } from "react-hook-form";
 import { ExerciseFormData } from "@/components/workout/types";
 import { Weight, RotateCw, Clock } from "lucide-react";
@@ -10,11 +9,11 @@ import { SetControl } from "./SetControl";
 import { QuickSelectButtons } from "./QuickSelectButtons";
 import { DeleteSetDialog } from "./DeleteSetDialog";
 
-export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
+export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "sets" }: SetInputProps) {
   const { session } = useAuth();
   const { watch, setValue } = useFormContext<ExerciseFormData>();
-  const weight = watch(`sets.${index}.weight`);
-  const reps = watch(`sets.${index}.reps`);
+  const weight = watch(`${fieldArrayPath}.${index}.weight`);
+  const reps = watch(`${fieldArrayPath}.${index}.reps`);
   const selectedExercise = watch('exercise');
   const customExercise = watch('customExercise');
   const selectedCategory = watch('category');
@@ -56,15 +55,14 @@ export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
         }
       });
 
-      // Get the most frequent weight and rep values
       const weights = Object.entries(weightCounts)
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 1)  // Only get the most frequent one
+        .slice(0, 1)
         .map(([weight]) => Number(weight));
 
       const reps = Object.entries(repsCounts)
         .sort(([, a], [, b]) => b - a)
-        .slice(0, 1)  // Only get the most frequent one
+        .slice(0, 1)
         .map(([reps]) => Number(reps));
 
       return { weights, reps };
@@ -74,7 +72,6 @@ export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
     gcTime: 10 * 60 * 1000,
   });
 
-  // Modified to fetch last values based on set number
   const { data: lastWorkoutValues, isLoading: isLoadingLast } = useQuery({
     queryKey: ['last-workout-values', session?.user.id, selectedExercise, customExercise, index + 1],
     queryFn: async () => {
@@ -86,7 +83,7 @@ export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
         .from('workout_logs')
         .select('weight_kg, reps, workout_date')
         .eq('user_id', session.user.id)
-        .eq('set_number', index + 1) // Filter by set number
+        .eq('set_number', index + 1)
         .order('workout_date', { ascending: false })
         .order('created_at', { ascending: false });
       
@@ -116,34 +113,28 @@ export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
     const newWeight = isCardio 
       ? Math.max(0, (currentWeight + amount))
       : Math.max(0, Math.round((currentWeight + amount) * 2) / 2);
-    setValue(`sets.${index}.weight`, newWeight);
+    setValue(`${fieldArrayPath}.${index}.weight`, newWeight);
   };
 
   const handleRepsChange = (amount: number) => {
-    setValue(`sets.${index}.reps`, (reps || 0) + amount);
+    setValue(`${fieldArrayPath}.${index}.reps`, (reps || 0) + amount);
   };
 
-  // Create button values safely without depending on potentially undefined values
   const createButtonValues = () => {
-    // Initialize arrays
     const weightBtns: number[] = [];
     const repsBtns: number[] = [];
     
-    // Safe defaults based on exercise type
     const defaultWeight = isCardio ? 10 : 20;
     const defaultReps = isCardio ? 5 : 10;
     
-    // Try to add last weight if available
     if (lastWorkoutValues && typeof lastWorkoutValues.lastWeight === 'number') {
       weightBtns.push(lastWorkoutValues.lastWeight);
     }
     
-    // Try to add last reps if available
     if (lastWorkoutValues && typeof lastWorkoutValues.lastReps === 'number') {
       repsBtns.push(lastWorkoutValues.lastReps);
     }
     
-    // Try to add frequent weight if available and different
     if (frequentValues?.weights?.length) {
       const freqWeight = frequentValues.weights[0];
       if (weightBtns.length === 0 || weightBtns[0] !== freqWeight) {
@@ -151,7 +142,6 @@ export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
       }
     }
     
-    // Try to add frequent reps if available and different
     if (frequentValues?.reps?.length) {
       const freqReps = frequentValues.reps[0];
       if (repsBtns.length === 0 || repsBtns[0] !== freqReps) {
@@ -159,17 +149,14 @@ export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
       }
     }
     
-    // Ensure we have at least one weight button
     if (weightBtns.length === 0) {
       weightBtns.push(defaultWeight);
     }
     
-    // Ensure we have at least one reps button
     if (repsBtns.length === 0) {
       repsBtns.push(defaultReps);
     }
     
-    // Ensure we have a second weight button if needed
     if (weightBtns.length === 1) {
       const valueToAdd = isCardio ? 
         weightBtns[0] + 5 : 
@@ -177,7 +164,6 @@ export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
       weightBtns.push(valueToAdd);
     }
     
-    // Ensure we have a second reps button if needed
     if (repsBtns.length === 1) {
       const valueToAdd = isCardio ? 
         Math.min(repsBtns[0] + 1, 10) : 
@@ -185,17 +171,14 @@ export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
       repsBtns.push(valueToAdd);
     }
     
-    // Trim to max 2 buttons each
     return {
       weightButtons: weightBtns.slice(0, 2),
       repButtons: repsBtns.slice(0, 2)
     };
   };
-  
-  // Generate the button values safely
+
   const { weightButtons, repButtons } = createButtonValues();
 
-  // Safe helper functions that don't rely on possibly undefined values
   const isLastWeightValue = (val: number): boolean => {
     if (!lastWorkoutValues || typeof lastWorkoutValues.lastWeight !== 'number') {
       return false;
@@ -244,14 +227,14 @@ export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
           
           <QuickSelectButtons
             values={weightButtons}
-            onSelect={(value) => setValue(`sets.${index}.weight`, value)}
+            onSelect={(value) => setValue(`${fieldArrayPath}.${index}.weight`, value)}
             unit={isCardio ? "min" : "KG"}
             isLastValue={isLastWeightValue}
           />
 
           <SetControl
             value={weight || 0}
-            onChange={(value) => setValue(`sets.${index}.weight`, value)}
+            onChange={(value) => setValue(`${fieldArrayPath}.${index}.weight`, value)}
             min={0}
             max={isCardio ? 120 : 200}
             step={isCardio ? 1 : 0.5}
@@ -275,13 +258,13 @@ export function SetInput({ index, onRemove, exerciseLabel }: SetInputProps) {
           
           <QuickSelectButtons
             values={repButtons}
-            onSelect={(value) => setValue(`sets.${index}.reps`, value)}
+            onSelect={(value) => setValue(`${fieldArrayPath}.${index}.reps`, value)}
             isLastValue={isLastRepsValue}
           />
 
           <SetControl
             value={reps || 0}
-            onChange={(value) => setValue(`sets.${index}.reps`, value)}
+            onChange={(value) => setValue(`${fieldArrayPath}.${index}.reps`, value)}
             min={0}
             max={isCardio ? 10 : 50}
             step={1}
