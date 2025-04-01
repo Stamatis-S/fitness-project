@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -122,6 +121,20 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
           category: "ΠΛΑΤΗ" 
         }
       }
+    },
+    {
+      id: "power-set-8",
+      name: "ΑΥΤΟΣΥΓΚΕΝΤΡΩΣΕΙΣ - ΚΩΠΗΛΑΤΙΚΗ ΣΕ ΕΠΙΚΛΙΝΗ ΜΕ ΑΛΤΗΡΕΣ",
+      exercises: {
+        exercise1: { 
+          name: "ΑΥΤΟΣΥΓΚΕΝΤΡΩΣΕΙΣ", 
+          category: "ΔΙΚΕΦΑΛΑ" 
+        },
+        exercise2: { 
+          name: "ΚΩΠΗΛΑΤΙΚΗ ΣΕ ΕΠΙΚΛΙΝΗ ΜΕ ΑΛΤΗΡΕΣ", 
+          category: "ΠΛΑΤΗ" 
+        }
+      }
     }
   ];
 
@@ -149,8 +162,8 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
       </div>
 
       <div className={cn(
-        "grid gap-2", // Increased gap from 1.5 to 2
-        isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 gap-2" // Changed to single column on mobile, 2 columns on larger screens
+        "grid gap-2",
+        isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 gap-2"
       )}>
         {filteredPowerSets.map((powerSet) => (
           <motion.button
@@ -159,13 +172,13 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
             whileTap={{ scale: 0.98 }}
             onClick={() => onValueChange(powerSet.id, powerSet.exercises)}
             className={cn(
-              "w-full px-3 py-2.5 rounded-lg font-medium", // Increased padding
+              "w-full px-3 py-2.5 rounded-lg font-medium",
               "transition-all duration-200",
               "text-center break-words hyphens-auto bg-[#333333] dark:bg-slate-800",
               isMobile ? (
-                "min-h-[60px] text-xs leading-tight" // Increased height from 40px to 60px and font size on mobile
+                "min-h-[60px] text-xs leading-tight"
               ) : (
-                "min-h-[70px] text-sm" // Increased height from 46px to 70px on desktop
+                "min-h-[70px] text-sm"
               ),
               value === powerSet.id
                 ? "ring-2 ring-primary"
@@ -173,7 +186,7 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
               "text-white dark:text-white"
             )}
           >
-            <div className="line-clamp-3 break-words hyphens-auto px-1"> {/* Increased line-clamp from 2 to 3 */}
+            <div className="line-clamp-3 break-words hyphens-auto px-1">
               {powerSet.name}
             </div>
           </motion.button>
