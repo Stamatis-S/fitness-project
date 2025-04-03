@@ -41,7 +41,7 @@ export function PowerSetInfo() {
         appendExercise2
       );
     }
-  }, [powerSetPair, exercise1Sets.length, exercise2Sets.length, fields.length]);
+  }, [powerSetPair]);
   
   if (!powerSetPair) return null;
   

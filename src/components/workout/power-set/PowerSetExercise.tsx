@@ -41,41 +41,35 @@ export function PowerSetExercise({
         </div>
       </div>
       
-      <ScrollArea className="max-h-[200px] px-1 pb-1 overflow-hidden">
-        <div className="space-y-1 touch-pan-y">
-          <AnimatePresence>
-            {fields.map((field, index) => (
-              <motion.div
-                key={`${field.id}-${fieldArrayPath}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="relative"
-              >
-                <div className="flex items-center">
-                  <div className="flex-1">
-                    <SetInput
-                      key={field.id}
-                      index={index}
-                      onRemove={remove}
-                      exerciseLabel={`${exerciseName} - Set ${index + 1}`}
-                      fieldArrayPath={fieldArrayPath}
-                    />
-                  </div>
-                  {index > 0 && (
-                    <div className="absolute top-3 right-3">
-                      <DeleteSetDialog 
-                        setNumber={index + 1}
-                        onDelete={() => remove(index)}
-                      />
-                    </div>
-                  )}
+      <div className="space-y-1 touch-pan-y">
+        <AnimatePresence>
+          {fields.map((field, index) => (
+            <motion.div
+              key={`${field.id}-${fieldArrayPath}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="relative"
+            >
+              <SetInput
+                key={field.id}
+                index={index}
+                onRemove={remove}
+                exerciseLabel={`${exerciseName} - Set ${index + 1}`}
+                fieldArrayPath={fieldArrayPath}
+              />
+              {index > 0 && (
+                <div className="absolute top-3 right-3">
+                  <DeleteSetDialog 
+                    setNumber={index + 1}
+                    onDelete={() => remove(index)}
+                  />
                 </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      </ScrollArea>
+              )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
       
       <div className="mt-2">
         <motion.div
