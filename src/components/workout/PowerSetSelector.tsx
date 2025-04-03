@@ -1,12 +1,13 @@
 
-import { useState } from "react";
-import { Label } from "@/components/ui/label";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Search, Dumbbell } from "lucide-react";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { ExercisePair } from "./types";
 import type { ExerciseCategory } from "@/lib/constants";
 
@@ -15,143 +16,67 @@ interface PowerSetSelectorProps {
   onValueChange: (value: string, pair?: ExercisePair) => void;
 }
 
+interface PowerSetData {
+  id: number;
+  name: string;
+  exercise1_name: string;
+  exercise1_category: string;
+  exercise2_name: string;
+  exercise2_category: string;
+}
+
 export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const isMobile = useIsMobile();
-  
-  // Predefined power sets
-  const powerSets: Array<{
+  const [powerSets, setPowerSets] = useState<Array<{
     id: string;
     name: string;
     exercises: ExercisePair;
-  }> = [
-    {
-      id: "power-set-1",
-      name: "PEC FLY - ΣΦΥΡΙΑ",
-      exercises: {
-        exercise1: { 
-          name: "PEC FLY", 
-          category: "ΣΤΗΘΟΣ" 
-        },
-        exercise2: { 
-          name: "ΣΦΥΡΙΑ", 
-          category: "ΔΙΚΕΦΑΛΑ" 
+  }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const isMobile = useIsMobile();
+  
+  useEffect(() => {
+    const fetchPowerSets = async () => {
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('power_sets')
+          .select('*')
+          .order('id', { ascending: true });
+        
+        if (error) {
+          throw error;
         }
-      }
-    },
-    {
-      id: "power-set-2",
-      name: "ΠΙΕΣΕΙΣ ΜΕ ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ - ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ",
-      exercises: {
-        exercise1: { 
-          name: "ΠΙΕΣΕΙΣ ΜΕ ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ", 
-          category: "ΣΤΗΘΟΣ" 
-        },
-        exercise2: { 
-          name: "ΑΛΤΗΡΕΣ ΣΕ ΕΠΙΚΛΙΝΗ", 
-          category: "ΔΙΚΕΦΑΛΑ" 
+        
+        if (data) {
+          // Convert from database format to our application format
+          const formattedPowerSets = data.map((set: PowerSetData) => ({
+            id: `power-set-${set.id}`,
+            name: set.name,
+            exercises: {
+              exercise1: {
+                name: set.exercise1_name,
+                category: set.exercise1_category as ExerciseCategory
+              },
+              exercise2: {
+                name: set.exercise2_name,
+                category: set.exercise2_category as ExerciseCategory
+              }
+            }
+          }));
+          
+          setPowerSets(formattedPowerSets);
         }
+      } catch (error) {
+        console.error('Error fetching power sets:', error);
+        toast.error('Failed to load power sets');
+      } finally {
+        setIsLoading(false);
       }
-    },
-    {
-      id: "power-set-3",
-      name: "ΠΙΕΣΕΙΣ ΜΕ ΜΠΑΡΑ - ΕΚΤΑΣΕΙΣ ΠΛΑΓΙΑ",
-      exercises: {
-        exercise1: { 
-          name: "ΠΙΕΣΕΙΣ ΜΕ ΜΠΑΡΑ", 
-          category: "ΣΤΗΘΟΣ" 
-        },
-        exercise2: { 
-          name: "ΕΚΤΑΣΕΙΣ ΠΛΑΓΙΑ", 
-          category: "ΩΜΟΙ" 
-        }
-      }
-    },
-    {
-      id: "power-set-4",
-      name: "PUSH DOWN ΤΡΟΧΑΛΙΑ - ΕΚΤΑΣΕΙΣ ΨΗΛΑ ΣΕ ΕΠΙΚΛΙΝΗ",
-      exercises: {
-        exercise1: { 
-          name: "PUSH DOWN ΤΡΟΧΑΛΙΑ", 
-          category: "ΤΡΙΚΕΦΑΛΑ" 
-        },
-        exercise2: { 
-          name: "ΕΚΤΑΣΕΙΣ ΨΗΛΑ ΣΕ ΕΠΙΚΛΙΝΗ", 
-          category: "ΩΜΟΙ" 
-        }
-      }
-    },
-    {
-      id: "power-set-5",
-      name: "ΜΟΝΟΖΥΓΟ - ΓΑΛΛΙΚΕΣ ΜΕ ΑΛΤΗΡΕΣ",
-      exercises: {
-        exercise1: { 
-          name: "ΜΟΝΟΖΥΓΟ", 
-          category: "ΠΛΑΤΗ" 
-        },
-        exercise2: { 
-          name: "ΓΑΛΛΙΚΕΣ ΜΕ ΑΛΤΗΡΕΣ", 
-          category: "ΤΡΙΚΕΦΑΛΑ" 
-        }
-      }
-    },
-    {
-      id: "power-set-6",
-      name: "ΚΩΠΗΛΑΤΙΚΗ ΤΡΟΧΑΛΙΑ 1 ΧΕΡΙ - ΕΚΤΑΣΕΙΣ ΠΛΑΓΙΕΣ ΣΕ ΠΑΓΚΟ",
-      exercises: {
-        exercise1: { 
-          name: "ΚΩΠΗΛΑΤΙΚΗ ΤΡΟΧΑΛΙΑ 1 ΧΕΡΙ", 
-          category: "ΠΛΑΤΗ" 
-        },
-        exercise2: { 
-          name: "ΕΚΤΑΣΕΙΣ ΠΛΑΓΙΕΣ ΣΕ ΠΑΓΚΟ", 
-          category: "ΩΜΟΙ" 
-        }
-      }
-    },
-    {
-      id: "power-set-7",
-      name: "SHRUGS ΜΕ ΑΛΤΗΡΕΣ - ΚΩΠΗΛΑΤΙΚΗ ΜΕ ΜΠΑΡΑ",
-      exercises: {
-        exercise1: { 
-          name: "SHRUGS ΜΕ ΑΛΤΗΡΕΣ", 
-          category: "ΩΜΟΙ" 
-        },
-        exercise2: { 
-          name: "ΚΩΠΗΛΑΤΙΚΗ ΜΕ ΜΠΑΡΑ", 
-          category: "ΠΛΑΤΗ" 
-        }
-      }
-    },
-    {
-      id: "power-set-8",
-      name: "ΑΥΤΟΣΥΓΚΕΝΤΡΩΣΕΙΣ - ΚΩΠΗΛΑΤΙΚΗ ΣΕ ΕΠΙΚΛΙΝΗ ΜΕ ΑΛΤΗΡΕΣ",
-      exercises: {
-        exercise1: { 
-          name: "ΑΥΤΟΣΥΓΚΕΝΤΡΩΣΕΙΣ", 
-          category: "ΔΙΚΕΦΑΛΑ" 
-        },
-        exercise2: { 
-          name: "ΚΩΠΗΛΑΤΙΚΗ ΣΕ ΕΠΙΚΛΙΝΗ ΜΕ ΑΛΤΗΡΕΣ", 
-          category: "ΠΛΑΤΗ" 
-        }
-      }
-    },
-    {
-      id: "power-set-9",
-      name: "LEG EXTENSION - HACK SQUATS",
-      exercises: {
-        exercise1: { 
-          name: "LEG EXTENSION", 
-          category: "ΠΟΔΙΑ" 
-        },
-        exercise2: { 
-          name: "HACK SQUATS", 
-          category: "ΠΟΔΙΑ" 
-        }
-      }
-    }
-  ];
+    };
+    
+    fetchPowerSets();
+  }, []);
 
   // Filter power sets based on search
   const filteredPowerSets = powerSets.filter(set =>
@@ -180,40 +105,51 @@ export function PowerSetSelector({ value, onValueChange }: PowerSetSelectorProps
         "grid gap-2",
         isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 gap-2"
       )}>
-        {filteredPowerSets.map((powerSet) => (
-          <motion.button
-            key={powerSet.id}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onValueChange(powerSet.id, powerSet.exercises)}
-            className={cn(
-              "w-full px-3 py-2.5 rounded-lg font-medium",
-              "transition-all duration-200",
-              "text-center break-words hyphens-auto bg-[#333333] dark:bg-slate-800",
-              isMobile ? (
-                "min-h-[60px] text-xs leading-tight"
-              ) : (
-                "min-h-[70px] text-sm"
-              ),
-              value === powerSet.id
-                ? "ring-2 ring-primary"
-                : "hover:bg-[#444444] dark:hover:bg-slate-700",
-              "text-white dark:text-white"
-            )}
-          >
-            <div className="line-clamp-3 break-words hyphens-auto px-1">
-              {powerSet.name}
-            </div>
-          </motion.button>
-        ))}
-        
-        {filteredPowerSets.length === 0 && (
+        {isLoading ? (
           <div className={cn(
-            "col-span-full text-center py-2 text-muted-foreground",
+            "col-span-full text-center py-4 text-muted-foreground",
             isMobile && "text-xs"
           )}>
-            No power sets found
+            Loading power sets...
           </div>
+        ) : (
+          <>
+            {filteredPowerSets.map((powerSet) => (
+              <motion.button
+                key={powerSet.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => onValueChange(powerSet.id, powerSet.exercises)}
+                className={cn(
+                  "w-full px-3 py-2.5 rounded-lg font-medium",
+                  "transition-all duration-200",
+                  "text-center break-words hyphens-auto bg-[#333333] dark:bg-slate-800",
+                  isMobile ? (
+                    "min-h-[60px] text-xs leading-tight"
+                  ) : (
+                    "min-h-[70px] text-sm"
+                  ),
+                  value === powerSet.id
+                    ? "ring-2 ring-primary"
+                    : "hover:bg-[#444444] dark:hover:bg-slate-700",
+                  "text-white dark:text-white"
+                )}
+              >
+                <div className="line-clamp-3 break-words hyphens-auto px-1">
+                  {powerSet.name}
+                </div>
+              </motion.button>
+            ))}
+            
+            {filteredPowerSets.length === 0 && !isLoading && (
+              <div className={cn(
+                "col-span-full text-center py-2 text-muted-foreground",
+                isMobile && "text-xs"
+              )}>
+                No power sets found
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

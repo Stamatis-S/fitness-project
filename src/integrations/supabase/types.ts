@@ -129,6 +129,36 @@ export type Database = {
         }
         Relationships: []
       }
+      power_sets: {
+        Row: {
+          created_at: string
+          exercise1_category: string
+          exercise1_name: string
+          exercise2_category: string
+          exercise2_name: string
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          exercise1_category: string
+          exercise1_name: string
+          exercise2_category: string
+          exercise2_name: string
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string
+          exercise1_category?: string
+          exercise1_name?: string
+          exercise2_category?: string
+          exercise2_name?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
