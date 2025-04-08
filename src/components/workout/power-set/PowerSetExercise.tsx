@@ -2,7 +2,6 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnimatePresence, motion } from "framer-motion";
 import { CATEGORY_COLORS } from "@/lib/constants";
 import { SetInput } from "@/components/workout/set-input/SetInput";
