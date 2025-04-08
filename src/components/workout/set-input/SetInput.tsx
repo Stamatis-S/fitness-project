@@ -1,3 +1,4 @@
+
 import { useFormContext } from "react-hook-form";
 import { ExerciseFormData } from "@/components/workout/types";
 import { Weight, RotateCw, Clock } from "lucide-react";
@@ -13,9 +14,10 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
   const { session } = useAuth();
   const { watch, setValue } = useFormContext<ExerciseFormData>();
   
-  const fieldPath = `${fieldArrayPath}.${index}` as const;
-  const weight = watch(`${fieldArrayPath}.${index}.weight` as const);
-  const reps = watch(`${fieldArrayPath}.${index}.reps` as const);
+  // Use type assertion for dynamic field paths
+  const fieldPath = `${fieldArrayPath}.${index}`;
+  const weight = watch(`${fieldArrayPath}.${index}.weight` as any);
+  const reps = watch(`${fieldArrayPath}.${index}.reps` as any);
   
   const selectedExercise = watch('exercise');
   const formCustomExercise = watch('customExercise');
