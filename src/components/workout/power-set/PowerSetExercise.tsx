@@ -56,6 +56,7 @@ export function PowerSetExercise({
                 onRemove={remove}
                 exerciseLabel={`${exerciseName} - Set ${index + 1}`}
                 fieldArrayPath={fieldArrayPath}
+                customExercise={exerciseName}
               />
               {index > 0 && (
                 <div className="absolute top-3 right-3">

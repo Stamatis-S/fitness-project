@@ -9,7 +9,7 @@ import { SetControl } from "./SetControl";
 import { QuickSelectButtons } from "./QuickSelectButtons";
 import { DeleteSetDialog } from "./DeleteSetDialog";
 
-export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "sets" }: SetInputProps) {
+export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "sets", customExercise }: SetInputProps) {
   const { session } = useAuth();
   const { watch, setValue } = useFormContext<ExerciseFormData>();
   
@@ -18,12 +18,14 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
   const reps = watch(`${fieldArrayPath}.${index}.reps` as const);
   
   const selectedExercise = watch('exercise');
-  const customExercise = watch('customExercise');
+  const formCustomExercise = watch('customExercise');
   const selectedCategory = watch('category');
   const isCardio = selectedCategory === 'CARDIO';
+  
+  const effectiveCustomExercise = customExercise || formCustomExercise;
 
   const { data: frequentValues } = useQuery({
-    queryKey: ['frequent-workout-values', session?.user.id, selectedExercise, customExercise],
+    queryKey: ['frequent-workout-values', session?.user.id, selectedExercise, effectiveCustomExercise],
     queryFn: async () => {
       if (!session?.user.id) return { weights: [], reps: [] };
 
@@ -33,8 +35,8 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
 
-      if (selectedExercise === 'custom' && customExercise) {
-        query.eq('custom_exercise', customExercise);
+      if (selectedExercise === 'custom' && effectiveCustomExercise) {
+        query.eq('custom_exercise', effectiveCustomExercise);
       } else if (selectedExercise && selectedExercise !== 'custom') {
         query.eq('exercise_id', parseInt(selectedExercise));
       }
@@ -70,15 +72,15 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
 
       return { weights, reps };
     },
-    enabled: !!session?.user.id && !!selectedExercise,
+    enabled: !!session?.user.id && (!!selectedExercise || !!effectiveCustomExercise),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 
   const { data: lastWorkoutValues, isLoading: isLoadingLast } = useQuery({
-    queryKey: ['last-workout-values', session?.user.id, selectedExercise, customExercise, index + 1],
+    queryKey: ['last-workout-values', session?.user.id, selectedExercise, effectiveCustomExercise, index + 1],
     queryFn: async () => {
-      if (!session?.user.id || !selectedExercise) {
+      if (!session?.user.id) {
         return { lastWeight: null, lastReps: null, lastDate: null };
       }
 
@@ -90,8 +92,8 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
         .order('workout_date', { ascending: false })
         .order('created_at', { ascending: false });
       
-      if (selectedExercise === 'custom' && customExercise) {
-        query.eq('custom_exercise', customExercise);
+      if ((selectedExercise === 'custom' || fieldArrayPath !== 'sets') && effectiveCustomExercise) {
+        query.eq('custom_exercise', effectiveCustomExercise);
       } else if (selectedExercise && selectedExercise !== 'custom') {
         query.eq('exercise_id', parseInt(selectedExercise));
       }
@@ -108,7 +110,7 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
         lastDate: data[0].workout_date
       };
     },
-    enabled: !!session?.user.id && !!selectedExercise,
+    enabled: !!session?.user.id && (!!selectedExercise || !!effectiveCustomExercise),
   });
 
   const handleWeightChange = (amount: number) => {
