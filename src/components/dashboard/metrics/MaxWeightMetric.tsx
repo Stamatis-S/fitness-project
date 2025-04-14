@@ -16,7 +16,7 @@ export function MaxWeightMetric({ topExercises }: MaxWeightMetricProps) {
         <div className="bg-[#E22222]/10 p-1 rounded-md">
           <Dumbbell className="h-3.5 w-3.5 text-[#E22222]" />
         </div>
-        <h3 className="text-sm font-semibold">Top Weight Lifted</h3>
+        <h3 className="text-sm font-semibold">All-Time Max Weight</h3>
       </div>
       
       <div className="space-y-1">
