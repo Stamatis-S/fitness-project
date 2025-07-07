@@ -69,7 +69,7 @@ export default function SavedExercises() {
 
       toast.success("Exercise deleted successfully");
       refetch();
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Failed to delete exercise");
       console.error("Delete error:", error);
     }

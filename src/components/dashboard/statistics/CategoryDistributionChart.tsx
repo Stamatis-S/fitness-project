@@ -15,11 +15,20 @@ interface CategoryDistributionChartProps {
   isMobile: boolean;
 }
 
+interface LabelProps {
+  percentage: number;
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+}
+
 export function CategoryDistributionChart({ 
   categoryDistribution,
   isMobile
 }: CategoryDistributionChartProps) {
-  const renderCustomLabel = ({ percentage, cx, cy, midAngle, innerRadius, outerRadius }: any) => {
+  const renderCustomLabel = ({ percentage, cx, cy, midAngle, innerRadius, outerRadius }: LabelProps) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);

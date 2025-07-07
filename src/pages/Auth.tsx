@@ -68,8 +68,9 @@ export default function Auth() {
         toast.success("Successfully logged in!");
         navigate("/");
       }
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

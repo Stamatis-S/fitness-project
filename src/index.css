@@ -50,7 +50,7 @@
 .category-button {
   @apply transition-all duration-50 hover:scale-105 active:scale-95
          shadow-lg hover:shadow-xl bg-opacity-90 dark:bg-opacity-90
-         bg-[#222222] hover:bg-[#333333] text-white;
+         bg-card hover:bg-secondary text-card-foreground;
 }
 
 /* Animation Classes */
@@ -92,15 +92,15 @@
 
 /* Custom styles for fitness app */
 .fitness-card {
-  @apply bg-[#222222] rounded-lg p-3 border-0 shadow-md;
+  @apply bg-card rounded-lg p-3 border-0 shadow-md;
 }
 
 .fitness-tab {
-  @apply bg-[#333333] text-white hover:bg-[#444444];
+  @apply bg-secondary text-secondary-foreground hover:bg-muted;
 }
 
 .fitness-tab-active {
-  @apply bg-[#444444] text-white;
+  @apply bg-muted text-muted-foreground;
 }
 
 .compact-form {
@@ -108,11 +108,11 @@
 }
 
 .compact-input {
-  @apply py-1 px-2 text-sm bg-[#333333] border-[#444444];
+  @apply py-1 px-2 text-sm bg-secondary border-border;
 }
 
 .exercise-button {
-  @apply bg-[#333333] hover:bg-[#444444] text-white text-sm py-2 px-3 rounded-md;
+  @apply bg-secondary hover:bg-muted text-secondary-foreground text-sm py-2 px-3 rounded-md;
 }
 
 .category-pill {

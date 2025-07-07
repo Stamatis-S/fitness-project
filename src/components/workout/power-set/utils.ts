@@ -1,11 +1,16 @@
 
+interface SetData {
+  weight: number;
+  reps: number;
+}
+
 // This utility initializes a pair of power set exercises with their respective sets
 export const initializePowerSetPair = (
-  exercise1Sets: any[],
-  exercise2Sets: any[],
-  regularSets: any[],
-  appendExercise1: (data: { weight: number, reps: number }) => void,
-  appendExercise2: (data: { weight: number, reps: number }) => void
+  exercise1Sets: SetData[],
+  exercise2Sets: SetData[],
+  regularSets: SetData[],
+  appendExercise1: (data: SetData) => void,
+  appendExercise2: (data: SetData) => void
 ) => {
   // If no sets exist for the first exercise, initialize with a default set
   if (exercise1Sets.length === 0) {

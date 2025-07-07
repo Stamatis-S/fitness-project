@@ -239,7 +239,7 @@ export function useWorkoutPlan(userId: string | undefined) {
 
       toast.success("Workout plan saved successfully!");
       navigate('/saved-exercises');
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving workout plan:", error);
       toast.error("Failed to save workout plan");
     }

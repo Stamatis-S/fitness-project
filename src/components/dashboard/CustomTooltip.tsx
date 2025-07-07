@@ -1,7 +1,18 @@
 
 import { Label } from "@/components/ui/label";
 
-export const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number | string;
+    color?: string;
+    stroke?: string;
+  }>;
+  label?: string;
+}
+
+export const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
   if (!active || !payload || !payload.length) return null;
 
   return (
@@ -11,7 +22,7 @@ export const CustomTooltip = ({ active, payload, label }: any) => {
           {label}
         </Label>
       )}
-      {payload.map((entry: any, index: number) => (
+      {payload.map((entry, index: number) => (
         <div
           key={index}
           className="flex items-center gap-2 text-sm"

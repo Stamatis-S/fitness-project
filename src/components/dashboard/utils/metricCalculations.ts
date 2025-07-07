@@ -89,7 +89,16 @@ export function calculateExerciseStats(workoutLogs: WorkoutLog[]) {
   };
 }
 
-export function getMostUsedExercise(exerciseStats: Map<string, any>) {
+interface ExerciseStatsData {
+  totalSets: number;
+  thisWeekSets: number;
+  lastWeekSets: number;
+  dailySets: Map<string, number>;
+  maxWeight: number;
+  weightProgress: number;
+}
+
+export function getMostUsedExercise(exerciseStats: Map<string, ExerciseStatsData>) {
   if (exerciseStats.size === 0) {
     return { exercises: ['No exercises recorded'], sets: 0 };
   }
@@ -105,31 +114,6 @@ export function getMostUsedExercise(exerciseStats: Map<string, any>) {
   };
 }
 
-export function getMaxWeight(thisWeekLogs: WorkoutLog[], lastWeekLogs: WorkoutLog[]) {
-  const exerciseMaxWeights = new Map<string, number>();
-  
-  [...thisWeekLogs, ...lastWeekLogs].forEach(log => {
-    const exerciseName = log.custom_exercise || log.exercises?.name;
-    if (!exerciseName || !log.weight_kg) return;
-    
-    const currentMax = exerciseMaxWeights.get(exerciseName) || 0;
-    exerciseMaxWeights.set(exerciseName, Math.max(currentMax, log.weight_kg));
-  });
-
-  if (exerciseMaxWeights.size === 0) {
-    return { topExercises: [{ exercise: 'No exercises recorded', weight: 0 }] };
-  }
-
-  const topExercises = Array.from(exerciseMaxWeights.entries())
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 3)
-    .map(([exercise, weight]) => ({
-      exercise,
-      weight
-    }));
-
-  return { topExercises };
-}
 
 export function getTotalVolume(thisWeekLogs: WorkoutLog[], lastWeekLogs: WorkoutLog[]) {
   const thisWeekVolume = thisWeekLogs.reduce((sum, log) => 
