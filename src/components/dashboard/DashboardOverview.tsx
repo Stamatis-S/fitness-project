@@ -6,12 +6,14 @@ import { MostUsedExercise } from "./metrics/MostUsedExercise";
 import { MaxWeightMetric } from "./metrics/MaxWeightMetric";
 import { PRTracker } from "./metrics/PRTracker";
 import { WorkoutReports } from "./WorkoutReports";
+import { WeeklyVolume } from "./metrics/WeeklyVolume";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { 
   calculateExerciseStats, 
   getMostUsedExercise, 
-  getPersonalRecords 
+  getPersonalRecords,
+  getTotalVolume
 } from "./utils/metricCalculations";
 
 interface DashboardOverviewProps {
@@ -29,6 +31,7 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
 
   const { exerciseStats, thisWeekLogs, lastWeekLogs } = calculateExerciseStats(workoutLogs);
   const mostUsed = getMostUsedExercise(exerciseStats);
+  const { volume, percentChange } = getTotalVolume(thisWeekLogs, lastWeekLogs);
   
   // Calculate all-time max weights
   const maxWeightMap = new Map<string, number>();
@@ -60,6 +63,17 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
         animate={{ opacity: 1, y: 0 }}
         className="col-span-full"
       >
+        <Card className="p-3">
+          <WeeklyVolume volume={volume} percentChange={percentChange} />
+        </Card>
+      </motion.div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="col-span-full"
+      >
         <Card className="h-full">
           <div className="grid grid-cols-2 h-full">
             <div className="p-1.5 border-r border-border">
@@ -75,7 +89,7 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: 0.2 }}
         className="col-span-full"
       >
         <Card className="p-3">

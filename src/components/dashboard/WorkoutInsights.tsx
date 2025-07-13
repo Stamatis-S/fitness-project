@@ -6,6 +6,7 @@ import { Activity, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { WorkoutCycleCard } from "./WorkoutCycleCard";
+import { EXERCISE_CATEGORIES } from "@/lib/constants";
 
 interface WorkoutInsightsProps {
   logs: WorkoutLog[];
