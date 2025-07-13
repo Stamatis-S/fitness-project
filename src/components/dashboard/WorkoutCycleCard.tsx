@@ -98,20 +98,15 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
   // Send payment reminder
   const sendReminderMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/send-payment-reminder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('send-payment-reminder', {
+        body: {
           email: session?.user?.email,
           name: session?.user?.email?.split('@')[0] || 'Gym Member'
-        }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send reminder email');
-      }
-
-      return response.json();
+      if (error) throw error;
+      return data;
     },
   });
 

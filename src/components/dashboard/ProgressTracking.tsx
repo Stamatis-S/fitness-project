@@ -148,12 +148,6 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
     }
   }, [workoutLogs, selectedExercises]);
 
-  console.log('Chart Component State:', {
-    selectedExercises,
-    exerciseNames,
-    progressDataLength: progressData.length,
-    workoutLogsLength: workoutLogs.length,
-  });
 
   if (!progressData.length && selectedExercises.length > 0) {
     return (
