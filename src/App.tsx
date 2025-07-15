@@ -14,6 +14,7 @@ import Leaderboard from "@/pages/Leaderboard";
 import WorkoutPlan from "@/pages/WorkoutPlan";
 import NotFound from "@/pages/NotFound";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
             {isMobile && <BottomNav />}
+            <PWAInstallPrompt />
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
