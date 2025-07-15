@@ -33,10 +33,8 @@ export function PWAInstallPrompt() {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       
-      // Show the prompt after a delay to not be too intrusive
-      setTimeout(() => {
-        setShowPrompt(true);
-      }, 3000);
+      // Show the prompt immediately when users visit the site
+      setShowPrompt(true);
     };
 
     // Listen for app installed event
