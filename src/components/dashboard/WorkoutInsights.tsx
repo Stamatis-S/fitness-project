@@ -26,10 +26,12 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
   };
 
   const mostTrainedCategory = getMostTrainedCategory();
-  // Get unique workout dates (using Set to prevent duplicates)
-  const workoutDates = [...new Set(logs.map(log => log.workout_date))];
   
-  // Sort dates in descending order (newest first) to ensure accurate count
+  // Get unique workout dates (using Set to prevent duplicates)
+  const uniqueWorkoutDates = new Set(logs.map(log => log.workout_date));
+  const workoutDates = Array.from(uniqueWorkoutDates);
+  
+  // Sort dates in descending order (newest first) to ensure accurate count and last workout date
   workoutDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
   
   const lastWorkoutDate = workoutDates.length > 0 ? workoutDates[0] : null;
