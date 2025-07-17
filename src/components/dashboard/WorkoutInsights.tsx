@@ -76,7 +76,7 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
                   <h3 className="text-sm font-semibold">Total Workouts</h3>
                 </div>
                 <div className="text-2xl font-bold">{workoutDates.length}</div>
-                <p className="text-xs text-muted-foreground">You're doing great!</p>
+                <p className="text-xs text-muted-foreground">Unique workout days</p>
               </div>
             )}
           </div>
