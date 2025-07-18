@@ -6,7 +6,6 @@ import { Activity, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { WorkoutCycleCard } from "./WorkoutCycleCard";
-import { EXERCISE_CATEGORIES } from "@/lib/constants";
 
 interface WorkoutInsightsProps {
   logs: WorkoutLog[];
@@ -68,7 +67,7 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
                   <Award className="h-4 w-4 text-yellow-500" />
                   <h3 className="text-sm font-semibold">Total Workouts</h3>
                 </div>
-                <div className="text-2xl font-bold">{workoutDates.length}</div>
+                <div className="text-2xl font-bold">{logs.length}</div>
                 <p className="text-xs text-muted-foreground">You're doing great!</p>
               </div>
             )}
