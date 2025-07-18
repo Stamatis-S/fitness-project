@@ -114,11 +114,9 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
     if (currentCycle?.start_date && session?.user?.id) {
       // Count actual workout days since cycle start
       const cycleStartDate = new Date(currentCycle.start_date);
-      // Filter workout dates that occurred after cycle start date and create a unique set
-      const workoutDaysSinceCycleStart = workoutDates
-        .filter(date => !isBefore(new Date(date), cycleStartDate))
-        .filter((date, index, self) => self.indexOf(date) === index) // Get unique dates
-        .length;
+      const workoutDaysSinceCycleStart = workoutDates.filter(date => 
+        !isBefore(new Date(date), cycleStartDate)
+      ).length;
 
       if (workoutDaysSinceCycleStart >= CYCLE_DAYS && currentCycle.is_active) {
         setIsComplete(true);

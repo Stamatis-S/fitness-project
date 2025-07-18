@@ -4,18 +4,12 @@ import { ExerciseCategory } from "@/lib/constants";
 
 export function calculateExerciseStats(workoutLogs: WorkoutLog[]) {
   const now = new Date();
-  // Get Monday of current week as start day
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
-  startOfWeek.setHours(0, 0, 0, 0);
-  
-  // Get Monday of previous week
-  const startOfPrevWeek = new Date(startOfWeek);
-  startOfPrevWeek.setDate(startOfPrevWeek.getDate() - 7);
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-  const thisWeekLogs = workoutLogs.filter(log => new Date(log.workout_date) >= startOfWeek);
+  const thisWeekLogs = workoutLogs.filter(log => new Date(log.workout_date) >= oneWeekAgo);
   const lastWeekLogs = workoutLogs.filter(log => 
-    new Date(log.workout_date) >= startOfPrevWeek && new Date(log.workout_date) < startOfWeek
+    new Date(log.workout_date) >= twoWeeksAgo && new Date(log.workout_date) < oneWeekAgo
   );
 
   const exerciseStats = workoutLogs.reduce((stats, log) => {
@@ -45,9 +39,9 @@ export function calculateExerciseStats(workoutLogs: WorkoutLog[]) {
     exerciseData.dailySets.set(dateKey, dailyCount + 1);
     
     const logDate = new Date(log.workout_date);
-    if (logDate >= startOfWeek) {
+    if (logDate >= oneWeekAgo) {
       exerciseData.thisWeekSets += 1;
-    } else if (logDate >= startOfPrevWeek && logDate < startOfWeek) {
+    } else if (logDate >= twoWeeksAgo && logDate < oneWeekAgo) {
       exerciseData.lastWeekSets += 1;
     }
     
@@ -137,13 +131,10 @@ export function getTotalVolume(thisWeekLogs: WorkoutLog[], lastWeekLogs: Workout
 
 export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
   const now = new Date();
-  // Get Monday of current week as start day
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
-  startOfWeek.setHours(0, 0, 0, 0);
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   
-  const recentLogs = workoutLogs.filter(log => new Date(log.workout_date) >= startOfWeek);
-  const historicalLogs = workoutLogs.filter(log => new Date(log.workout_date) < startOfWeek);
+  const recentLogs = workoutLogs.filter(log => new Date(log.workout_date) >= oneWeekAgo);
+  const historicalLogs = workoutLogs.filter(log => new Date(log.workout_date) < oneWeekAgo);
   
   const records: { 
     exercise: string; 
