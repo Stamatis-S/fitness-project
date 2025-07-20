@@ -1,4 +1,5 @@
 
+import React from "react";
 import { motion } from "framer-motion";
 import { DateSelector } from "@/components/workout/DateSelector";
 import { CategorySelector } from "@/components/workout/CategorySelector";

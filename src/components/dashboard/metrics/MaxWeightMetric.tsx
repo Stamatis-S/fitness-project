@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Dumbbell } from "lucide-react";
 import { motion } from "framer-motion";
 
