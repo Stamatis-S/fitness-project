@@ -8,6 +8,7 @@ import { LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { UserRecordPopup } from "@/components/UserRecordPopup";
+import { DataErrorBoundary } from "@/components/ErrorBoundary";
 
 const Index = () => {
   const { session, isLoading } = useAuth();
@@ -60,7 +61,9 @@ const Index = () => {
               />
               {/* Fixed position for UserRecordPopup */}
               <div className="mt-2 mb-3">
-                <UserRecordPopup />
+                <DataErrorBoundary>
+                  <UserRecordPopup />
+                </DataErrorBoundary>
               </div>
             </div>
           </div>
@@ -69,7 +72,11 @@ const Index = () => {
           <div className="h-6"></div>
 
           <div className="relative">
-            {session && <ExerciseEntryForm />}
+            {session && (
+              <DataErrorBoundary>
+                <ExerciseEntryForm />
+              </DataErrorBoundary>
+            )}
           </div>
         </div>
       </div>

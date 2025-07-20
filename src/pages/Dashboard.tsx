@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
+import { DataErrorBoundary } from "@/components/ErrorBoundary";
 
 type ExerciseCategory = Database['public']['Enums']['exercise_category'];
 
@@ -105,19 +106,33 @@ export default function Dashboard() {
 
                   <div className="p-1">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                      <WorkoutInsights logs={workoutLogs} />
+                      <DataErrorBoundary>
+                        <WorkoutInsights logs={workoutLogs} />
+                      </DataErrorBoundary>
                     </div>
 
                     <TabsContent value="overview" className="m-0">
-                      {workoutLogs && <DashboardOverview workoutLogs={workoutLogs} />}
+                      {workoutLogs && (
+                        <DataErrorBoundary>
+                          <DashboardOverview workoutLogs={workoutLogs} />
+                        </DataErrorBoundary>
+                      )}
                     </TabsContent>
 
                     <TabsContent value="progress" className="m-0 w-full">
-                      {workoutLogs && <ProgressTracking workoutLogs={workoutLogs} />}
+                      {workoutLogs && (
+                        <DataErrorBoundary>
+                          <ProgressTracking workoutLogs={workoutLogs} />
+                        </DataErrorBoundary>
+                      )}
                     </TabsContent>
 
                     <TabsContent value="statistics" className="m-0 w-full">
-                      {workoutLogs && <DashboardStatistics workoutLogs={workoutLogs} />}
+                      {workoutLogs && (
+                        <DataErrorBoundary>
+                          <DashboardStatistics workoutLogs={workoutLogs} />
+                        </DataErrorBoundary>
+                      )}
                     </TabsContent>
                   </div>
                 </Tabs>
