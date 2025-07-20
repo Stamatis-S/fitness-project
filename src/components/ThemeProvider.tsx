@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from "react"
+import React, { createContext, useContext } from "react"
 
 type Theme = "brand"
 
@@ -25,12 +25,12 @@ export function ThemeProvider({
   defaultTheme = "brand",
   ...props
 }: ThemeProviderProps) {
-  // Simplified implementation without hooks to avoid React bundling issues
-  React.useEffect(() => {
+  // Apply theme immediately without hooks to avoid bundling issues
+  if (typeof window !== 'undefined') {
     const root = window.document.documentElement
     root.classList.remove("light", "dark")
     root.classList.add("brand")
-  }, [])
+  }
 
   const value = {
     theme: "brand" as Theme,
