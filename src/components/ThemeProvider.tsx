@@ -25,16 +25,15 @@ export function ThemeProvider({
   defaultTheme = "brand",
   ...props
 }: ThemeProviderProps) {
-  const [theme] = useState<Theme>("brand")
-
-  useEffect(() => {
+  // Simplified implementation without hooks to avoid React bundling issues
+  React.useEffect(() => {
     const root = window.document.documentElement
     root.classList.remove("light", "dark")
     root.classList.add("brand")
   }, [])
 
   const value = {
-    theme,
+    theme: "brand" as Theme,
     setTheme: () => {},
   }
 
