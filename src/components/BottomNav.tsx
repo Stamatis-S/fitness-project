@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Home, BarChart2, Bookmark, User, Trophy } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
