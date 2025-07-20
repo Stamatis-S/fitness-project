@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface UserRecord {
   user_id: string;
@@ -121,10 +120,8 @@ export function UserRecordPopup() {
   return (
     <div className="flex justify-center">
       <div className="w-64 bg-[#1A1F2C] border border-gray-700 text-white p-1.5 mx-auto rounded-md">
-        <motion.div
+        <div
           key={currentRecord.user_id}
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 1 }}
           className="space-y-0.5"
         >
           <div className="flex items-center justify-between">
@@ -158,7 +155,7 @@ export function UserRecordPopup() {
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
