@@ -3,7 +3,6 @@ import React from "react";
 import { Home, BarChart2, Bookmark, User, Trophy } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 export function BottomNav() {
   const navigate = useNavigate();
@@ -39,13 +38,7 @@ export function BottomNav() {
               <div className="relative">
                 <Icon className="h-5 w-5 mb-0.5" />
                 {isActive && (
-                  <motion.div
-                    className="absolute -inset-1 bg-primary/10 rounded-full -z-10"
-                    layoutId="nav-indicator"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2 }}
-                  />
+                  <div className="absolute -inset-1 bg-primary/10 rounded-full -z-10" />
                 )}
               </div>
               <span 
@@ -57,13 +50,7 @@ export function BottomNav() {
                 {label}
               </span>
               {isActive && (
-                <motion.div 
-                  className="absolute bottom-0 w-1/2 h-0.5 bg-primary rounded-full"
-                  layoutId="bottom-indicator"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                />
+                <div className="absolute bottom-0 w-1/2 h-0.5 bg-primary rounded-full" />
               )}
             </button>
           );
