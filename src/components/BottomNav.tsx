@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Home, BarChart2, Bookmark, User, Trophy } from "lucide-react";
+import { Home, BarChart2, Bookmark, User, Trophy, Dumbbell } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ export function BottomNav() {
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: BarChart2, label: "Dashboard", path: "/dashboard" },
+    { icon: Dumbbell, label: "Builder", path: "/workout-builder" },
     { icon: Bookmark, label: "Saved", path: "/saved-exercises" },
     { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
     { icon: User, label: "Profile", path: "/profile" },
