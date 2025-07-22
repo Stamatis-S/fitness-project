@@ -19,7 +19,7 @@ export function BottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 h-16 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t safe-area-bottom">
-      <nav className="flex h-full items-center justify-around px-2 md:px-4 max-w-7xl mx-auto">
+      <nav className="flex h-full items-center justify-around px-1 sm:px-2 md:px-4 max-w-7xl mx-auto overflow-x-auto">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = path === location.pathname;
           
@@ -28,7 +28,7 @@ export function BottomNav() {
               key={path}
               onClick={() => navigate(path)}
               className={cn(
-                "flex flex-col items-center justify-center relative p-1 w-full h-full",
+                "flex flex-col items-center justify-center relative p-1 min-w-0 flex-1 h-full",
                 "transition-colors duration-200",
                 isActive
                   ? "text-primary"
@@ -44,7 +44,7 @@ export function BottomNav() {
               </div>
               <span 
                 className={cn(
-                  "text-xs font-medium transition-all duration-200",
+                  "text-xs font-medium transition-all duration-200 truncate max-w-full",
                   isActive ? "opacity-100" : "opacity-70"
                 )}
               >

@@ -101,7 +101,7 @@ function App() {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </ErrorBoundary>
-                {isMobile && <BottomNav />}
+                <BottomNav />
                 <Toaster />
               </AuthProvider>
             </ErrorBoundary>
