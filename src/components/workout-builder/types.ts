@@ -21,7 +21,7 @@ export interface WorkoutTemplate {
   aiGenerated?: boolean;
 }
 
-export interface ExerciseCategory {
+export interface WorkoutCategory {
   name: string;
   exercises: WorkoutExercise[];
   color: string;
