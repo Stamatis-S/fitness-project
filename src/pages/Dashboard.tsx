@@ -48,7 +48,8 @@ export default function Dashboard() {
           )
         `)
         .eq('user_id', session.user.id)
-        .order('workout_date', { ascending: false });
+        .order('workout_date', { ascending: false })
+        .limit(10000); // Ensure we get all workout logs
 
       if (error) {
         toast.error("Failed to load workout logs");
