@@ -2,12 +2,14 @@
 import { ExerciseFormData } from "@/components/workout/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 export async function saveExercise(
   data: ExerciseFormData, 
   selectedCategory: string | null, 
   userId: string, 
-  setIsSubmitting: (value: boolean) => void
+  setIsSubmitting: (value: boolean) => void,
+  invalidateQueries?: () => void
 ): Promise<boolean> {
   try {
     if (!selectedCategory) {
@@ -127,6 +129,11 @@ export async function saveExercise(
       .insert(exerciseSets);
 
     if (error) throw error;
+
+    // Invalidate queries to refresh dashboard data
+    if (invalidateQueries) {
+      invalidateQueries();
+    }
 
     toast.success("Exercise logged successfully!");
     return true;

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FormErrorBoundary } from "@/components/ErrorBoundary";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { useAuth } from "@/components/AuthProvider";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import type { ExerciseFormData, ExercisePair } from "@/components/workout/types";
@@ -16,6 +17,7 @@ import { saveExercise } from "@/components/workout/entry-form/utils";
 
 export function ExerciseEntryForm() {
   const { session } = useAuth();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState<'category' | 'exercise' | 'sets'>('category');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,31 +55,40 @@ export function ExerciseEntryForm() {
       data,
       selectedCategory,
       session?.user?.id || '',
-      setIsSubmitting
+      setIsSubmitting,
+      () => {
+        // Invalidate all workout-related queries
+        queryClient.invalidateQueries({ queryKey: ['workout_logs'] });
+      }
     );
     
     if (success) {
-      // Reset form with fresh default values
-      methods.reset({
-        date: (() => {
-          const now = new Date();
-          return new Date(Date.UTC(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate(),
-            12, 0, 0, 0
-          ));
-        })(),
-        exercise: "",
-        sets: [{ weight: 0, reps: 0 }],
-        exercise1Sets: [{ weight: 0, reps: 0 }],
-        exercise2Sets: [{ weight: 0, reps: 0 }],
-        isSubmitting: false
-      });
-      
-      // Reset state in correct sequence
-      setSelectedCategory(null);
-      setStep('category');
+      // Complete form reset with timeout to ensure proper state clearing
+      setTimeout(() => {
+        methods.reset({
+          date: (() => {
+            const now = new Date();
+            return new Date(Date.UTC(
+              now.getFullYear(),
+              now.getMonth(),
+              now.getDate(),
+              12, 0, 0, 0
+            ));
+          })(),
+          exercise: "",
+          customExercise: "",
+          powerSetPair: undefined,
+          sets: [{ weight: 0, reps: 0 }],
+          exercise1Sets: [{ weight: 0, reps: 0 }],
+          exercise2Sets: [{ weight: 0, reps: 0 }],
+          isSubmitting: false
+        });
+        
+        // Reset all state variables
+        setSelectedCategory(null);
+        setStep('category');
+        setIsSubmitting(false);
+      }, 100);
     } else {
       setIsSubmitting(false);
       methods.setValue("isSubmitting", false);
