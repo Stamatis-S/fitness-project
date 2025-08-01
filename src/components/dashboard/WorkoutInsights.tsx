@@ -61,16 +61,19 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
               </div>
             )}
 
-            {logs.length > 0 && (
-              <div className="flex flex-col gap-2 p-3">
-                <div className="flex items-center space-x-2">
-                  <Award className="h-4 w-4 text-yellow-500" />
-                  <h3 className="text-sm font-semibold">Total Workouts</h3>
+            {(() => {
+              const uniqueWorkouts = new Set(logs.map(log => log.workout_date)).size;
+              return uniqueWorkouts > 0 && (
+                <div className="flex flex-col gap-2 p-3">
+                  <div className="flex items-center space-x-2">
+                    <Award className="h-4 w-4 text-yellow-500" />
+                    <h3 className="text-sm font-semibold">Total Workouts</h3>
+                  </div>
+                  <div className="text-2xl font-bold">{uniqueWorkouts}</div>
+                  <p className="text-xs text-muted-foreground">You're doing great!</p>
                 </div>
-                <div className="text-2xl font-bold">{logs.length}</div>
-                <p className="text-xs text-muted-foreground">You're doing great!</p>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </Card>
       </motion.div>
