@@ -38,6 +38,7 @@ export default function Dashboard() {
         throw new Error('Not authenticated');
       }
 
+      // Remove ALL limits and get ALL workout data
       const { data, error } = await supabase
         .from('workout_logs')
         .select(`
@@ -48,13 +49,14 @@ export default function Dashboard() {
           )
         `)
         .eq('user_id', session.user.id)
-        .order('workout_date', { ascending: false })
-        .limit(10000); // Ensure we get all workout logs
+        .order('workout_date', { ascending: false });
 
       if (error) {
         toast.error("Failed to load workout logs");
         throw error;
       }
+      
+      console.log(`Loaded ${data?.length || 0} total workout logs`);
       return data as WorkoutLog[];
     },
     enabled: !!session?.user.id,

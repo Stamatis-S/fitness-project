@@ -1,4 +1,3 @@
-
 import { PageTransition } from "@/components/PageTransition";
 import { WorkoutTable } from "@/components/saved-exercises/WorkoutTable";
 import { WorkoutFilters } from "@/components/saved-exercises/WorkoutFilters";
@@ -34,6 +33,7 @@ export default function SavedExercises() {
         throw new Error('Not authenticated');
       }
 
+      // Remove ALL limits to get ALL workout data
       const { data, error } = await supabase
         .from('workout_logs')
         .select(`
@@ -50,6 +50,8 @@ export default function SavedExercises() {
         toast.error("Failed to load workout logs");
         throw error;
       }
+      
+      console.log(`Loaded ${data?.length || 0} total saved exercises`);
       return data as WorkoutLog[];
     },
     enabled: !!session?.user.id,
