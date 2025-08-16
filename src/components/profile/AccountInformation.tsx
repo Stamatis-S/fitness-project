@@ -200,7 +200,10 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
                 </Button>
                 <Button
                   size="sm"
-                  onClick={handlePasswordChange}
+                  onClick={() => {
+                    console.log('Update button clicked', { passwordForm });
+                    handlePasswordChange();
+                  }}
                   disabled={!passwordForm.currentPassword || 
                            !passwordForm.newPassword || 
                            !passwordForm.confirmNewPassword ||
