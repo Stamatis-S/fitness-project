@@ -52,6 +52,14 @@ export default function SavedExercises() {
       }
       
       console.log(`Loaded ${data?.length || 0} total saved exercises`);
+      
+      // Debug: Check date range of loaded data
+      if (data && data.length > 0) {
+        const dates = data.map(log => log.workout_date).sort();
+        console.log(`Date range: ${dates[0]} to ${dates[dates.length - 1]}`);
+        console.log(`Sample dates:`, dates.slice(0, 5));
+      }
+      
       return data as WorkoutLog[];
     },
     enabled: !!session?.user.id,
@@ -117,12 +125,17 @@ export default function SavedExercises() {
       if (dateRange) {
         const logDate = new Date(log.workout_date);
         const [startDate, endDate] = dateRange;
+        console.log(`Filtering date: ${log.workout_date}, logDate: ${logDate}, range: ${startDate} to ${endDate}`);
         if (logDate < startDate || logDate > endDate) return false;
       }
     }
     
     return true;
   });
+
+  // Debug: Log filter results
+  console.log(`Filter settings - Date: ${dateFilter}, Category: ${categoryFilter}, Search: "${searchTerm}"`);
+  console.log(`Total logs: ${workoutLogs?.length || 0}, Filtered: ${filteredLogs?.length || 0}`);
 
   return (
     <PageTransition>
