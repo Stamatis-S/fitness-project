@@ -95,18 +95,29 @@ export default function SavedExercises() {
 
   const getDateRange = (filter: string): [Date, Date] | null => {
     const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
     
     switch (filter) {
       case "7days":
-        return [subDays(today, 7), today];
+        const start7 = subDays(today, 7);
+        start7.setHours(0, 0, 0, 0); // Start of day
+        return [start7, today];
       case "15days":
-        return [subDays(today, 15), today];
+        const start15 = subDays(today, 15);
+        start15.setHours(0, 0, 0, 0);
+        return [start15, today];
       case "30days":
-        return [subDays(today, 30), today];
+        const start30 = subDays(today, 30);
+        start30.setHours(0, 0, 0, 0);
+        return [start30, today];
       case "45days":
-        return [subDays(today, 45), today];
+        const start45 = subDays(today, 45);
+        start45.setHours(0, 0, 0, 0);
+        return [start45, today];
       case "90days":
-        return [subDays(today, 90), today];
+        const start90 = subDays(today, 90);
+        start90.setHours(0, 0, 0, 0);
+        return [start90, today];
       default:
         return null;
     }
@@ -123,7 +134,7 @@ export default function SavedExercises() {
     if (dateFilter !== "all") {
       const dateRange = getDateRange(dateFilter);
       if (dateRange) {
-        const logDate = new Date(log.workout_date);
+        const logDate = new Date(log.workout_date + 'T12:00:00'); // Set to noon to avoid timezone issues
         const [startDate, endDate] = dateRange;
         console.log(`Filtering date: ${log.workout_date}, logDate: ${logDate}, range: ${startDate} to ${endDate}`);
         if (logDate < startDate || logDate > endDate) return false;
