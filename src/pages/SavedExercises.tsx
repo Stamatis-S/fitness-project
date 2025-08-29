@@ -44,7 +44,8 @@ export default function SavedExercises() {
           )
         `)
         .eq('user_id', session.user.id)
-        .order('workout_date', { ascending: false });
+        .order('workout_date', { ascending: false })
+        .limit(null); // Remove default 1000 row limit to load all workout data
 
       if (error) {
         toast.error("Failed to load workout logs");
