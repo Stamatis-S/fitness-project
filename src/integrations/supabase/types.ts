@@ -236,6 +236,36 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_deletion_log: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          deleted_user_id: string | null
+          deleted_workout_date: string | null
+          deleted_workout_id: number | null
+          deletion_source: string | null
+          id: number
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_at?: string | null
+          deleted_user_id?: string | null
+          deleted_workout_date?: string | null
+          deleted_workout_id?: number | null
+          deletion_source?: string | null
+          id?: number
+        }
+        Update: {
+          created_at?: string | null
+          deleted_at?: string | null
+          deleted_user_id?: string | null
+          deleted_workout_date?: string | null
+          deleted_workout_id?: number | null
+          deletion_source?: string | null
+          id?: number
+        }
+        Relationships: []
+      }
       workout_logs: {
         Row: {
           category: Database["public"]["Enums"]["exercise_category"]
