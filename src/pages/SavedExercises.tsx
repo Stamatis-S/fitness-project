@@ -59,6 +59,12 @@ export default function SavedExercises() {
         const dates = data.map(log => log.workout_date).sort();
         console.log(`Date range: ${dates[0]} to ${dates[dates.length - 1]}`);
         console.log(`Sample dates:`, dates.slice(0, 5));
+        console.log(`Last 5 dates:`, dates.slice(-5));
+        
+        // Check for potential memory issues - if too many records, we might need pagination
+        if (data.length > 2000) {
+          console.warn(`Large dataset detected: ${data.length} records. Consider implementing pagination.`);
+        }
       }
       
       return data as WorkoutLog[];
@@ -148,6 +154,13 @@ export default function SavedExercises() {
   // Debug: Log filter results
   console.log(`Filter settings - Date: ${dateFilter}, Category: ${categoryFilter}, Search: "${searchTerm}"`);
   console.log(`Total logs: ${workoutLogs?.length || 0}, Filtered: ${filteredLogs?.length || 0}`);
+  
+  // Additional debugging for date range in filtered data
+  if (filteredLogs && filteredLogs.length > 0) {
+    const filteredDates = filteredLogs.map(log => log.workout_date).sort();
+    console.log(`Filtered date range: ${filteredDates[0]} to ${filteredDates[filteredDates.length - 1]}`);
+    console.log(`Earliest 5 filtered dates: ${filteredDates.slice(0, 5).join(', ')}`);
+  }
 
   return (
     <PageTransition>

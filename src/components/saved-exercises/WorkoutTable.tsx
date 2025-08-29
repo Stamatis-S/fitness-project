@@ -76,6 +76,14 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
 
   // Sort by date descending
   groupedLogs.sort((a, b) => b.date.localeCompare(a.date));
+  
+  // Debug: Log the date range of grouped data
+  if (groupedLogs.length > 0) {
+    console.log(`WorkoutTable: Rendering ${groupedLogs.length} date groups`);
+    console.log(`WorkoutTable: Date range from ${groupedLogs[groupedLogs.length - 1]?.date} to ${groupedLogs[0]?.date}`);
+    console.log(`WorkoutTable: First 5 dates: ${groupedLogs.slice(0, 5).map(g => g.date).join(', ')}`);
+    console.log(`WorkoutTable: Last 5 dates: ${groupedLogs.slice(-5).map(g => g.date).join(', ')}`);
+  }
 
   return (
     <div className="space-y-2">
