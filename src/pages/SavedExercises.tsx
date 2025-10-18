@@ -45,7 +45,7 @@ export default function SavedExercises() {
         `)
         .eq('user_id', session.user.id)
         .order('workout_date', { ascending: false })
-        .limit(5000); // Increase limit to accommodate all workout data
+        .limit(50000); // Set high limit to get all records (Supabase default is 1000)
 
       if (error) {
         toast.error("Failed to load workout logs");
