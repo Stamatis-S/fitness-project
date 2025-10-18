@@ -38,27 +38,42 @@ export default function Dashboard() {
         throw new Error('Not authenticated');
       }
 
-      // Remove ALL limits and get ALL workout data
-      const { data, error } = await supabase
-        .from('workout_logs')
-        .select(`
-          *,
-          exercises (
-            id,
-            name
-          )
-        `)
-        .eq('user_id', session.user.id)
-        .order('workout_date', { ascending: false })
-        .limit(50000); // Set high limit to get all records (Supabase default is 1000)
+      // Fetch ALL workout data by making multiple requests (Supabase has 1000 row limit per query)
+      let allData: WorkoutLog[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      let hasMore = true;
 
-      if (error) {
-        toast.error("Failed to load workout logs");
-        throw error;
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('workout_logs')
+          .select(`
+            *,
+            exercises (
+              id,
+              name
+            )
+          `)
+          .eq('user_id', session.user.id)
+          .order('workout_date', { ascending: false })
+          .range(from, from + batchSize - 1);
+
+        if (error) {
+          toast.error("Failed to load workout logs");
+          throw error;
+        }
+
+        if (data && data.length > 0) {
+          allData = [...allData, ...data];
+          from += batchSize;
+          hasMore = data.length === batchSize;
+        } else {
+          hasMore = false;
+        }
       }
       
-      console.log(`Loaded ${data?.length || 0} total workout logs`);
-      return data as WorkoutLog[];
+      console.log(`Loaded ${allData.length} total workout logs from ${Math.ceil(allData.length / batchSize)} batches`);
+      return allData as WorkoutLog[];
     },
     enabled: !!session?.user.id,
   });

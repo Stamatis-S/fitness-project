@@ -43,41 +43,50 @@ export default function SavedExercises() {
         throw new Error('Not authenticated');
       }
 
-      // Remove ALL limits to get ALL workout data
-      const { data, error } = await supabase
-        .from('workout_logs')
-        .select(`
-          *,
-          exercises (
-            id,
-            name
-          )
-        `)
-        .eq('user_id', session.user.id)
-        .order('workout_date', { ascending: false })
-        .limit(50000); // Set high limit to get all records (Supabase default is 1000)
+      // Fetch ALL workout data by making multiple requests (Supabase has 1000 row limit per query)
+      let allData: WorkoutLog[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      let hasMore = true;
 
-      if (error) {
-        toast.error("Failed to load workout logs");
-        throw error;
-      }
-      
-      console.log(`Loaded ${data?.length || 0} total saved exercises`);
-      
-      // Debug: Check date range of loaded data
-      if (data && data.length > 0) {
-        const dates = data.map(log => log.workout_date).sort();
-        console.log(`Date range: ${dates[0]} to ${dates[dates.length - 1]}`);
-        console.log(`Sample dates:`, dates.slice(0, 5));
-        console.log(`Last 5 dates:`, dates.slice(-5));
-        
-        // Check for potential memory issues - if too many records, we might need pagination
-        if (data.length > 2000) {
-          console.warn(`Large dataset detected: ${data.length} records. Consider implementing pagination.`);
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('workout_logs')
+          .select(`
+            *,
+            exercises (
+              id,
+              name
+            )
+          `)
+          .eq('user_id', session.user.id)
+          .order('workout_date', { ascending: false })
+          .range(from, from + batchSize - 1);
+
+        if (error) {
+          toast.error("Failed to load workout logs");
+          throw error;
+        }
+
+        if (data && data.length > 0) {
+          allData = [...allData, ...data];
+          from += batchSize;
+          hasMore = data.length === batchSize; // Continue if we got a full batch
+        } else {
+          hasMore = false;
         }
       }
       
-      return data as WorkoutLog[];
+      console.log(`Loaded ${allData.length} total saved exercises from ${Math.ceil(allData.length / batchSize)} batches`);
+      
+      // Debug: Check date range of loaded data
+      if (allData.length > 0) {
+        const dates = allData.map(log => log.workout_date).sort();
+        console.log(`Date range: ${dates[0]} to ${dates[dates.length - 1]}`);
+        console.log(`Unique dates: ${new Set(dates).size}`);
+      }
+      
+      return allData as WorkoutLog[];
     },
     enabled: !!session?.user.id,
   });
