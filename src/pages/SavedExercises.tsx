@@ -12,6 +12,14 @@ import { useState, useEffect } from "react";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { ArrowLeft } from "lucide-react";
 import { subDays } from "date-fns";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function SavedExercises() {
   const { session, isLoading } = useAuth();
@@ -19,6 +27,8 @@ export default function SavedExercises() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20; // Show 20 workout days per page
 
   useEffect(() => {
     if (!isLoading && !session) {
@@ -151,6 +161,29 @@ export default function SavedExercises() {
     return true;
   });
 
+  // Group by date for pagination
+  const groupedByDate = filteredLogs?.reduce((acc: { [key: string]: WorkoutLog[] }, log) => {
+    if (!acc[log.workout_date]) {
+      acc[log.workout_date] = [];
+    }
+    acc[log.workout_date].push(log);
+    return acc;
+  }, {}) || {};
+
+  const uniqueDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
+  const totalPages = Math.ceil(uniqueDates.length / itemsPerPage);
+  
+  // Get logs for current page
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentDates = uniqueDates.slice(startIndex, endIndex);
+  const paginatedLogs = filteredLogs?.filter(log => currentDates.includes(log.workout_date));
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter, dateFilter]);
+
   // Debug: Log filter results
   console.log(`Filter settings - Date: ${dateFilter}, Category: ${categoryFilter}, Search: "${searchTerm}"`);
   console.log(`Total logs: ${workoutLogs?.length || 0}, Filtered: ${filteredLogs?.length || 0}`);
@@ -192,8 +225,61 @@ export default function SavedExercises() {
           </Card>
 
           <Card className="overflow-hidden bg-[#222222] border-0 rounded-lg">
-            <WorkoutTable logs={filteredLogs || []} onDelete={handleDelete} />
+            <WorkoutTable logs={paginatedLogs || []} onDelete={handleDelete} />
           </Card>
+
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-4">
+              <Pagination>
+                <PaginationContent className="gap-1">
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer bg-[#333333] hover:bg-[#444444] text-white"}
+                    />
+                  </PaginationItem>
+                  
+                  {[...Array(Math.min(5, totalPages))].map((_, idx) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = idx + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = idx + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + idx;
+                    } else {
+                      pageNum = currentPage - 2 + idx;
+                    }
+                    
+                    return (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink
+                          onClick={() => setCurrentPage(pageNum)}
+                          isActive={currentPage === pageNum}
+                          className={currentPage === pageNum 
+                            ? "bg-[#E22222] text-white hover:bg-[#E22222]" 
+                            : "bg-[#333333] hover:bg-[#444444] text-white cursor-pointer"}
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+                  
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer bg-[#333333] hover:bg-[#444444] text-white"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+
+          <div className="text-center text-sm text-gray-400 mt-2">
+            Page {currentPage} of {totalPages} • Showing {currentDates.length} days
+          </div>
         </div>
       </div>
     </PageTransition>
