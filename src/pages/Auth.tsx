@@ -45,7 +45,13 @@ export default function Auth() {
       let result;
       
       if (isSignUp) {
-        result = await supabase.auth.signUp({ email, password });
+        result = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`
+          }
+        });
       } else {
         // The Supabase API doesn't support autoRefreshToken in signInWithPassword options
         // We'll handle rememberMe through localStorage instead

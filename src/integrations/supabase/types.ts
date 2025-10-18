@@ -172,7 +172,6 @@ export type Database = {
           id: string
           last_score_update: string | null
           profile_photo_url: string | null
-          role: Database["public"]["Enums"]["user_role"]
           updated_at: string
           username: string | null
         }
@@ -183,7 +182,6 @@ export type Database = {
           id: string
           last_score_update?: string | null
           profile_photo_url?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           username?: string | null
         }
@@ -194,9 +192,32 @@ export type Database = {
           id?: string
           last_score_update?: string | null
           profile_photo_url?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -353,8 +374,16 @@ export type Database = {
           username: string
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "user" | "moderator" | "admin"
       exercise_category:
         | "ΣΤΗΘΟΣ"
         | "ΠΛΑΤΗ"
@@ -493,6 +522,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["user", "moderator", "admin"],
       exercise_category: [
         "ΣΤΗΘΟΣ",
         "ΠΛΑΤΗ",

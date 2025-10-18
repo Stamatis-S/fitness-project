@@ -15,7 +15,6 @@ interface ProfileData {
   fitness_score: number;
   fitness_level: string;
   last_score_update: string;
-  role: "admin" | "user";
   profile_photo_url: string | null;
 }
 
@@ -35,7 +34,7 @@ export default function Profile() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('username, fitness_score, fitness_level, last_score_update, role, profile_photo_url')
+        .select('username, fitness_score, fitness_level, last_score_update, profile_photo_url')
         .eq('id', session?.user.id)
         .maybeSingle();
 
