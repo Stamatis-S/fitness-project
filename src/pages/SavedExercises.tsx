@@ -36,45 +36,69 @@ export default function SavedExercises() {
     }
   }, [session, isLoading, navigate]);
 
-  // First, get unique workout dates with a count
+  // First, get unique workout dates using a more efficient approach
   const { data: dateInfo } = useQuery({
     queryKey: ['workout_dates', session?.user.id, categoryFilter, searchTerm, dateFilter],
     queryFn: async () => {
       if (!session?.user.id) throw new Error('Not authenticated');
 
-      // Build query for getting unique dates
-      let query = supabase
-        .from('workout_logs')
-        .select('workout_date, category, exercise_id, custom_exercise, exercises!inner(name)', { count: 'exact' })
-        .eq('user_id', session.user.id);
+      // Get ALL workout dates by batching if necessary
+      let allDates: string[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      let hasMore = true;
 
-      // Apply filters
-      if (categoryFilter !== 'all') {
-        query = query.eq('category', categoryFilter as any);
-      }
+      while (hasMore) {
+        let query = supabase
+          .from('workout_logs')
+          .select('workout_date, category, exercise_id, custom_exercise, exercises(name)')
+          .eq('user_id', session.user.id)
+          .order('workout_date', { ascending: false })
+          .range(from, from + batchSize - 1);
 
-      if (dateFilter !== 'all') {
-        const dateRange = getDateRange(dateFilter);
-        if (dateRange) {
-          const [startDate, endDate] = dateRange;
-          const startStr = startDate.toISOString().split('T')[0];
-          const endStr = endDate.toISOString().split('T')[0];
-          query = query.gte('workout_date', startStr).lte('workout_date', endStr);
+        // Apply filters
+        if (categoryFilter !== 'all') {
+          query = query.eq('category', categoryFilter as any);
+        }
+
+        if (dateFilter !== 'all') {
+          const dateRange = getDateRange(dateFilter);
+          if (dateRange) {
+            const [startDate, endDate] = dateRange;
+            const startStr = startDate.toISOString().split('T')[0];
+            const endStr = endDate.toISOString().split('T')[0];
+            query = query.gte('workout_date', startStr).lte('workout_date', endStr);
+          }
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          // Filter by search term if needed
+          let filtered = data;
+          if (searchTerm) {
+            filtered = data.filter(log => {
+              const exerciseName = log.exercises?.name || log.custom_exercise;
+              return exerciseName?.toLowerCase().includes(searchTerm.toLowerCase());
+            });
+          }
+
+          const dates = filtered.map(d => d.workout_date);
+          allDates = [...allDates, ...dates];
+          from += batchSize;
+          hasMore = data.length === batchSize;
+        } else {
+          hasMore = false;
         }
       }
 
-      if (searchTerm) {
-        // For search, we need to filter by exercise name - requires joining with exercises table
-        query = query.or(`exercises.name.ilike.%${searchTerm}%,custom_exercise.ilike.%${searchTerm}%`);
-      }
-
-      const { data, error, count } = await query;
-      if (error) throw error;
-
-      // Get unique dates from the results
-      const uniqueDates = [...new Set(data?.map(d => d.workout_date) || [])].sort((a, b) => b.localeCompare(a));
+      // Get unique dates from all the results
+      const uniqueDates = [...new Set(allDates)].sort((a, b) => b.localeCompare(a));
       
-      return { uniqueDates, totalCount: count || 0 };
+      console.log(`Found ${uniqueDates.length} unique workout dates (from ${allDates.length} total entries)`);
+      
+      return { uniqueDates, totalCount: allDates.length };
     },
     enabled: !!session?.user.id,
   });
