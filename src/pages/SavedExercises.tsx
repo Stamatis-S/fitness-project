@@ -36,79 +36,76 @@ export default function SavedExercises() {
     }
   }, [session, isLoading, navigate]);
 
-  // First, get unique workout dates using a more efficient approach
-  const { data: dateInfo } = useQuery({
-    queryKey: ['workout_dates', session?.user.id, categoryFilter, searchTerm, dateFilter],
+  // First, get ALL unique workout dates without date filter (we'll filter for display later)
+  const { data: allDateInfo } = useQuery({
+    queryKey: ['all_workout_dates', session?.user.id],
     queryFn: async () => {
       if (!session?.user.id) throw new Error('Not authenticated');
 
-      // Get ALL workout dates by batching if necessary
+      // Get ALL workout dates without any date range filter
       let allDates: string[] = [];
       let from = 0;
       const batchSize = 1000;
       let hasMore = true;
 
+      console.log('Fetching ALL workout dates (no date filter)...');
+
       while (hasMore) {
-        let query = supabase
+        const { data, error } = await supabase
           .from('workout_logs')
-          .select('workout_date, category, exercise_id, custom_exercise, exercises(name)')
+          .select('workout_date')
           .eq('user_id', session.user.id)
           .order('workout_date', { ascending: false })
           .range(from, from + batchSize - 1);
 
-        // Apply filters
-        if (categoryFilter !== 'all') {
-          query = query.eq('category', categoryFilter as any);
-        }
-
-        if (dateFilter !== 'all') {
-          const dateRange = getDateRange(dateFilter);
-          if (dateRange) {
-            const [startDate, endDate] = dateRange;
-            const startStr = startDate.toISOString().split('T')[0];
-            const endStr = endDate.toISOString().split('T')[0];
-            query = query.gte('workout_date', startStr).lte('workout_date', endStr);
-          }
-        }
-
-        const { data, error } = await query;
         if (error) throw error;
 
         if (data && data.length > 0) {
-          // Filter by search term if needed
-          let filtered = data;
-          if (searchTerm) {
-            filtered = data.filter(log => {
-              const exerciseName = log.exercises?.name || log.custom_exercise;
-              return exerciseName?.toLowerCase().includes(searchTerm.toLowerCase());
-            });
-          }
-
-          const dates = filtered.map(d => d.workout_date);
+          const dates = data.map(d => d.workout_date);
           allDates = [...allDates, ...dates];
           from += batchSize;
           hasMore = data.length === batchSize;
+          console.log(`Batch ${Math.ceil(from / batchSize)}: fetched ${data.length} entries, total dates: ${allDates.length}`);
         } else {
           hasMore = false;
         }
       }
 
-      // Get unique dates from all the results
+      // Get unique dates
       const uniqueDates = [...new Set(allDates)].sort((a, b) => b.localeCompare(a));
       
-      console.log(`Found ${uniqueDates.length} unique workout dates (from ${allDates.length} total entries)`);
+      console.log(`✅ Found ${uniqueDates.length} unique workout dates from ${allDates.length} total entries`);
+      if (uniqueDates.length > 0) {
+        console.log(`📅 Date range: ${uniqueDates[uniqueDates.length - 1]} to ${uniqueDates[0]}`);
+      }
       
       return { uniqueDates, totalCount: allDates.length };
     },
     enabled: !!session?.user.id,
   });
 
-  // Calculate pagination based on unique dates
-  const uniqueDates = dateInfo?.uniqueDates || [];
-  const totalPages = Math.ceil(uniqueDates.length / itemsPerPage);
+  // Apply filters to the dates
+  const allUniqueDates = allDateInfo?.uniqueDates || [];
+  const filteredUniqueDates = allUniqueDates.filter(date => {
+    // Apply date filter
+    if (dateFilter !== 'all') {
+      const dateRange = getDateRange(dateFilter);
+      if (dateRange) {
+        const logDate = new Date(date + 'T12:00:00');
+        const [startDate, endDate] = dateRange;
+        if (logDate < startDate || logDate > endDate) return false;
+      }
+    }
+    return true;
+  });
+
+  // Calculate pagination based on filtered unique dates
+  const totalPages = Math.ceil(filteredUniqueDates.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentDates = uniqueDates.slice(startIndex, endIndex);
+  const currentDates = filteredUniqueDates.slice(startIndex, endIndex);
+
+  console.log(`📊 Total dates: ${allUniqueDates.length}, Filtered: ${filteredUniqueDates.length}, Current page dates: ${currentDates.length}`);
 
   // Now fetch only the workout logs for the current page's dates
   const { data: workoutLogs, refetch } = useQuery({
@@ -130,7 +127,7 @@ export default function SavedExercises() {
         .order('workout_date', { ascending: false })
         .order('created_at', { ascending: true });
 
-      // Apply same filters
+      // Apply category filter
       if (categoryFilter !== 'all') {
         query = query.eq('category', categoryFilter as any);
       }
@@ -147,6 +144,7 @@ export default function SavedExercises() {
         });
       }
 
+      console.log(`📦 Loaded ${filtered.length} workout entries for current page`);
       return filtered as WorkoutLog[];
     },
     enabled: !!session?.user.id && currentDates.length > 0,
