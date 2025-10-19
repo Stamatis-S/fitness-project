@@ -36,59 +36,96 @@ export default function SavedExercises() {
     }
   }, [session, isLoading, navigate]);
 
-  const { data: workoutLogs, refetch } = useQuery({
-    queryKey: ['workout_logs', session?.user.id],
+  // First, get unique workout dates with a count
+  const { data: dateInfo } = useQuery({
+    queryKey: ['workout_dates', session?.user.id, categoryFilter, searchTerm, dateFilter],
     queryFn: async () => {
-      if (!session?.user.id) {
-        throw new Error('Not authenticated');
+      if (!session?.user.id) throw new Error('Not authenticated');
+
+      // Build query for getting unique dates
+      let query = supabase
+        .from('workout_logs')
+        .select('workout_date, category, exercise_id, custom_exercise, exercises!inner(name)', { count: 'exact' })
+        .eq('user_id', session.user.id);
+
+      // Apply filters
+      if (categoryFilter !== 'all') {
+        query = query.eq('category', categoryFilter as any);
       }
 
-      // Fetch ALL workout data by making multiple requests (Supabase has 1000 row limit per query)
-      let allData: WorkoutLog[] = [];
-      let from = 0;
-      const batchSize = 1000;
-      let hasMore = true;
-
-      while (hasMore) {
-        const { data, error } = await supabase
-          .from('workout_logs')
-          .select(`
-            *,
-            exercises (
-              id,
-              name
-            )
-          `)
-          .eq('user_id', session.user.id)
-          .order('workout_date', { ascending: false })
-          .range(from, from + batchSize - 1);
-
-        if (error) {
-          toast.error("Failed to load workout logs");
-          throw error;
-        }
-
-        if (data && data.length > 0) {
-          allData = [...allData, ...data];
-          from += batchSize;
-          hasMore = data.length === batchSize; // Continue if we got a full batch
-        } else {
-          hasMore = false;
+      if (dateFilter !== 'all') {
+        const dateRange = getDateRange(dateFilter);
+        if (dateRange) {
+          const [startDate, endDate] = dateRange;
+          const startStr = startDate.toISOString().split('T')[0];
+          const endStr = endDate.toISOString().split('T')[0];
+          query = query.gte('workout_date', startStr).lte('workout_date', endStr);
         }
       }
-      
-      console.log(`Loaded ${allData.length} total saved exercises from ${Math.ceil(allData.length / batchSize)} batches`);
-      
-      // Debug: Check date range of loaded data
-      if (allData.length > 0) {
-        const dates = allData.map(log => log.workout_date).sort();
-        console.log(`Date range: ${dates[0]} to ${dates[dates.length - 1]}`);
-        console.log(`Unique dates: ${new Set(dates).size}`);
+
+      if (searchTerm) {
+        // For search, we need to filter by exercise name - requires joining with exercises table
+        query = query.or(`exercises.name.ilike.%${searchTerm}%,custom_exercise.ilike.%${searchTerm}%`);
       }
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+
+      // Get unique dates from the results
+      const uniqueDates = [...new Set(data?.map(d => d.workout_date) || [])].sort((a, b) => b.localeCompare(a));
       
-      return allData as WorkoutLog[];
+      return { uniqueDates, totalCount: count || 0 };
     },
     enabled: !!session?.user.id,
+  });
+
+  // Calculate pagination based on unique dates
+  const uniqueDates = dateInfo?.uniqueDates || [];
+  const totalPages = Math.ceil(uniqueDates.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentDates = uniqueDates.slice(startIndex, endIndex);
+
+  // Now fetch only the workout logs for the current page's dates
+  const { data: workoutLogs, refetch } = useQuery({
+    queryKey: ['workout_logs_paginated', session?.user.id, currentDates, categoryFilter, searchTerm],
+    queryFn: async () => {
+      if (!session?.user.id || currentDates.length === 0) return [];
+
+      let query = supabase
+        .from('workout_logs')
+        .select(`
+          *,
+          exercises (
+            id,
+            name
+          )
+        `)
+        .eq('user_id', session.user.id)
+        .in('workout_date', currentDates)
+        .order('workout_date', { ascending: false })
+        .order('created_at', { ascending: true });
+
+      // Apply same filters
+      if (categoryFilter !== 'all') {
+        query = query.eq('category', categoryFilter as any);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      // Client-side filter for search term if needed
+      let filtered = data || [];
+      if (searchTerm) {
+        filtered = filtered.filter(log => {
+          const exerciseName = log.exercises?.name || log.custom_exercise;
+          return exerciseName?.toLowerCase().includes(searchTerm.toLowerCase());
+        });
+      }
+
+      return filtered as WorkoutLog[];
+    },
+    enabled: !!session?.user.id && currentDates.length > 0,
   });
 
   const handleDelete = async (id: number) => {
@@ -119,14 +156,15 @@ export default function SavedExercises() {
     return null;
   }
 
-  const getDateRange = (filter: string): [Date, Date] | null => {
+  // Move getDateRange before the queries since it's used there
+  function getDateRange(filter: string): [Date, Date] | null {
     const today = new Date();
-    today.setHours(23, 59, 59, 999); // End of today
+    today.setHours(23, 59, 59, 999);
     
     switch (filter) {
       case "7days":
         const start7 = subDays(today, 7);
-        start7.setHours(0, 0, 0, 0); // Start of day
+        start7.setHours(0, 0, 0, 0);
         return [start7, today];
       case "15days":
         const start15 = subDays(today, 15);
@@ -147,62 +185,10 @@ export default function SavedExercises() {
       default:
         return null;
     }
-  };
-
-  const filteredLogs = workoutLogs?.filter(log => {
-    if (categoryFilter !== "all" && log.category !== categoryFilter) return false;
-    
-    if (searchTerm) {
-      const exerciseName = log.exercises?.name || log.custom_exercise;
-      if (!exerciseName?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    }
-    
-    if (dateFilter !== "all") {
-      const dateRange = getDateRange(dateFilter);
-      if (dateRange) {
-        const logDate = new Date(log.workout_date + 'T12:00:00'); // Set to noon to avoid timezone issues
-        const [startDate, endDate] = dateRange;
-        console.log(`Filtering date: ${log.workout_date}, logDate: ${logDate}, range: ${startDate} to ${endDate}`);
-        if (logDate < startDate || logDate > endDate) return false;
-      }
-    }
-    
-    return true;
-  });
-
-  // Group by date for pagination
-  const groupedByDate = filteredLogs?.reduce((acc: { [key: string]: WorkoutLog[] }, log) => {
-    if (!acc[log.workout_date]) {
-      acc[log.workout_date] = [];
-    }
-    acc[log.workout_date].push(log);
-    return acc;
-  }, {}) || {};
-
-  const uniqueDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
-  const totalPages = Math.ceil(uniqueDates.length / itemsPerPage);
-  
-  // Get logs for current page
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentDates = uniqueDates.slice(startIndex, endIndex);
-  const paginatedLogs = filteredLogs?.filter(log => currentDates.includes(log.workout_date));
-
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, categoryFilter, dateFilter]);
-
-  // Debug: Log filter results
-  console.log(`Filter settings - Date: ${dateFilter}, Category: ${categoryFilter}, Search: "${searchTerm}"`);
-  console.log(`Total logs: ${workoutLogs?.length || 0}, Filtered: ${filteredLogs?.length || 0}`);
-  
-  // Additional debugging for date range in filtered data
-  if (filteredLogs && filteredLogs.length > 0) {
-    const filteredDates = filteredLogs.map(log => log.workout_date).sort();
-    console.log(`Filtered date range: ${filteredDates[0]} to ${filteredDates[filteredDates.length - 1]}`);
-    console.log(`Earliest 5 filtered dates: ${filteredDates.slice(0, 5).join(', ')}`);
   }
+
+  // No need for client-side filtering anymore - it's all done server-side
+  // workoutLogs already contains only the filtered and paginated data
 
   return (
     <PageTransition>
@@ -234,7 +220,7 @@ export default function SavedExercises() {
           </Card>
 
           <Card className="overflow-hidden bg-[#222222] border-0 rounded-lg">
-            <WorkoutTable logs={paginatedLogs || []} onDelete={handleDelete} />
+            <WorkoutTable logs={workoutLogs || []} onDelete={handleDelete} />
           </Card>
 
           {totalPages > 1 && (
