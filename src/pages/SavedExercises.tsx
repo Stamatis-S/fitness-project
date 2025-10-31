@@ -107,6 +107,21 @@ export default function SavedExercises() {
 
   console.log(`📊 Total dates: ${allUniqueDates.length}, Filtered: ${filteredUniqueDates.length}, Current page dates: ${currentDates.length}`);
 
+  // Fetch workout cycles to identify cycle start dates
+  const { data: workoutCycles } = useQuery({
+    queryKey: ['workout_cycles', session?.user.id],
+    queryFn: async () => {
+      if (!session?.user.id) return [];
+      const { data, error } = await supabase
+        .from('workout_cycles')
+        .select('start_date')
+        .eq('user_id', session.user.id);
+      if (error) throw error;
+      return data.map(cycle => cycle.start_date);
+    },
+    enabled: !!session?.user.id,
+  });
+
   // Now fetch only the workout logs for the current page's dates
   const { data: workoutLogs, refetch } = useQuery({
     queryKey: ['workout_logs_paginated', session?.user.id, currentDates, categoryFilter, searchTerm],
@@ -242,7 +257,11 @@ export default function SavedExercises() {
           </Card>
 
           <Card className="overflow-hidden bg-[#222222] border-0 rounded-lg">
-            <WorkoutTable logs={workoutLogs || []} onDelete={handleDelete} />
+            <WorkoutTable 
+              logs={workoutLogs || []} 
+              onDelete={handleDelete} 
+              cycleStartDates={workoutCycles || []}
+            />
           </Card>
 
           {totalPages > 1 && (

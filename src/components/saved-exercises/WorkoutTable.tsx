@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Trash2 } from "lucide-react";
+import { Trash2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -19,6 +19,7 @@ const DATE_COLOR = "#60a5fa"; // Blue
 interface WorkoutTableProps {
   logs: WorkoutLog[];
   onDelete?: (id: number) => void;
+  cycleStartDates?: string[];
 }
 
 interface GroupedWorkoutLog {
@@ -30,7 +31,7 @@ interface GroupedWorkoutLog {
   }[];
 }
 
-export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
+export function WorkoutTable({ logs, onDelete, cycleStartDates = [] }: WorkoutTableProps) {
   const getExerciseName = (log: WorkoutLog) => {
     if (log.custom_exercise) {
       return log.custom_exercise;
@@ -87,14 +88,26 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
 
   return (
     <div className="space-y-2">
-      {groupedLogs.map((dateGroup) => (
-        <div key={dateGroup.date} className="space-y-2">
-          <h3 
-            className="font-semibold text-base px-2 py-0.5"
-            style={{ color: DATE_COLOR }}
-          >
-            {formatDate(dateGroup.date)}
-          </h3>
+      {groupedLogs.map((dateGroup) => {
+        const isCycleStart = cycleStartDates.includes(dateGroup.date);
+        return (
+          <div key={dateGroup.date} className="space-y-2">
+            <div className="flex items-center gap-2 px-2 py-0.5">
+              <h3 
+                className="font-semibold text-base"
+                style={{ color: DATE_COLOR }}
+              >
+                {formatDate(dateGroup.date)}
+              </h3>
+              {isCycleStart && (
+                <Badge 
+                  className="flex items-center gap-1 px-2 py-0.5 text-xs bg-green-500/20 text-green-400 border border-green-500/30"
+                >
+                  <Calendar className="h-3 w-3" />
+                  Cycle Start
+                </Badge>
+              )}
+            </div>
           {dateGroup.exercises.map((exercise) => (
             <div 
               key={`${dateGroup.date}-${exercise.name}`}
@@ -142,8 +155,9 @@ export function WorkoutTable({ logs, onDelete }: WorkoutTableProps) {
               </div>
             </div>
           ))}
-        </div>
-      ))}
+          </div>
+        );
+      })}
     </div>
   );
 }
