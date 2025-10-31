@@ -364,7 +364,7 @@ export type Database = {
         }[]
       }
       get_user_workout_stats: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           favorite_category: string
           max_weight: number
