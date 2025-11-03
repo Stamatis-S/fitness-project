@@ -42,7 +42,7 @@ export default function WorkoutPlan() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black pb-16">
+      <div className="min-h-screen bg-black bottom-nav-spacing">
         <div className="mx-auto max-w-[98%] px-1 space-y-2">
           <WorkoutPlanHeader title="Today's Workout Plan" />
 
