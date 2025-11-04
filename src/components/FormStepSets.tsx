@@ -35,7 +35,7 @@ export function FormStepSets({
       ) : (
         <>
           <ScrollArea className="flex-1 px-1 pb-1 overflow-hidden">
-            <div className="space-y-1 touch-pan-y">
+            <div className="space-y-1 touch-pan-y pb-6">
               <AnimatePresence>
                 {fields.map((field, index) => (
                   <motion.div
