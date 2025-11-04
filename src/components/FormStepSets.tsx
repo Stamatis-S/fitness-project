@@ -28,7 +28,7 @@ export function FormStepSets({
       initial={{ opacity: 0, x: 5 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -5 }}
-      className="flex flex-col h-[calc(100vh-14rem)]"
+      className="flex flex-col h-[calc(100vh-20rem)]"
     >
       {selectedCategory === "POWER SETS" ? (
         <PowerSetInfo />
