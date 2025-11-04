@@ -74,7 +74,7 @@ export function FormStepSets({
           </div>
           
           {/* Save Exercise button for regular exercises */}
-          <div className="mt-auto pt-1.5 border-t border-[#333333] bg-[#222222]/95">
+          <div className="mt-auto pt-1.5 pb-20 border-t border-[#333333] bg-[#222222]/95">
             <motion.div
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
