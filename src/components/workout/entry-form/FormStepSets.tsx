@@ -27,14 +27,14 @@ export function FormStepSets({
       initial={{ opacity: 0, x: 5 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -5 }}
-      className="flex flex-col max-h-[calc(100vh-18rem)]"
+      className="flex flex-col h-[calc(100vh-14rem)]"
     >
       {selectedCategory === "POWER SETS" ? (
         <PowerSetInfo />
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto px-1 pb-24">
-            <div className="space-y-1">
+          <ScrollArea className="flex-1 px-1 pb-1 overflow-hidden">
+            <div className="space-y-1 touch-pan-y">
               <AnimatePresence>
                 {fields.map((field, index) => (
                   <motion.div
@@ -52,9 +52,9 @@ export function FormStepSets({
                 ))}
               </AnimatePresence>
             </div>
-          </div>
+          </ScrollArea>
           
-          <div className="sticky bottom-0 space-y-1.5 pt-1.5 border-t border-[#333333] bg-[#222222] z-10">
+          <div className="space-y-1.5 pt-1.5 border-t border-[#333333] bg-[#222222]/95">
             <motion.div
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
@@ -70,15 +70,17 @@ export function FormStepSets({
                 Add Set
               </Button>
             </motion.div>
+          </div>
           
-            {/* Save Exercise button for regular exercises */}
+          {/* Save Exercise button for regular exercises */}
+          <div className="mt-auto pt-1.5 border-t border-[#333333] bg-[#222222]/95">
             <motion.div
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
             >
               <Button 
                 type="submit" 
-                className="w-full h-9 text-base bg-[#E22222] hover:bg-[#C11818] text-white mb-2"
+                className="w-full h-9 text-base bg-[#E22222] hover:bg-[#C11818] text-white"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (

@@ -60,7 +60,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-black bottom-nav-spacing">
+    <div className="min-h-screen bg-black pb-16">
       <div className="mx-auto space-y-4 p-4">
         <div className="flex items-center">
           <button

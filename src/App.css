@@ -53,18 +53,7 @@
 
 /* Scrollable areas */
 .scroll-container {
-  @apply h-[calc(100vh-3rem)] overflow-y-auto;
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-.scroll-container::-webkit-scrollbar {
-  display: none;
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-.scroll-container {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  @apply h-[calc(100vh-3rem)] overflow-y-auto scrollbar-none;
 }
 
 /* Safe area for devices with notches */

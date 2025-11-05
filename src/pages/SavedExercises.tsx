@@ -229,7 +229,7 @@ export default function SavedExercises() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black bottom-nav-spacing">
+      <div className="min-h-screen bg-black pb-6">
         <div className="mx-auto max-w-md space-y-1.5">
           <div className="flex items-center p-1.5">
             <button
