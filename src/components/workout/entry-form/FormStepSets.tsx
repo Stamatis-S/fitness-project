@@ -27,14 +27,14 @@ export function FormStepSets({
       initial={{ opacity: 0, x: 5 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -5 }}
-      className="flex flex-col h-[calc(100vh-14rem)]"
+      className="flex flex-col"
     >
       {selectedCategory === "POWER SETS" ? (
         <PowerSetInfo />
       ) : (
         <>
-          <ScrollArea className="flex-1 px-1 pb-1 overflow-hidden">
-            <div className="space-y-1 touch-pan-y">
+          <ScrollArea className="h-[calc(100vh-22rem)] px-1">
+            <div className="space-y-1 pb-4">
               <AnimatePresence>
                 {fields.map((field, index) => (
                   <motion.div
@@ -73,7 +73,7 @@ export function FormStepSets({
           </div>
           
           {/* Save Exercise button for regular exercises */}
-          <div className="mt-auto pt-1.5 border-t border-[#333333] bg-[#222222]/95">
+          <div className="pt-1.5 pb-4 border-t border-[#333333] bg-[#222222]/95">
             <motion.div
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
