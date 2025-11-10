@@ -129,12 +129,22 @@ export function getTotalVolume(thisWeekLogs: WorkoutLog[], lastWeekLogs: Workout
   return { volume: thisWeekVolume, percentChange };
 }
 
+// Helper function to get the start of the current week (Monday)
+function getStartOfWeek(date: Date): Date {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
   const now = new Date();
-  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const weekStart = getStartOfWeek(now);
   
-  const recentLogs = workoutLogs.filter(log => new Date(log.workout_date) >= oneWeekAgo);
-  const historicalLogs = workoutLogs.filter(log => new Date(log.workout_date) < oneWeekAgo);
+  const recentLogs = workoutLogs.filter(log => new Date(log.workout_date) >= weekStart);
+  const historicalLogs = workoutLogs.filter(log => new Date(log.workout_date) < weekStart);
   
   const records: { 
     exercise: string; 
