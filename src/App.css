@@ -53,7 +53,13 @@
 
 /* Scrollable areas */
 .scroll-container {
-  @apply h-[calc(100vh-3rem)] overflow-y-auto scrollbar-none;
+  @apply h-[calc(100vh-3rem)] overflow-y-auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scroll-container::-webkit-scrollbar {
+  display: none;
 }
 
 /* Safe area for devices with notches */

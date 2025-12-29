@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,23 +10,22 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { PageTransition } from "@/components/PageTransition";
 import { motion } from "framer-motion";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
   const { session } = useAuth();
 
-  // Load saved credentials from localStorage on component mount
   useEffect(() => {
     const savedEmail = localStorage.getItem("savedEmail");
     if (savedEmail) {
       setEmail(savedEmail);
-      // Don't load password from localStorage for security reasons
-      // Instead just indicate that there are saved credentials
     }
   }, []);
   
@@ -53,15 +51,12 @@ export default function Auth() {
           }
         });
       } else {
-        // The Supabase API doesn't support autoRefreshToken in signInWithPassword options
-        // We'll handle rememberMe through localStorage instead
         result = await supabase.auth.signInWithPassword({ email, password });
       }
 
       const { error } = result;
       if (error) throw error;
 
-      // Save email to localStorage if rememberMe is checked
       if (rememberMe && !isSignUp) {
         localStorage.setItem("savedEmail", email);
       } else {
@@ -88,82 +83,97 @@ export default function Auth() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col items-center justify-start pt-6 md:pt-12 bg-black p-3">
+      <div className="min-h-screen flex flex-col items-center justify-start pt-12 md:pt-16 bg-background px-4">
         <motion.div 
-          initial={{ scale: 0.95, opacity: 0 }}
+          initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-          className="w-full max-w-md mb-3"
+          transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+          className="w-full max-w-sm mb-8"
         >
           <img 
             src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
             alt="Fitness Project Logo"
-            className="w-32 md:w-40 mx-auto hover-brightness"
+            className="w-36 md:w-44 mx-auto"
           />
         </motion.div>
         
-        <Card className="w-full max-w-md p-3 space-y-2 animate-fade-up bg-[#222222] border-0">
+        <Card className="w-full max-w-sm p-6 space-y-5 animate-fade-up">
           <motion.div 
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-            className="text-center mb-1"
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="text-center"
           >
-            <h1 className="text-xl font-bold text-white">
-              FITNESS PROJECT
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
+              {isSignUp ? "Create Account" : "Welcome Back"}
             </h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              {isSignUp ? "Sign up to start tracking" : "Sign in to continue"}
+            </p>
           </motion.div>
 
-          <form onSubmit={handleAuth} className="space-y-2">
+          <form onSubmit={handleAuth} className="space-y-4">
             <motion.div 
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.3 }}
-              className="space-y-1"
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="space-y-2"
             >
-              <Label htmlFor="email" className="text-sm text-gray-300">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium text-foreground">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="compact-input h-9 hover-brightness focus:ring-2 focus:ring-[#E22222]/50"
+                autoComplete="email"
+                className="h-14"
               />
             </motion.div>
 
             <motion.div 
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.4 }}
-              className="space-y-1"
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="space-y-2"
             >
-              <Label htmlFor="password" className="text-sm text-gray-300">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="compact-input h-9 hover-brightness focus:ring-2 focus:ring-[#E22222]/50"
-              />
+              <Label htmlFor="password" className="text-sm font-medium text-foreground">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete={isSignUp ? "new-password" : "current-password"}
+                  className="h-14 pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors touch-target"
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
             </motion.div>
 
             {!isSignUp && (
               <motion.div 
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.3, delay: 0.5 }}
-                className="flex items-center space-x-2"
+                transition={{ duration: 0.4, delay: 0.4 }}
+                className="flex items-center gap-3 py-1"
               >
                 <Checkbox 
                   id="rememberMe" 
                   checked={rememberMe} 
                   onCheckedChange={checked => setRememberMe(checked === true)}
+                  className="h-5 w-5 rounded-md"
                 />
-                <Label htmlFor="rememberMe" className="text-xs text-gray-400">
+                <Label htmlFor="rememberMe" className="text-sm text-muted-foreground cursor-pointer">
                   Remember me
                 </Label>
               </motion.div>
@@ -172,18 +182,19 @@ export default function Auth() {
             <motion.div
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.6 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+              className="pt-2"
             >
               <Button 
                 type="submit" 
-                className="w-full bg-[#E22222] hover:bg-[#C11818] text-white h-9 mt-1 hover-scale" 
+                className="w-full h-14 text-lg font-semibold" 
                 disabled={isLoading}
               >
                 {isLoading
                   ? "Loading..."
                   : isSignUp
                   ? "Create Account"
-                  : "Log In"}
+                  : "Sign In"}
               </Button>
             </motion.div>
           </form>
@@ -191,17 +202,17 @@ export default function Auth() {
           <motion.div 
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.7 }}
-            className="text-center pb-1"
+            transition={{ duration: 0.4, delay: 0.6 }}
+            className="text-center pt-2"
           >
             <Button
               type="button"
-              variant="link"
+              variant="ghost"
               onClick={toggleSignUp}
-              className="text-xs text-gray-400 hover:text-white transition-colors duration-200"
+              className="text-sm text-muted-foreground hover:text-foreground"
             >
               {isSignUp
-                ? "Already have an account? Log in"
+                ? "Already have an account? Sign in"
                 : "Don't have an account? Sign up"}
             </Button>
           </motion.div>
