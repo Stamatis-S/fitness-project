@@ -214,7 +214,9 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
           {renderParticles()}
           <img 
             src={levelImages[currentLevelIndex]} 
-            alt={`${displayLevelName} level character`} 
+            alt={`${displayLevelName} level character`}
+            loading="lazy"
+            decoding="async"
             className="character-image"
           />
         </div>
