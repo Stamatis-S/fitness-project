@@ -22,17 +22,16 @@ export function ExerciseEntryForm() {
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Create today's date at start of day in local timezone (simpler, safer approach)
+  const getToday = () => {
+    const now = new Date();
+    now.setHours(12, 0, 0, 0); // Noon local time to avoid timezone edge cases
+    return now;
+  };
+
   const methods = useForm<ExerciseFormData>({
     defaultValues: {
-      date: (() => {
-        const now = new Date();
-        return new Date(Date.UTC(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate(),
-          12, 0, 0, 0
-        ));
-      })(),
+      date: getToday(),
       exercise: "",
       sets: [{ weight: 0, reps: 0 }],
       exercise1Sets: [{ weight: 0, reps: 0 }],
@@ -66,15 +65,7 @@ export function ExerciseEntryForm() {
       // Complete form reset with timeout to ensure proper state clearing
       setTimeout(() => {
         methods.reset({
-          date: (() => {
-            const now = new Date();
-            return new Date(Date.UTC(
-              now.getFullYear(),
-              now.getMonth(),
-              now.getDate(),
-              12, 0, 0, 0
-            ));
-          })(),
+          date: getToday(),
           exercise: "",
           customExercise: "",
           powerSetPair: undefined,
