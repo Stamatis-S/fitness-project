@@ -8,12 +8,17 @@ export function SoundSettings() {
   const [soundEnabled, setEnabled] = useState(getSoundEnabled);
 
   const handleToggle = (checked: boolean) => {
-    setEnabled(checked);
-    setSoundEnabled(checked);
-    
-    // Play a test sound when enabling
+    // Play sound before changing state (so we hear it when enabling)
     if (checked) {
+      setSoundEnabled(checked);
+      setEnabled(checked);
+      setTimeout(() => playFeedback('success'), 50);
+    } else {
       playFeedback('light');
+      setTimeout(() => {
+        setSoundEnabled(checked);
+        setEnabled(checked);
+      }, 100);
     }
   };
 

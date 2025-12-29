@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Timer, Play, Pause, RotateCcw, Plus, Minus } from 'lucide-react';
 import { useRestTimer } from '@/hooks/useRestTimer';
+import { useHaptic } from '@/hooks/useHaptic';
 
 interface RestTimerProps {
   defaultDuration?: number;
@@ -10,6 +11,7 @@ interface RestTimerProps {
 
 export function RestTimer({ defaultDuration = 90, onTimerComplete }: RestTimerProps) {
   const { isRunning, timeRemaining, totalTime, startTimer, stopTimer, resetTimer, addTime } = useRestTimer(defaultDuration);
+  const { vibrate } = useHaptic();
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -75,7 +77,10 @@ export function RestTimer({ defaultDuration = 90, onTimerComplete }: RestTimerPr
             variant="outline"
             size="sm"
             className="text-xs px-3 h-8 rounded-full"
-            onClick={() => startTimer(time)}
+            onClick={() => {
+              vibrate('light');
+              startTimer(time);
+            }}
           >
             {time}s
           </Button>
@@ -89,7 +94,10 @@ export function RestTimer({ defaultDuration = 90, onTimerComplete }: RestTimerPr
           variant="outline"
           size="icon"
           className="h-11 w-11 rounded-full"
-          onClick={() => addTime(-15)}
+          onClick={() => {
+            vibrate('light');
+            addTime(-15);
+          }}
           disabled={timeRemaining <= 15}
         >
           <Minus className="h-4 w-4" />
@@ -107,7 +115,10 @@ export function RestTimer({ defaultDuration = 90, onTimerComplete }: RestTimerPr
                 type="button"
                 size="icon"
                 className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90"
-                onClick={stopTimer}
+                onClick={() => {
+                  vibrate('light');
+                  stopTimer();
+                }}
               >
                 <Pause className="h-6 w-6" />
               </Button>
@@ -123,7 +134,10 @@ export function RestTimer({ defaultDuration = 90, onTimerComplete }: RestTimerPr
                 type="button"
                 size="icon"
                 className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90"
-                onClick={() => startTimer()}
+                onClick={() => {
+                  vibrate('light');
+                  startTimer();
+                }}
               >
                 <Play className="h-6 w-6 ml-0.5" />
               </Button>
@@ -136,7 +150,10 @@ export function RestTimer({ defaultDuration = 90, onTimerComplete }: RestTimerPr
           variant="outline"
           size="icon"
           className="h-11 w-11 rounded-full"
-          onClick={() => addTime(15)}
+          onClick={() => {
+            vibrate('light');
+            addTime(15);
+          }}
         >
           <Plus className="h-4 w-4" />
         </Button>
@@ -149,7 +166,10 @@ export function RestTimer({ defaultDuration = 90, onTimerComplete }: RestTimerPr
           variant="ghost"
           size="sm"
           className="text-muted-foreground"
-          onClick={resetTimer}
+          onClick={() => {
+            vibrate('light');
+            resetTimer();
+          }}
         >
           <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
           Reset
