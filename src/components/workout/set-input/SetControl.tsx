@@ -19,15 +19,15 @@ export function SetControl({
   };
 
   return (
-    <div className="flex items-center justify-between gap-2 mt-3">
+    <div className="flex items-center justify-between gap-1.5 mt-3">
       <Button
         type="button"
         variant="outline"
         size="icon"
-        className="h-11 w-11 min-w-11 rounded-xl bg-secondary/80 border-border/30 hover:bg-secondary active:scale-95 transition-all shrink-0"
+        className="h-11 w-10 min-w-10 rounded-xl bg-secondary/80 border-border/30 hover:bg-secondary active:scale-95 transition-all shrink-0"
         onClick={onDecrement}
       >
-        <Minus className="h-5 w-5 text-foreground" />
+        <Minus className="h-4 w-4 text-foreground" />
       </Button>
       
       <Input
@@ -37,7 +37,7 @@ export function SetControl({
         min={min}
         max={max}
         step={step}
-        className="flex-1 min-w-0 text-center text-lg font-bold h-11 bg-background/50 border-border/30 rounded-xl [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        className="flex-1 min-w-[60px] text-center text-base font-bold h-11 bg-background/50 border-border/30 rounded-xl px-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         inputMode="decimal"
       />
       
@@ -45,10 +45,10 @@ export function SetControl({
         type="button"
         variant="outline"
         size="icon"
-        className="h-11 w-11 min-w-11 rounded-xl bg-secondary/80 border-border/30 hover:bg-secondary active:scale-95 transition-all shrink-0"
+        className="h-11 w-10 min-w-10 rounded-xl bg-secondary/80 border-border/30 hover:bg-secondary active:scale-95 transition-all shrink-0"
         onClick={onIncrement}
       >
-        <Plus className="h-5 w-5 text-foreground" />
+        <Plus className="h-4 w-4 text-foreground" />
       </Button>
     </div>
   );
