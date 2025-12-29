@@ -158,7 +158,9 @@ export const useHaptic = () => {
   }, []);
 
   const vibrate = useCallback((type: FeedbackType = 'light') => {
-    if (soundEnabled) {
+    // Always check current state from localStorage
+    const enabled = getStoredSoundEnabled();
+    if (enabled) {
       SOUND_PATTERNS[type]();
     }
   }, []);
