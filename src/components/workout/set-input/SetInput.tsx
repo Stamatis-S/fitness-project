@@ -205,9 +205,9 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
   const displayReps = typeof reps === 'number' ? reps : 0;
 
   return (
-    <div className="bg-[#111111] rounded-xl p-3">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-red-500 text-sm font-semibold">
+    <div className="bg-ios-surface-elevated rounded-ios-lg p-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-primary text-base font-semibold">
           {exerciseLabel ? exerciseLabel : `Set ${index + 1}`}
         </div>
         {index > 0 && !exerciseLabel && (
@@ -218,20 +218,20 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
         )}
       </div>
       
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <div className="flex items-center gap-1 mb-2">
+          <div className="flex items-center gap-2 mb-3">
             {isCardio ? (
-              <Clock className="h-3.5 w-3.5 text-red-500" />
+              <Clock className="h-4 w-4 text-primary" />
             ) : (
-              <Weight className="h-3.5 w-3.5 text-red-500" />
+              <Weight className="h-4 w-4 text-primary" />
             )}
-            <span className="text-white text-xs font-medium">
-              {isCardio ? `Minutes: ${displayWeight}` : `Weight: ${displayWeight} KG`}
+            <span className="text-foreground text-sm font-medium">
+              {isCardio ? `${displayWeight} min` : `${displayWeight} KG`}
             </span>
             {!isLoadingLast && lastWorkoutValues && typeof lastWorkoutValues.lastWeight === 'number' && (
-              <span className="text-xs text-gray-400 ml-auto">
-                Last: {lastWorkoutValues.lastWeight}{isCardio ? 'min' : 'kg'}
+              <span className="text-xs text-muted-foreground ml-auto">
+                Last: {lastWorkoutValues.lastWeight}
               </span>
             )}
           </div>
@@ -255,13 +255,13 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
         </div>
 
         <div>
-          <div className="flex items-center gap-1 mb-2">
-            <RotateCw className="h-3.5 w-3.5 text-red-500" />
-            <span className="text-white text-xs font-medium">
-              {isCardio ? "Intensity (1-10)" : "Reps"}: {displayReps}
+          <div className="flex items-center gap-2 mb-3">
+            <RotateCw className="h-4 w-4 text-primary" />
+            <span className="text-foreground text-sm font-medium">
+              {isCardio ? `Intensity: ${displayReps}` : `${displayReps} reps`}
             </span>
             {!isLoadingLast && lastWorkoutValues && typeof lastWorkoutValues.lastReps === 'number' && (
-              <span className="text-xs text-gray-400 ml-auto">
+              <span className="text-xs text-muted-foreground ml-auto">
                 Last: {lastWorkoutValues.lastReps}
               </span>
             )}

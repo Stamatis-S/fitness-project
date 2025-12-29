@@ -126,17 +126,17 @@ export function ExerciseEntryForm() {
 
   return (
     <FormErrorBoundary>
-      <Card className="mx-auto p-3 border-0 bg-[#222222] rounded-lg">
+      <Card className="mx-auto p-5 rounded-ios-xl">
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-3">
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
             <FormHeader 
               step={step}
               handleBack={handleBack}
               isSubmitting={isSubmitting}
             />
             
-            <Tabs value={step} className="space-y-2">
-              <TabsContent value="category" className="m-0 space-y-3">
+            <Tabs value={step} className="space-y-4">
+              <TabsContent value="category" className="m-0 space-y-4">
                 <FormErrorBoundary>
                   <FormStepCategory
                     watch={methods.watch}

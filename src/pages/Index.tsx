@@ -1,4 +1,3 @@
-
 import { ExerciseEntryForm } from "@/components/ExerciseEntryForm";
 import { useAuth } from "@/components/AuthProvider";
 import { PageTransition } from "@/components/PageTransition";
@@ -32,7 +31,11 @@ const Index = () => {
   };
 
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center bg-black">Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
   }
 
   if (!session) {
@@ -41,37 +44,34 @@ const Index = () => {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black pb-20"> {/* Reduced bottom padding for better spacing with new button position */}
-        <div className="mx-auto space-y-1">
-          <div className="flex flex-col items-center justify-between gap-1 p-2">
-            <div className="w-full flex justify-end">
+      <div className="min-h-screen bg-background pb-24">
+        <div className="mx-auto max-w-lg px-4 space-y-4">
+          {/* Header */}
+          <header className="flex items-center justify-between py-4">
+            <div className="flex-1" />
+            <img 
+              src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
+              alt="Fitness Project Logo"
+              className="w-24 md:w-28" 
+            />
+            <div className="flex-1 flex justify-end">
               <button
                 onClick={handleLogout}
-                className="bg-[#333333] hover:bg-[#444444] p-2 rounded"
+                className="p-3 rounded-xl bg-ios-surface-elevated hover:bg-ios-fill transition-all active:scale-95 touch-target"
                 title="Logout"
               >
-                <LogOut className="h-4 w-4 text-white" />
+                <LogOut className="h-5 w-5 text-muted-foreground" />
               </button>
             </div>
-            <div className="text-center mb-1">
-              <img 
-                src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
-                alt="Fitness Project Logo"
-                className="w-24 md:w-28 mx-auto" 
-              />
-              {/* Fixed position for UserRecordPopup */}
-              <div className="mt-2 mb-3">
-                <DataErrorBoundary>
-                  <UserRecordPopup />
-                </DataErrorBoundary>
-              </div>
-            </div>
-          </div>
+          </header>
 
-          {/* Reduced vertical space */}
-          <div className="h-6"></div>
+          {/* User Record Popup */}
+          <DataErrorBoundary>
+            <UserRecordPopup />
+          </DataErrorBoundary>
 
-          <div className="relative">
+          {/* Exercise Entry Form */}
+          <div className="pt-2">
             {session && (
               <DataErrorBoundary>
                 <ExerciseEntryForm />
