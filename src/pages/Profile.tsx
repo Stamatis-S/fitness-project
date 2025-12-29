@@ -1,14 +1,15 @@
-
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "@/components/profile/ProfilePhoto";
 import { AccountInformation } from "@/components/profile/AccountInformation";
 import { MuscleGrowthVisualization } from "@/components/profile/MuscleGrowthVisualization";
+import { IOSPageHeader } from "@/components/ui/ios-page-header";
+import { PageTransition } from "@/components/PageTransition";
+import { motion } from "framer-motion";
 
 interface ProfileData {
   username: string | null;
@@ -56,59 +57,72 @@ export default function Profile() {
   }, [session?.user.id]);
 
   if (!profile || !session?.user) {
-    return <div className="flex h-screen items-center justify-center bg-black">Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-black pb-16">
-      <div className="mx-auto space-y-4 p-4">
-        <div className="flex items-center">
-          <button
-            className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-2 rounded"
-            onClick={() => navigate("/")}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm">Back</span>
-          </button>
-          <h1 className="text-lg font-bold flex-1 text-center text-white">
-            Profile
-          </h1>
-          <div className="w-[60px]" />
-        </div>
+    <PageTransition>
+      <div className="min-h-screen bg-background pb-24">
+        <IOSPageHeader title="Profile" />
         
-        {/* Profile Photo Card */}
-        <Card className="p-4 space-y-3 border-0 bg-[#222222] rounded-lg flex flex-col items-center">
-          <ProfilePhoto
-            profilePhotoUrl={profile.profile_photo_url}
-            userId={session.user.id}
-            username={profile.username}
-            email={session.user.email!}
-            onPhotoUpdate={(url) => setProfile(prev => prev ? { ...prev, profile_photo_url: url } : null)}
-          />
-          
-          <div className="text-center">
-            <p className="text-white font-medium">{profile.username || session.user.email}</p>
-            <p className="text-gray-400 text-sm">{session.user.email}</p>
-          </div>
-        </Card>
+        <div className="px-4 pt-4 space-y-4">
+          {/* Profile Photo Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="p-6 flex flex-col items-center gap-4">
+              <ProfilePhoto
+                profilePhotoUrl={profile.profile_photo_url}
+                userId={session.user.id}
+                username={profile.username}
+                email={session.user.email!}
+                onPhotoUpdate={(url) => setProfile(prev => prev ? { ...prev, profile_photo_url: url } : null)}
+              />
+              
+              <div className="text-center">
+                <p className="text-lg font-semibold text-foreground">
+                  {profile.username || session.user.email}
+                </p>
+                <p className="text-sm text-muted-foreground">{session.user.email}</p>
+              </div>
+            </Card>
+          </motion.div>
 
-        {/* Muscle Growth Visualization Card */}
-        <MuscleGrowthVisualization 
-          userId={session.user.id}
-          fitnessScore={profile.fitness_score}
-          fitnessLevel={profile.fitness_level}
-        />
+          {/* Muscle Growth Visualization Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <MuscleGrowthVisualization 
+              userId={session.user.id}
+              fitnessScore={profile.fitness_score}
+              fitnessLevel={profile.fitness_level}
+            />
+          </motion.div>
 
-        {/* Account Information Card */}
-        <Card className="p-4 space-y-3 border-0 bg-[#222222] rounded-lg">
-          <AccountInformation
-            userId={session.user.id}
-            username={profile.username}
-            email={session.user.email!}
-            onUsernameUpdate={(newUsername) => setProfile(prev => prev ? { ...prev, username: newUsername } : null)}
-          />
-        </Card>
+          {/* Account Information Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="p-5">
+              <AccountInformation
+                userId={session.user.id}
+                username={profile.username}
+                email={session.user.email!}
+                onUsernameUpdate={(newUsername) => setProfile(prev => prev ? { ...prev, username: newUsername } : null)}
+              />
+            </Card>
+          </motion.div>
+        </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }

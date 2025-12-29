@@ -31,8 +31,8 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className="col-span-full md:col-span-2"
       >
@@ -43,34 +43,40 @@ export function WorkoutInsights({ logs }: WorkoutInsightsProps) {
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
         className="col-span-full md:col-span-1"
       >
-        <Card className="h-full">
-          <div className="grid grid-cols-2 h-full">
+        <Card className="h-full p-0 overflow-hidden">
+          <div className="grid grid-cols-2 h-full divide-x divide-ios-separator">
             {mostTrainedCategory && (
-              <div className="flex flex-col gap-2 p-3 border-r border-border">
-                <div className="flex items-center space-x-2">
-                  <Activity className="h-4 w-4 text-green-500" />
-                  <h3 className="text-sm font-semibold">Most Trained</h3>
+              <div className="flex flex-col gap-2 p-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center">
+                    <Activity className="h-4 w-4 text-green-500" />
+                  </div>
                 </div>
-                <div className="text-xl font-bold">{mostTrainedCategory}</div>
-                <p className="text-xs text-muted-foreground">Focus on other categories too!</p>
+                <div>
+                  <p className="text-xs text-muted-foreground">Most Trained</p>
+                  <p className="text-lg font-semibold text-foreground truncate">{mostTrainedCategory}</p>
+                </div>
               </div>
             )}
 
             {(() => {
               const uniqueWorkouts = new Set(logs.map(log => log.workout_date)).size;
               return uniqueWorkouts > 0 && (
-                <div className="flex flex-col gap-2 p-3">
-                  <div className="flex items-center space-x-2">
-                    <Award className="h-4 w-4 text-yellow-500" />
-                    <h3 className="text-sm font-semibold">Total Workouts</h3>
+                <div className="flex flex-col gap-2 p-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                      <Award className="h-4 w-4 text-yellow-500" />
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold">{uniqueWorkouts}</div>
-                  <p className="text-xs text-muted-foreground">You're doing great!</p>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total Workouts</p>
+                    <p className="text-2xl font-bold text-foreground">{uniqueWorkouts}</p>
+                  </div>
                 </div>
               );
             })()}
