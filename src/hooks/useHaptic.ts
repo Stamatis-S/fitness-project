@@ -4,12 +4,23 @@ type FeedbackType = 'light' | 'success' | 'error';
 
 const SOUND_ENABLED_KEY = 'sound-feedback-enabled';
 
-// Sound enabled state
-let soundEnabled = typeof window !== 'undefined' 
-  ? localStorage.getItem(SOUND_ENABLED_KEY) !== 'false' 
-  : true;
+// Get sound enabled state from localStorage (defaults to true)
+const getStoredSoundEnabled = (): boolean => {
+  if (typeof window === 'undefined') return true;
+  const stored = localStorage.getItem(SOUND_ENABLED_KEY);
+  // Default to true if not set
+  if (stored === null) return true;
+  return stored === 'true';
+};
 
-export const getSoundEnabled = () => soundEnabled;
+// Sound enabled state - always check localStorage
+let soundEnabled = getStoredSoundEnabled();
+
+export const getSoundEnabled = (): boolean => {
+  // Re-read from localStorage to ensure sync
+  soundEnabled = getStoredSoundEnabled();
+  return soundEnabled;
+};
 
 export const setSoundEnabled = (enabled: boolean) => {
   soundEnabled = enabled;
@@ -80,15 +91,28 @@ if (typeof window !== 'undefined') {
 }
 
 const playTone = async (frequency: number, duration: number, volume: number = 0.3) => {
-  if (!soundEnabled) return;
+  // Always check current state
+  const enabled = getStoredSoundEnabled();
+  console.log('playTone called, soundEnabled:', enabled);
+  
+  if (!enabled) {
+    console.log('Sound disabled, skipping');
+    return;
+  }
   
   try {
     const ctx = getAudioContext();
-    if (!ctx) return;
+    if (!ctx) {
+      console.log('No audio context available');
+      return;
+    }
+    
+    console.log('AudioContext state:', ctx.state);
     
     // Ensure audio is resumed
     if (ctx.state === 'suspended') {
       await ctx.resume();
+      console.log('AudioContext resumed');
     }
     
     const oscillator = ctx.createOscillator();
@@ -106,6 +130,7 @@ const playTone = async (frequency: number, duration: number, volume: number = 0.
     
     oscillator.start(startTime);
     oscillator.stop(startTime + duration);
+    console.log('Tone played:', frequency, 'Hz');
   } catch (e) {
     console.log('Audio playback failed:', e);
   }
