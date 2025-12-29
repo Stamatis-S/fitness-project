@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 import { UserRecordPopup } from "@/components/UserRecordPopup";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
+import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 
 const Index = () => {
   const { session, isLoading } = useAuth();
@@ -64,6 +65,9 @@ const Index = () => {
               </button>
             </div>
           </header>
+
+          {/* PWA Install Banner */}
+          <PWAInstallBanner />
 
           {/* User Record Popup */}
           <DataErrorBoundary>
