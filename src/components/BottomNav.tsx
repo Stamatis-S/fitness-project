@@ -2,12 +2,14 @@ import React from "react";
 import { Home, BarChart2, Bookmark, User, Trophy } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useHaptic } from "@/hooks/useHaptic";
 
 const HIDDEN_PATHS = ['/auth', '/install'];
 
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { vibrate } = useHaptic();
 
   // Hide BottomNav on auth, install, and 404 pages
   const shouldHide = HIDDEN_PATHS.includes(location.pathname) || 
@@ -34,7 +36,10 @@ export function BottomNav() {
           return (
             <button
               key={path}
-              onClick={() => navigate(path)}
+              onClick={() => {
+                vibrate('light');
+                navigate(path);
+              }}
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 flex-1 h-full py-2 rounded-xl transition-all duration-150 active:scale-95 active:opacity-70 touch-target",
                 isActive
