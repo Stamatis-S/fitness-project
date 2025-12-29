@@ -16,14 +16,46 @@ export function useRestTimer(defaultDuration: number = 90) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize audio
+  // Initialize audio context for louder sound
   useEffect(() => {
-    audioRef.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleWE3Nni/0NKFRi0wdLLT1JJYMDNzrs3OhlAwNnm0ys2CUzU3e7TIy4JYNjl8tMjKgls3O320x8mBXTg9fbTGyIF+');
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
+  }, []);
+
+  const playLoudBeep = useCallback(() => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Create 3 sequential beeps for attention
+      const playBeep = (startTime: number, frequency: number) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = frequency;
+        oscillator.type = 'square';
+        
+        // Maximum volume
+        gainNode.gain.setValueAtTime(1, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.3);
+      };
+      
+      // Play 3 loud beeps
+      playBeep(audioContext.currentTime, 880);
+      playBeep(audioContext.currentTime + 0.35, 988);
+      playBeep(audioContext.currentTime + 0.7, 1047);
+      
+    } catch (e) {
+      console.log('Audio not supported');
+    }
   }, []);
 
   const triggerHaptic = useCallback(() => {
@@ -33,11 +65,9 @@ export function useRestTimer(defaultDuration: number = 90) {
   }, []);
 
   const playAlert = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.play().catch(() => {});
-    }
+    playLoudBeep();
     triggerHaptic();
-  }, [triggerHaptic]);
+  }, [playLoudBeep, triggerHaptic]);
 
   const startTimer = useCallback((duration?: number) => {
     const time = duration || defaultDuration;
