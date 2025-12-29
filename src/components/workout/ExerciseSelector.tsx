@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
+import { useHaptic } from "@/hooks/useHaptic";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,6 +52,7 @@ export function ExerciseSelector({
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
   const { session } = useAuth();
+  const { vibrate } = useHaptic();
 
   // Fetch standard exercises
   const { data: standardExercises = [], isLoading: isLoadingStandard } = useQuery({
@@ -152,6 +154,7 @@ export function ExerciseSelector({
       return;
     }
     
+    vibrate('light');
     addCustomExercise.mutate(newCustomExercise);
   };
 
@@ -207,7 +210,10 @@ export function ExerciseSelector({
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => onValueChange(exercise.id.toString())}
+                    onClick={() => {
+                      vibrate('light');
+                      onValueChange(exercise.id.toString());
+                    }}
                     className={cn(
                       "w-full px-2 py-1 rounded-lg font-medium",
                       "transition-all duration-200",
