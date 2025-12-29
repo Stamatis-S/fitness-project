@@ -94,18 +94,17 @@ export default function Leaderboard() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background pb-24">
+      <div className="flex flex-col h-screen bg-background">
         <IOSPageHeader title="Leaderboard" />
         
-        <div className="px-4 pt-4">
-          <Tabs defaultValue="rankings" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+        <div className="flex-1 overflow-hidden px-4 pt-4 pb-24">
+          <Tabs defaultValue="rankings" className="flex flex-col h-full">
+            <TabsList className="grid w-full grid-cols-2 shrink-0">
               <TabsTrigger value="rankings">Rankings</TabsTrigger>
               <TabsTrigger value="stats">Compare</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="rankings" className="mt-4">
-              <div className="max-h-[calc(100vh-220px)] overflow-y-auto overscroll-auto pb-20 -webkit-overflow-scrolling-touch">
+            <TabsContent value="rankings" className="flex-1 overflow-y-auto mt-4 pb-8">
                 {isLoading ? (
                   <div className="space-y-3">
                     {[...Array(5)].map((_, i) => (
@@ -177,7 +176,6 @@ export default function Leaderboard() {
                     })}
                   </div>
                 )}
-              </div>
             </TabsContent>
 
             <TabsContent value="stats" className="mt-4">
