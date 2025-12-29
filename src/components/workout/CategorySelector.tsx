@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CalendarCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { ExerciseCategory } from "@/lib/constants";
+import { useHaptic } from "@/hooks/useHaptic";
 
 interface CategorySelectorProps {
   onCategoryChange: (category: ExerciseCategory) => void;
@@ -30,6 +31,7 @@ export function CategorySelector({
   selectedCategory,
 }: CategorySelectorProps) {
   const navigate = useNavigate();
+  const { vibrate } = useHaptic();
   
   return (
     <ScrollArea className="w-full">
@@ -42,7 +44,10 @@ export function CategorySelector({
           <Button
             variant="default"
             className="w-full h-16 text-base font-semibold"
-            onClick={() => navigate("/workout-plan")}
+            onClick={() => {
+              vibrate('light');
+              navigate("/workout-plan");
+            }}
           >
             <CalendarCheck className="h-5 w-5 mr-2" />
             Today's Workout Plan
@@ -64,7 +69,10 @@ export function CategorySelector({
                     ? "ring-2 ring-primary bg-primary/10" 
                     : ""
                 }`}
-                onClick={() => onCategoryChange(value)}
+                onClick={() => {
+                  vibrate('light');
+                  onCategoryChange(value);
+                }}
               >
                 {label}
               </Button>
