@@ -6,11 +6,12 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Trophy, Medal, Star, ArrowLeft } from "lucide-react";
+import { Trophy, Medal, Star } from "lucide-react";
 import { LeaderboardStats } from "@/components/leaderboard/LeaderboardStats";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useNavigate } from "react-router-dom";
+import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import { getFitnessLevelName } from "@/components/profile/utils/progressLevelUtils";
+import { motion } from "framer-motion";
 
 interface Profile {
   id: string;
@@ -22,7 +23,6 @@ interface Profile {
 
 export default function Leaderboard() {
   const { session } = useAuth();
-  const navigate = useNavigate();
   
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['leaderboard'],
@@ -46,7 +46,7 @@ export default function Leaderboard() {
       case 3:
         return <Medal className="h-6 w-6 text-amber-600" />;
       default:
-        return <Star className="h-6 w-6 text-gray-600" />;
+        return <span className="text-lg font-bold text-muted-foreground">#{rank}</span>;
     }
   };
 
@@ -54,7 +54,7 @@ export default function Leaderboard() {
     if (profile.username) {
       return profile.username.substring(0, 2).toUpperCase();
     }
-    return 'AN'; // For Anonymous
+    return 'AN';
   };
 
   const getFormattedFitnessLevel = (level: string, score: number): string => {
@@ -63,12 +63,9 @@ export default function Leaderboard() {
     
     if (standardLevels.includes(normalizedLevel)) {
       const calculatedLevel = getFitnessLevelName(score);
-      
       if (calculatedLevel !== normalizedLevel) {
-        console.log(`Level mismatch for score ${score}: stored '${normalizedLevel}', calculated '${calculatedLevel}'`);
         return calculatedLevel;
       }
-      
       return normalizedLevel;
     }
     
@@ -97,49 +94,27 @@ export default function Leaderboard() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black pb-16">
-        <div className="mx-auto space-y-2">
-          <div className="flex items-center p-2">
-            <button
-              className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-2 rounded"
-              onClick={() => navigate("/")}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">Back</span>
-            </button>
-            <h1 className="text-lg font-bold flex-1 text-center text-white">
-              Leaderboard
-            </h1>
-            <div className="w-[60px]" />
-          </div>
-          
+      <div className="min-h-screen bg-background pb-24">
+        <IOSPageHeader title="Leaderboard" />
+        
+        <div className="px-4 pt-4">
           <Tabs defaultValue="rankings" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-[#333333]">
-              <TabsTrigger 
-                value="rankings" 
-                className="text-sm py-1.5 data-[state=active]:bg-[#E22222]"
-              >
-                Rankings
-              </TabsTrigger>
-              <TabsTrigger 
-                value="stats" 
-                className="text-sm py-1.5 data-[state=active]:bg-[#E22222]"
-              >
-                Compare Stats
-              </TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="rankings">Rankings</TabsTrigger>
+              <TabsTrigger value="stats">Compare</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="rankings" className="mt-2 space-y-3">
-              <ScrollArea className="h-[calc(100vh-120px)] rounded-lg">
+            <TabsContent value="rankings" className="mt-4">
+              <ScrollArea className="h-[calc(100vh-200px)]">
                 {isLoading ? (
                   <div className="space-y-3">
                     {[...Array(5)].map((_, i) => (
-                      <Card key={i} className="p-4 bg-[#222222] border-0">
+                      <Card key={i} className="p-4">
                         <div className="flex items-center gap-4">
                           <Skeleton className="h-12 w-12 rounded-full" />
-                          <div className="space-y-2">
-                            <Skeleton className="h-4 w-[180px]" />
-                            <Skeleton className="h-4 w-[120px]" />
+                          <div className="space-y-2 flex-1">
+                            <Skeleton className="h-4 w-[60%]" />
+                            <Skeleton className="h-3 w-[40%]" />
                           </div>
                         </div>
                       </Card>
@@ -150,47 +125,54 @@ export default function Leaderboard() {
                     {profiles?.map((profile, index) => {
                       const formattedLevel = getFormattedFitnessLevel(profile.fitness_level || 'Beginner', profile.fitness_score || 0);
                       const levelColor = getLevelColor(formattedLevel);
+                      const isCurrentUser = profile.id === session?.user.id;
                       
                       return (
-                        <Card 
+                        <motion.div
                           key={profile.id}
-                          className={`p-5 transition-all duration-200 animate-fade-up
-                            ${profile.id === session?.user.id 
-                              ? 'bg-[#333333] border-[#E22222]/40' 
-                              : 'bg-[#222222] border-0 hover:bg-[#2a2a2a]'
-                            }`}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
                         >
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#333333]">
-                              {getRankIcon(index + 1)}
-                            </div>
-                            <Avatar className="h-14 w-14 border border-[#444444]">
-                              {profile.profile_photo_url ? (
-                                <AvatarImage src={profile.profile_photo_url} alt={profile.username || 'User'} />
-                              ) : (
-                                <AvatarFallback className="bg-[#333333] text-white text-base">
-                                  {getUserInitials(profile)}
-                                </AvatarFallback>
-                              )}
-                            </Avatar>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-medium text-white">
-                                  {profile.username || 'Anonymous User'}
-                                  {profile.id === session?.user.id && (
-                                    <span className="ml-1 text-xs text-gray-400">(You)</span>
-                                  )}
-                                </h3>
-                                <span className="text-base font-medium text-[#E22222]">
-                                  {Math.round(profile.fitness_score).toLocaleString()}
-                                </span>
+                          <Card 
+                            className={`p-4 transition-all active:scale-[0.98] ${
+                              isCurrentUser 
+                                ? 'ring-2 ring-primary bg-primary/5' 
+                                : ''
+                            }`}
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center justify-center w-10 h-10">
+                                {getRankIcon(index + 1)}
                               </div>
-                              <p className={`text-sm ${levelColor}`}>
-                                {formattedLevel}
-                              </p>
+                              <Avatar className="h-12 w-12 border-2 border-ios-separator">
+                                {profile.profile_photo_url ? (
+                                  <AvatarImage src={profile.profile_photo_url} alt={profile.username || 'User'} />
+                                ) : (
+                                  <AvatarFallback className="bg-ios-surface-elevated text-foreground text-sm font-medium">
+                                    {getUserInitials(profile)}
+                                  </AvatarFallback>
+                                )}
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2">
+                                  <h3 className="font-medium text-foreground truncate">
+                                    {profile.username || 'Anonymous'}
+                                    {isCurrentUser && (
+                                      <span className="ml-1.5 text-xs text-muted-foreground">(You)</span>
+                                    )}
+                                  </h3>
+                                  <span className="text-base font-semibold text-primary shrink-0">
+                                    {Math.round(profile.fitness_score).toLocaleString()}
+                                  </span>
+                                </div>
+                                <p className={`text-sm ${levelColor}`}>
+                                  {formattedLevel}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        </Card>
+                          </Card>
+                        </motion.div>
                       );
                     })}
                   </div>
@@ -198,7 +180,7 @@ export default function Leaderboard() {
               </ScrollArea>
             </TabsContent>
 
-            <TabsContent value="stats" className="mt-2">
+            <TabsContent value="stats" className="mt-4">
               <LeaderboardStats />
             </TabsContent>
           </Tabs>

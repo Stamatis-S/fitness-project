@@ -55,18 +55,18 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   const personalRecords = getPersonalRecords(workoutLogs);
 
   return (
-    <div className="grid grid-cols-1 gap-1.5">
+    <div className="grid grid-cols-1 gap-4">
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="col-span-full"
       >
-        <Card className="h-full">
-          <div className="grid grid-cols-2 h-full">
-            <div className="p-1.5 border-r border-border">
+        <Card className="h-full p-0 overflow-hidden">
+          <div className="grid grid-cols-2 h-full divide-x divide-ios-separator">
+            <div className="p-4">
               <MostUsedExercise {...mostUsed} />
             </div>
-            <div className="p-1.5">
+            <div className="p-4">
               <MaxWeightMetric topExercises={topExercises} />
             </div>
           </div>
@@ -79,7 +79,7 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
         transition={{ delay: 0.1 }}
         className="col-span-full"
       >
-        <Card className="p-3">
+        <Card className="p-4">
           <PRTracker records={personalRecords} />
         </Card>
       </motion.div>

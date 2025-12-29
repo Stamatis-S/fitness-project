@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,8 @@ import { PageTransition } from "@/components/PageTransition";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/components/AuthProvider";
 import { useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { Plus } from "lucide-react";
+import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import type { Database } from "@/integrations/supabase/types";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
@@ -38,7 +38,6 @@ export default function Dashboard() {
         throw new Error('Not authenticated');
       }
 
-      // Fetch ALL workout data by making multiple requests (Supabase has 1000 row limit per query)
       let allData: WorkoutLog[] = [];
       let from = 0;
       const batchSize = 1000;
@@ -79,7 +78,11 @@ export default function Dashboard() {
   });
 
   if (isLoading) {
-    return <div className="flex h-screen items-center justify-center bg-black">Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   if (!session) {
@@ -88,77 +91,65 @@ export default function Dashboard() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black pb-16">
-        <div className="mx-auto max-w-[98%] px-1">
-          <div className="flex items-center p-2">
-            <button
-              className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-2 rounded"
-              onClick={() => navigate("/")}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">Back</span>
-            </button>
-            <h1 className="text-lg font-bold flex-1 text-center text-white">
-              My Dashboard
-            </h1>
+      <div className="min-h-screen bg-background pb-24">
+        <IOSPageHeader 
+          title="Dashboard" 
+          rightElement={
             <Button
-              onClick={() => navigate("/")}
-              variant="outline"
+              variant="ios"
               size="sm"
-              className="text-xs bg-[#333333] hover:bg-[#444444] text-white border-0"
+              onClick={() => navigate("/")}
+              className="h-9 px-3 gap-1.5"
             >
+              <Plus className="h-4 w-4" />
               New
             </Button>
-          </div>
+          }
+        />
 
-          {workoutLogs && (
-            <div className="space-y-2">
-              <div className="bg-[#222222] rounded-lg border-0">
-                <Tabs defaultValue="overview" className="w-full">
-                  <div className="sticky top-0 z-40 bg-[#222222] py-1.5 px-1 rounded-t-lg">
-                    <TabsList className="grid w-full grid-cols-3 gap-1 bg-[#333333]">
-                      <TabsTrigger value="overview" className="text-sm py-1 data-[state=active]:bg-[#E22222]">Overview</TabsTrigger>
-                      <TabsTrigger value="progress" className="text-sm py-1 data-[state=active]:bg-[#E22222]">Progress</TabsTrigger>
-                      <TabsTrigger value="statistics" className="text-sm py-1 data-[state=active]:bg-[#E22222]">Statistics</TabsTrigger>
-                    </TabsList>
-                  </div>
+        {workoutLogs && (
+          <div className="px-4 pt-4 space-y-4">
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="progress">Progress</TabsTrigger>
+                <TabsTrigger value="statistics">Statistics</TabsTrigger>
+              </TabsList>
 
-                  <div className="p-1">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-                      <DataErrorBoundary>
-                        <WorkoutInsights logs={workoutLogs} />
-                      </DataErrorBoundary>
-                    </div>
+              <div className="mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                  <DataErrorBoundary>
+                    <WorkoutInsights logs={workoutLogs} />
+                  </DataErrorBoundary>
+                </div>
 
-                    <TabsContent value="overview" className="m-0">
-                      {workoutLogs && (
-                        <DataErrorBoundary>
-                          <DashboardOverview workoutLogs={workoutLogs} />
-                        </DataErrorBoundary>
-                      )}
-                    </TabsContent>
+                <TabsContent value="overview" className="m-0">
+                  {workoutLogs && (
+                    <DataErrorBoundary>
+                      <DashboardOverview workoutLogs={workoutLogs} />
+                    </DataErrorBoundary>
+                  )}
+                </TabsContent>
 
-                    <TabsContent value="progress" className="m-0 w-full">
-                      {workoutLogs && (
-                        <DataErrorBoundary>
-                          <ProgressTracking workoutLogs={workoutLogs} />
-                        </DataErrorBoundary>
-                      )}
-                    </TabsContent>
+                <TabsContent value="progress" className="m-0 w-full">
+                  {workoutLogs && (
+                    <DataErrorBoundary>
+                      <ProgressTracking workoutLogs={workoutLogs} />
+                    </DataErrorBoundary>
+                  )}
+                </TabsContent>
 
-                    <TabsContent value="statistics" className="m-0 w-full">
-                      {workoutLogs && (
-                        <DataErrorBoundary>
-                          <DashboardStatistics workoutLogs={workoutLogs} />
-                        </DataErrorBoundary>
-                      )}
-                    </TabsContent>
-                  </div>
-                </Tabs>
+                <TabsContent value="statistics" className="m-0 w-full">
+                  {workoutLogs && (
+                    <DataErrorBoundary>
+                      <DashboardStatistics workoutLogs={workoutLogs} />
+                    </DataErrorBoundary>
+                  )}
+                </TabsContent>
               </div>
-            </div>
-          )}
-        </div>
+            </Tabs>
+          </div>
+        )}
       </div>
     </PageTransition>
   );

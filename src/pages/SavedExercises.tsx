@@ -7,11 +7,11 @@ import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
-import { ArrowLeft } from "lucide-react";
 import { subDays } from "date-fns";
+import { IOSPageHeader } from "@/components/ui/ios-page-header";
+import { motion } from "framer-motion";
 import {
   Pagination,
   PaginationContent,
@@ -28,7 +28,7 @@ export default function SavedExercises() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20; // Show 20 workout days per page
+  const itemsPerPage = 20;
 
   useEffect(() => {
     if (!isLoading && !session) {
@@ -36,164 +36,6 @@ export default function SavedExercises() {
     }
   }, [session, isLoading, navigate]);
 
-  // First, get ALL unique workout dates without date filter (we'll filter for display later)
-  const { data: allDateInfo } = useQuery({
-    queryKey: ['all_workout_dates', session?.user.id],
-    queryFn: async () => {
-      if (!session?.user.id) throw new Error('Not authenticated');
-
-      // Get ALL workout dates without any date range filter
-      let allDates: string[] = [];
-      let from = 0;
-      const batchSize = 1000;
-      let hasMore = true;
-
-      console.log('Fetching ALL workout dates (no date filter)...');
-
-      while (hasMore) {
-        const { data, error } = await supabase
-          .from('workout_logs')
-          .select('workout_date')
-          .eq('user_id', session.user.id)
-          .order('workout_date', { ascending: false })
-          .range(from, from + batchSize - 1);
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          const dates = data.map(d => d.workout_date);
-          allDates = [...allDates, ...dates];
-          from += batchSize;
-          hasMore = data.length === batchSize;
-          console.log(`Batch ${Math.ceil(from / batchSize)}: fetched ${data.length} entries, total dates: ${allDates.length}`);
-        } else {
-          hasMore = false;
-        }
-      }
-
-      // Get unique dates
-      const uniqueDates = [...new Set(allDates)].sort((a, b) => b.localeCompare(a));
-      
-      console.log(`✅ Found ${uniqueDates.length} unique workout dates from ${allDates.length} total entries`);
-      if (uniqueDates.length > 0) {
-        console.log(`📅 Date range: ${uniqueDates[uniqueDates.length - 1]} to ${uniqueDates[0]}`);
-      }
-      
-      return { uniqueDates, totalCount: allDates.length };
-    },
-    enabled: !!session?.user.id,
-  });
-
-  // Apply filters to the dates
-  const allUniqueDates = allDateInfo?.uniqueDates || [];
-  const filteredUniqueDates = allUniqueDates.filter(date => {
-    // Apply date filter
-    if (dateFilter !== 'all') {
-      const dateRange = getDateRange(dateFilter);
-      if (dateRange) {
-        const logDate = new Date(date + 'T12:00:00');
-        const [startDate, endDate] = dateRange;
-        if (logDate < startDate || logDate > endDate) return false;
-      }
-    }
-    return true;
-  });
-
-  // Calculate pagination based on filtered unique dates
-  const totalPages = Math.ceil(filteredUniqueDates.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentDates = filteredUniqueDates.slice(startIndex, endIndex);
-
-  console.log(`📊 Total dates: ${allUniqueDates.length}, Filtered: ${filteredUniqueDates.length}, Current page dates: ${currentDates.length}`);
-
-  // Fetch workout cycles to identify cycle start dates
-  const { data: workoutCycles } = useQuery({
-    queryKey: ['workout_cycles', session?.user.id],
-    queryFn: async () => {
-      if (!session?.user.id) return [];
-      const { data, error } = await supabase
-        .from('workout_cycles')
-        .select('start_date')
-        .eq('user_id', session.user.id);
-      if (error) throw error;
-      return data.map(cycle => cycle.start_date);
-    },
-    enabled: !!session?.user.id,
-  });
-
-  // Now fetch only the workout logs for the current page's dates
-  const { data: workoutLogs, refetch } = useQuery({
-    queryKey: ['workout_logs_paginated', session?.user.id, currentDates, categoryFilter, searchTerm],
-    queryFn: async () => {
-      if (!session?.user.id || currentDates.length === 0) return [];
-
-      let query = supabase
-        .from('workout_logs')
-        .select(`
-          *,
-          exercises (
-            id,
-            name
-          )
-        `)
-        .eq('user_id', session.user.id)
-        .in('workout_date', currentDates)
-        .order('workout_date', { ascending: false })
-        .order('created_at', { ascending: true });
-
-      // Apply category filter
-      if (categoryFilter !== 'all') {
-        query = query.eq('category', categoryFilter as any);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      // Client-side filter for search term if needed
-      let filtered = data || [];
-      if (searchTerm) {
-        filtered = filtered.filter(log => {
-          const exerciseName = log.exercises?.name || log.custom_exercise;
-          return exerciseName?.toLowerCase().includes(searchTerm.toLowerCase());
-        });
-      }
-
-      console.log(`📦 Loaded ${filtered.length} workout entries for current page`);
-      return filtered as WorkoutLog[];
-    },
-    enabled: !!session?.user.id && currentDates.length > 0,
-  });
-
-  const handleDelete = async (id: number) => {
-    if (!session?.user.id) return;
-
-    try {
-      const { error } = await supabase
-        .from('workout_logs')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', session.user.id);
-
-      if (error) throw error;
-
-      toast.success("Exercise deleted successfully");
-      refetch();
-    } catch (error) {
-      toast.error("Failed to delete exercise");
-      console.error("Delete error:", error);
-    }
-  };
-
-  if (isLoading) {
-    return <div className="flex h-screen items-center justify-center bg-black">Loading...</div>;
-  }
-
-  if (!session) {
-    return null;
-  }
-
-  // Move getDateRange before the queries since it's used there
   function getDateRange(filter: string): [Date, Date] | null {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
@@ -224,54 +66,194 @@ export default function SavedExercises() {
     }
   }
 
-  // No need for client-side filtering anymore - it's all done server-side
-  // workoutLogs already contains only the filtered and paginated data
+  const { data: allDateInfo } = useQuery({
+    queryKey: ['all_workout_dates', session?.user.id],
+    queryFn: async () => {
+      if (!session?.user.id) throw new Error('Not authenticated');
+
+      let allDates: string[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('workout_logs')
+          .select('workout_date')
+          .eq('user_id', session.user.id)
+          .order('workout_date', { ascending: false })
+          .range(from, from + batchSize - 1);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const dates = data.map(d => d.workout_date);
+          allDates = [...allDates, ...dates];
+          from += batchSize;
+          hasMore = data.length === batchSize;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      const uniqueDates = [...new Set(allDates)].sort((a, b) => b.localeCompare(a));
+      return { uniqueDates, totalCount: allDates.length };
+    },
+    enabled: !!session?.user.id,
+  });
+
+  const allUniqueDates = allDateInfo?.uniqueDates || [];
+  const filteredUniqueDates = allUniqueDates.filter(date => {
+    if (dateFilter !== 'all') {
+      const dateRange = getDateRange(dateFilter);
+      if (dateRange) {
+        const logDate = new Date(date + 'T12:00:00');
+        const [startDate, endDate] = dateRange;
+        if (logDate < startDate || logDate > endDate) return false;
+      }
+    }
+    return true;
+  });
+
+  const totalPages = Math.ceil(filteredUniqueDates.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentDates = filteredUniqueDates.slice(startIndex, endIndex);
+
+  const { data: workoutCycles } = useQuery({
+    queryKey: ['workout_cycles', session?.user.id],
+    queryFn: async () => {
+      if (!session?.user.id) return [];
+      const { data, error } = await supabase
+        .from('workout_cycles')
+        .select('start_date')
+        .eq('user_id', session.user.id);
+      if (error) throw error;
+      return data.map(cycle => cycle.start_date);
+    },
+    enabled: !!session?.user.id,
+  });
+
+  const { data: workoutLogs, refetch } = useQuery({
+    queryKey: ['workout_logs_paginated', session?.user.id, currentDates, categoryFilter, searchTerm],
+    queryFn: async () => {
+      if (!session?.user.id || currentDates.length === 0) return [];
+
+      let query = supabase
+        .from('workout_logs')
+        .select(`
+          *,
+          exercises (
+            id,
+            name
+          )
+        `)
+        .eq('user_id', session.user.id)
+        .in('workout_date', currentDates)
+        .order('workout_date', { ascending: false })
+        .order('created_at', { ascending: true });
+
+      if (categoryFilter !== 'all') {
+        query = query.eq('category', categoryFilter as any);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      let filtered = data || [];
+      if (searchTerm) {
+        filtered = filtered.filter(log => {
+          const exerciseName = log.exercises?.name || log.custom_exercise;
+          return exerciseName?.toLowerCase().includes(searchTerm.toLowerCase());
+        });
+      }
+
+      return filtered as WorkoutLog[];
+    },
+    enabled: !!session?.user.id && currentDates.length > 0,
+  });
+
+  const handleDelete = async (id: number) => {
+    if (!session?.user.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('workout_logs')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', session.user.id);
+
+      if (error) throw error;
+
+      toast.success("Exercise deleted successfully");
+      refetch();
+    } catch (error) {
+      toast.error("Failed to delete exercise");
+      console.error("Delete error:", error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-black pb-6">
-        <div className="mx-auto max-w-md space-y-1.5">
-          <div className="flex items-center p-1.5">
-            <button
-              className="flex items-center gap-1 text-white bg-transparent hover:bg-[#333333] p-1 rounded"
-              onClick={() => navigate("/")}
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              <span className="text-xs">Back</span>
-            </button>
-            <h1 className="text-base font-bold flex-1 text-center text-white">
-              Saved Exercises
-            </h1>
-            <div className="w-[50px]" />
-          </div>
+      <div className="min-h-screen bg-background pb-24">
+        <IOSPageHeader title="Saved Exercises" />
+        
+        <div className="px-4 pt-4 space-y-4">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="p-4">
+              <WorkoutFilters
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                categoryFilter={categoryFilter}
+                onCategoryChange={setCategoryFilter}
+                dateFilter={dateFilter}
+                onDateChange={setDateFilter}
+              />
+            </Card>
+          </motion.div>
 
-          <Card className="p-1.5 bg-[#222222] border-0 rounded-lg">
-            <WorkoutFilters
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              categoryFilter={categoryFilter}
-              onCategoryChange={setCategoryFilter}
-              dateFilter={dateFilter}
-              onDateChange={setDateFilter}
-            />
-          </Card>
-
-          <Card className="overflow-hidden bg-[#222222] border-0 rounded-lg">
-            <WorkoutTable 
-              logs={workoutLogs || []} 
-              onDelete={handleDelete} 
-              cycleStartDates={workoutCycles || []}
-            />
-          </Card>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="overflow-hidden">
+              <WorkoutTable 
+                logs={workoutLogs || []} 
+                onDelete={handleDelete} 
+                cycleStartDates={workoutCycles || []}
+              />
+            </Card>
+          </motion.div>
 
           {totalPages > 1 && (
-            <div className="flex justify-center mt-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="flex justify-center"
+            >
               <Pagination>
                 <PaginationContent className="gap-1">
                   <PaginationItem>
                     <PaginationPrevious
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer bg-[#333333] hover:bg-[#444444] text-white"}
+                      className={`rounded-ios ${currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer bg-ios-surface-elevated active:scale-95"}`}
                     />
                   </PaginationItem>
                   
@@ -292,9 +274,9 @@ export default function SavedExercises() {
                         <PaginationLink
                           onClick={() => setCurrentPage(pageNum)}
                           isActive={currentPage === pageNum}
-                          className={currentPage === pageNum 
-                            ? "bg-[#E22222] text-white hover:bg-[#E22222]" 
-                            : "bg-[#333333] hover:bg-[#444444] text-white cursor-pointer"}
+                          className={`rounded-ios ${currentPage === pageNum 
+                            ? "bg-primary text-primary-foreground" 
+                            : "bg-ios-surface-elevated active:scale-95"}`}
                         >
                           {pageNum}
                         </PaginationLink>
@@ -305,17 +287,17 @@ export default function SavedExercises() {
                   <PaginationItem>
                     <PaginationNext
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer bg-[#333333] hover:bg-[#444444] text-white"}
+                      className={`rounded-ios ${currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer bg-ios-surface-elevated active:scale-95"}`}
                     />
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
-            </div>
+            </motion.div>
           )}
 
-          <div className="text-center text-sm text-gray-400 mt-2">
-            Page {currentPage} of {totalPages} • Showing {currentDates.length} days
-          </div>
+          <p className="text-center text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages} • {currentDates.length} days
+          </p>
         </div>
       </div>
     </PageTransition>

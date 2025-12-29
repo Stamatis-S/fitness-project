@@ -34,10 +34,10 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
   const maxWeightData = calculateMaxWeightData(filteredLogs);
 
   return (
-    <div className="grid grid-cols-1 gap-3">
-      <Card className="p-3 col-span-full bg-[#1E1E1E] border-[#333333]">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
-          <h2 className="text-xl font-semibold text-white">Statistics Overview</h2>
+    <div className="grid grid-cols-1 gap-4">
+      <Card className="p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <h2 className="text-lg font-semibold text-foreground">Statistics Overview</h2>
           <StatisticsTimeRangeSelector 
             timeRange={timeRange} 
             setTimeRange={setTimeRange} 
@@ -51,8 +51,8 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
         />
       </Card>
 
-      <Card className="p-3 bg-[#1E1E1E] border-[#333333]">
-        <h2 className="text-xl font-semibold mb-3 text-white">Max Weight Per Exercise</h2>
+      <Card className="p-4">
+        <h2 className="text-lg font-semibold mb-4 text-foreground">Max Weight Per Exercise</h2>
         <MaxWeightBarChart maxWeightData={maxWeightData} isMobile={isMobile} />
       </Card>
     </div>
