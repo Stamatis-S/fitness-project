@@ -22,7 +22,7 @@ export function SetControl({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3 mt-2">
       <Button
         type="button"
         variant="outline"
@@ -31,16 +31,18 @@ export function SetControl({
       >
         <Minus className="h-5 w-5" />
       </Button>
-      <Input
-        type="number"
-        value={value}
-        onChange={handleInputChange}
-        min={min}
-        max={max}
-        step={step}
-        className="flex-1 text-center text-lg font-semibold h-12 bg-ios-surface-elevated border-border/50"
-        inputMode="decimal"
-      />
+      <div className="flex-1 flex items-center justify-center">
+        <Input
+          type="number"
+          value={value}
+          onChange={handleInputChange}
+          min={min}
+          max={max}
+          step={step}
+          className="w-24 text-center text-xl font-bold h-14 bg-ios-surface-elevated border-border/30 rounded-xl shadow-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          inputMode="decimal"
+        />
+      </div>
       <Button
         type="button"
         variant="outline"
