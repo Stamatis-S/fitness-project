@@ -1,22 +1,76 @@
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 type FeedbackType = 'light' | 'success' | 'error';
 
 // Audio context singleton
 let audioContext: AudioContext | null = null;
+let isAudioUnlocked = false;
 
-const getAudioContext = () => {
+const getAudioContext = (): AudioContext | null => {
+  if (typeof window === 'undefined') return null;
+  
   if (!audioContext) {
-    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        audioContext = new AudioContextClass();
+      }
+    } catch (e) {
+      console.log('AudioContext not supported:', e);
+      return null;
+    }
   }
   return audioContext;
 };
 
-const playTone = (frequency: number, duration: number, volume: number = 0.3) => {
+// Unlock audio on first user interaction (required for iOS/mobile)
+const unlockAudio = async () => {
+  if (isAudioUnlocked) return;
+  
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  
+  try {
+    if (ctx.state === 'suspended') {
+      await ctx.resume();
+    }
+    
+    // Play a silent sound to unlock audio on iOS
+    const buffer = ctx.createBuffer(1, 1, 22050);
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    source.start(0);
+    
+    isAudioUnlocked = true;
+  } catch (e) {
+    console.log('Audio unlock failed:', e);
+  }
+};
+
+// Initialize audio unlock listeners
+if (typeof window !== 'undefined') {
+  const events = ['touchstart', 'touchend', 'click', 'keydown'];
+  const unlockHandler = () => {
+    unlockAudio();
+    // Remove listeners after first interaction
+    events.forEach(event => {
+      document.removeEventListener(event, unlockHandler, true);
+    });
+  };
+  events.forEach(event => {
+    document.addEventListener(event, unlockHandler, true);
+  });
+}
+
+const playTone = async (frequency: number, duration: number, volume: number = 0.3) => {
   try {
     const ctx = getAudioContext();
+    if (!ctx) return;
+    
+    // Ensure audio is resumed
     if (ctx.state === 'suspended') {
-      ctx.resume();
+      await ctx.resume();
     }
     
     const oscillator = ctx.createOscillator();
@@ -55,6 +109,11 @@ const SOUND_PATTERNS: Record<FeedbackType, () => void> = {
 };
 
 export const useHaptic = () => {
+  // Unlock audio when hook is used
+  useEffect(() => {
+    unlockAudio();
+  }, []);
+
   const vibrate = useCallback((type: FeedbackType = 'light') => {
     SOUND_PATTERNS[type]();
   }, []);
