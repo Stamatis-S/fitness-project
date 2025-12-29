@@ -93,6 +93,10 @@ export default function Auth() {
           <img 
             src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
             alt="Fitness Project Logo"
+            width={176}
+            height={155}
+            fetchPriority="high"
+            decoding="async"
             className="w-36 md:w-44 mx-auto"
           />
         </motion.div>
