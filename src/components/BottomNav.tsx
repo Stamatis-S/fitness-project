@@ -3,9 +3,19 @@ import { Home, BarChart2, Bookmark, User, Trophy } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
+const HIDDEN_PATHS = ['/auth', '/install'];
+
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Hide BottomNav on auth, install, and 404 pages
+  const shouldHide = HIDDEN_PATHS.includes(location.pathname) || 
+    !['/', '/dashboard', '/saved-exercises', '/leaderboard', '/profile', '/workout-plan'].includes(location.pathname);
+  
+  if (shouldHide) {
+    return null;
+  }
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
