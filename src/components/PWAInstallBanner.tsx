@@ -4,12 +4,14 @@ import { Download, X, Share, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useNavigate } from "react-router-dom";
+import { useHaptic } from "@/hooks/useHaptic";
 
 export function PWAInstallBanner() {
   const { isInstallable, isInstalled, isIOS, promptInstall } = usePWAInstall();
   const [isDismissed, setIsDismissed] = useState(false);
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
   const navigate = useNavigate();
+  const { vibrate } = useHaptic();
 
   useEffect(() => {
     // Check if banner was dismissed before
@@ -24,11 +26,13 @@ export function PWAInstallBanner() {
   }, []);
 
   const handleDismiss = () => {
+    vibrate('light');
     setIsDismissed(true);
     localStorage.setItem('pwa-banner-dismissed', Date.now().toString());
   };
 
   const handleInstall = async () => {
+    vibrate('light');
     if (isIOS) {
       setShowIOSInstructions(true);
     } else {

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Edit2, Check, Lock } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useHaptic } from "@/hooks/useHaptic";
 
 interface AccountInformationProps {
   userId: string;
@@ -22,6 +23,7 @@ interface PasswordChangeForm {
 
 export function AccountInformation({ userId, username, email, onUsernameUpdate }: AccountInformationProps) {
   const queryClient = useQueryClient();
+  const { vibrate } = useHaptic();
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [newUsername, setNewUsername] = useState(username || "");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -124,7 +126,10 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
               />
               <Button
                 size="sm"
-                onClick={handleUpdateUsername}
+                onClick={() => {
+                  vibrate('light');
+                  handleUpdateUsername();
+                }}
                 disabled={!newUsername.trim()}
                 className="h-8 bg-[#333333] hover:bg-[#444444] border-0"
               >
@@ -139,7 +144,10 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => setIsEditingUsername(true)}
+                onClick={() => {
+                  vibrate('light');
+                  setIsEditingUsername(true);
+                }}
                 className="h-6 p-1"
               >
                 <Edit2 className="h-3 w-3 text-gray-400" />
@@ -152,7 +160,10 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setIsChangingPassword(!isChangingPassword)}
+            onClick={() => {
+              vibrate('light');
+              setIsChangingPassword(!isChangingPassword);
+            }}
             className="w-full flex justify-between items-center text-sm h-9 bg-[#333333] hover:bg-[#444444] text-white border-0"
           >
             <span>Change Password</span>
@@ -187,6 +198,7 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
                   size="sm"
                   variant="outline"
                   onClick={() => {
+                    vibrate('light');
                     setIsChangingPassword(false);
                     setPasswordForm({
                       currentPassword: "",
@@ -201,6 +213,7 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
                 <Button
                   size="sm"
                   onClick={() => {
+                    vibrate('light');
                     console.log('Update button clicked', { passwordForm });
                     handlePasswordChange();
                   }}
