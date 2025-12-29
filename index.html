@@ -1,18 +1,52 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>strength-stats-navigator</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- Primary Meta Tags -->
+    <title>FitTrack - Fitness Tracker</title>
+    <meta name="title" content="FitTrack - Fitness Tracker" />
+    <meta name="description" content="Track your workouts, monitor progress, and achieve your fitness goals with FitTrack" />
+    <meta name="author" content="FitTrack" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="FitTrack - Fitness Tracker" />
+    <meta property="og:description" content="Track your workouts, monitor progress, and achieve your fitness goals" />
     <meta property="og:image" content="/og-image.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="FitTrack - Fitness Tracker" />
+    <meta property="twitter:description" content="Track your workouts, monitor progress, and achieve your fitness goals" />
+    <meta property="twitter:image" content="/og-image.png" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="FitTrack" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-TileColor" content="#000000" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/pwa-192x192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/pwa-192x192.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/pwa-192x192.png" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    
+    <!-- Splash Screens for iOS -->
+    <link rel="apple-touch-startup-image" href="/pwa-512x512.png" />
   </head>
 
   <body>
     <div id="root"></div>
-    <!-- Move script here and ensure it loads first -->
     <script 
       src="https://cdn.gpteng.co/gptengineer.js" 
       type="module" 
@@ -22,7 +56,6 @@
     ></script>
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Add fallback error handler -->
     <script>
       window.addEventListener('error', function(event) {
         if (event.filename === '' && event.lineno === 0 && event.colno === 0) {

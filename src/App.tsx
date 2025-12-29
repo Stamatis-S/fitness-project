@@ -14,7 +14,7 @@ import Profile from "@/pages/Profile";
 import SavedExercises from "@/pages/SavedExercises";
 import Leaderboard from "@/pages/Leaderboard";
 import WorkoutPlan from "@/pages/WorkoutPlan";
-
+import Install from "@/pages/Install";
 import NotFound from "@/pages/NotFound";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -91,6 +91,11 @@ function App() {
                     <Route path="/workout-plan" element={
                       <ErrorBoundary>
                         <WorkoutPlan />
+                      </ErrorBoundary>
+                    } />
+                    <Route path="/install" element={
+                      <ErrorBoundary>
+                        <Install />
                       </ErrorBoundary>
                     } />
                     <Route path="*" element={<NotFound />} />
