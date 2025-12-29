@@ -5,7 +5,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { Trophy, Medal, Star } from "lucide-react";
 import { LeaderboardStats } from "@/components/leaderboard/LeaderboardStats";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -105,7 +105,7 @@ export default function Leaderboard() {
             </TabsList>
 
             <TabsContent value="rankings" className="mt-4">
-              <ScrollArea className="h-[calc(100vh-200px)]">
+              <div className="h-[calc(100vh-200px)] overflow-y-auto overscroll-contain pb-4">
                 {isLoading ? (
                   <div className="space-y-3">
                     {[...Array(5)].map((_, i) => (
@@ -177,7 +177,7 @@ export default function Leaderboard() {
                     })}
                   </div>
                 )}
-              </ScrollArea>
+              </div>
             </TabsContent>
 
             <TabsContent value="stats" className="mt-4">
