@@ -105,7 +105,7 @@ export default function Leaderboard() {
             </TabsList>
 
             <TabsContent value="rankings" className="mt-4">
-              <div className="h-[calc(100vh-200px)] overflow-y-auto overscroll-contain pb-4">
+              <div className="max-h-[calc(100vh-220px)] overflow-y-auto overscroll-auto pb-20 -webkit-overflow-scrolling-touch">
                 {isLoading ? (
                   <div className="space-y-3">
                     {[...Array(5)].map((_, i) => (
