@@ -34,6 +34,8 @@ export function MuscleHeatmap({ workoutLogs, className, timeRange }: MuscleHeatm
           <img 
             src="/lovable-uploads/32516b6e-fe1e-44bc-a297-dda9bfe437ce.png" 
             alt="Muscle anatomy" 
+            loading="lazy"
+            decoding="async"
             className="h-full w-auto object-contain opacity-40"
           />
         </div>
