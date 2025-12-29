@@ -5,11 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { UserRecordPopup } from "@/components/UserRecordPopup";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { useWakeLock } from "@/hooks/useWakeLock";
+import { RepeatLastWorkout } from "@/components/workout/RepeatLastWorkout";
+import { WorkoutTemplates } from "@/components/workout/WorkoutTemplates";
 
 const Index = () => {
   const { session, isLoading } = useAuth();
@@ -84,6 +86,22 @@ const Index = () => {
           {/* User Record Popup */}
           <DataErrorBoundary>
             <UserRecordPopup />
+          </DataErrorBoundary>
+
+          {/* Quick Actions - Repeat & Templates */}
+          <DataErrorBoundary>
+            <div className="flex gap-3">
+              <RepeatLastWorkout 
+                onRepeat={(exercises) => {
+                  toast.success(`Loaded ${exercises.length} exercise${exercises.length > 1 ? 's' : ''} from last workout`);
+                }} 
+              />
+              <WorkoutTemplates 
+                onLoadTemplate={(template) => {
+                  toast.success(`Loaded template: ${template.name}`);
+                }}
+              />
+            </div>
           </DataErrorBoundary>
 
           {/* Exercise Entry Form */}
