@@ -2,6 +2,22 @@ import { useCallback, useEffect } from 'react';
 
 type FeedbackType = 'light' | 'success' | 'error';
 
+const SOUND_ENABLED_KEY = 'sound-feedback-enabled';
+
+// Sound enabled state
+let soundEnabled = typeof window !== 'undefined' 
+  ? localStorage.getItem(SOUND_ENABLED_KEY) !== 'false' 
+  : true;
+
+export const getSoundEnabled = () => soundEnabled;
+
+export const setSoundEnabled = (enabled: boolean) => {
+  soundEnabled = enabled;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(SOUND_ENABLED_KEY, String(enabled));
+  }
+};
+
 // Audio context singleton
 let audioContext: AudioContext | null = null;
 let isAudioUnlocked = false;
@@ -64,6 +80,8 @@ if (typeof window !== 'undefined') {
 }
 
 const playTone = async (frequency: number, duration: number, volume: number = 0.3) => {
+  if (!soundEnabled) return;
+  
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
@@ -115,7 +133,9 @@ export const useHaptic = () => {
   }, []);
 
   const vibrate = useCallback((type: FeedbackType = 'light') => {
-    SOUND_PATTERNS[type]();
+    if (soundEnabled) {
+      SOUND_PATTERNS[type]();
+    }
   }, []);
 
   return { vibrate };
@@ -123,5 +143,7 @@ export const useHaptic = () => {
 
 // Helper for non-React contexts
 export const playFeedback = (type: FeedbackType) => {
-  SOUND_PATTERNS[type]();
+  if (soundEnabled) {
+    SOUND_PATTERNS[type]();
+  }
 };

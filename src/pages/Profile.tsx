@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "@/components/profile/ProfilePhoto";
 import { AccountInformation } from "@/components/profile/AccountInformation";
 import { MuscleGrowthVisualization } from "@/components/profile/MuscleGrowthVisualization";
+import { SoundSettings } from "@/components/profile/SoundSettings";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import { PageTransition } from "@/components/PageTransition";
 import { motion } from "framer-motion";
@@ -119,6 +120,18 @@ export default function Profile() {
                 email={session.user.email!}
                 onUsernameUpdate={(newUsername) => setProfile(prev => prev ? { ...prev, username: newUsername } : null)}
               />
+            </Card>
+          </motion.div>
+
+          {/* Settings Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="p-5">
+              <h3 className="text-lg font-semibold mb-4">Settings</h3>
+              <SoundSettings />
             </Card>
           </motion.div>
         </div>
