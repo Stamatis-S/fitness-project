@@ -6,6 +6,9 @@ interface RestTimerState {
   totalTime: number;
 }
 
+// Base64 encoded beep sound (louder, longer beep)
+const BEEP_SOUND = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhAC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAA4T/////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tQZB8P8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+
 export function useRestTimer(defaultDuration: number = 90) {
   const [state, setState] = useState<RestTimerState>({
     isRunning: false,
@@ -15,9 +18,13 @@ export function useRestTimer(defaultDuration: number = 90) {
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Initialize audio context for louder sound
+  // Pre-load audio on mount
   useEffect(() => {
+    audioRef.current = new Audio(BEEP_SOUND);
+    audioRef.current.volume = 1.0;
+    
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -25,42 +32,68 @@ export function useRestTimer(defaultDuration: number = 90) {
     };
   }, []);
 
+  // Unlock audio on iOS - must be called from user interaction
+  const unlockAudio = useCallback(() => {
+    if (audioRef.current) {
+      // Play and immediately pause to unlock on iOS
+      audioRef.current.play().then(() => {
+        audioRef.current?.pause();
+        audioRef.current!.currentTime = 0;
+      }).catch(() => {});
+    }
+    
+    // Also create AudioContext on user interaction
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+  }, []);
+
   const playLoudBeep = useCallback(() => {
+    // Method 1: Use pre-loaded Audio element
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.volume = 1.0;
+      const playPromise = audioRef.current.play();
+      if (playPromise) {
+        playPromise.catch(() => {});
+      }
+    }
+
+    // Method 2: Also try AudioContext for extra sound
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const ctx = audioContextRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
       
-      // Create 3 sequential beeps for attention
-      const playBeep = (startTime: number, frequency: number) => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+      const playBeep = (delay: number, frequency: number, duration: number) => {
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
         
         oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+        gainNode.connect(ctx.destination);
         
         oscillator.frequency.value = frequency;
         oscillator.type = 'square';
         
-        // Maximum volume
-        gainNode.gain.setValueAtTime(1, startTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+        const startTime = ctx.currentTime + delay;
+        gainNode.gain.setValueAtTime(0.8, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
         
         oscillator.start(startTime);
-        oscillator.stop(startTime + 0.3);
+        oscillator.stop(startTime + duration);
       };
       
-      // Play 3 loud beeps
-      playBeep(audioContext.currentTime, 880);
-      playBeep(audioContext.currentTime + 0.35, 988);
-      playBeep(audioContext.currentTime + 0.7, 1047);
+      // Play 3 ascending beeps
+      playBeep(0, 800, 0.2);
+      playBeep(0.25, 1000, 0.2);
+      playBeep(0.5, 1200, 0.3);
       
     } catch (e) {
-      console.log('Audio not supported');
+      console.log('AudioContext failed:', e);
     }
   }, []);
 
   const triggerHaptic = useCallback(() => {
     if ('vibrate' in navigator) {
-      navigator.vibrate([200, 100, 200]);
+      navigator.vibrate([300, 100, 300, 100, 300]);
     }
   }, []);
 
@@ -70,6 +103,9 @@ export function useRestTimer(defaultDuration: number = 90) {
   }, [playLoudBeep, triggerHaptic]);
 
   const startTimer = useCallback((duration?: number) => {
+    // Unlock audio when user starts timer (user interaction)
+    unlockAudio();
+    
     const time = duration || defaultDuration;
     setState({
       isRunning: true,
@@ -93,7 +129,7 @@ export function useRestTimer(defaultDuration: number = 90) {
         return { ...prev, timeRemaining: prev.timeRemaining - 1 };
       });
     }, 1000);
-  }, [defaultDuration, playAlert]);
+  }, [defaultDuration, playAlert, unlockAudio]);
 
   const stopTimer = useCallback(() => {
     if (intervalRef.current) {
