@@ -8,6 +8,7 @@ import { WorkoutInsights } from "@/components/dashboard/WorkoutInsights";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { ProgressTracking } from "@/components/dashboard/ProgressTracking";
 import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics";
+import { AchievementBadges } from "@/components/dashboard/AchievementBadges";
 import { PageTransition } from "@/components/PageTransition";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/components/AuthProvider";
@@ -123,11 +124,16 @@ export default function Dashboard() {
                   </DataErrorBoundary>
                 </div>
 
-                <TabsContent value="overview" className="m-0">
+                <TabsContent value="overview" className="m-0 space-y-4">
                   {workoutLogs && (
-                    <DataErrorBoundary>
-                      <DashboardOverview workoutLogs={workoutLogs} />
-                    </DataErrorBoundary>
+                    <>
+                      <DataErrorBoundary>
+                        <DashboardOverview workoutLogs={workoutLogs} />
+                      </DataErrorBoundary>
+                      <DataErrorBoundary>
+                        <AchievementBadges workoutLogs={workoutLogs} />
+                      </DataErrorBoundary>
+                    </>
                   )}
                 </TabsContent>
 

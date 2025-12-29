@@ -9,16 +9,28 @@ import { useEffect } from "react";
 import { UserRecordPopup } from "@/components/UserRecordPopup";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
+import { useWakeLock } from "@/hooks/useWakeLock";
 
 const Index = () => {
   const { session, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { requestWakeLock, releaseWakeLock } = useWakeLock();
 
   useEffect(() => {
     if (!isLoading && !session) {
       navigate('/auth');
     }
   }, [session, isLoading, navigate]);
+
+  // Keep screen awake while on workout page
+  useEffect(() => {
+    if (session) {
+      requestWakeLock();
+    }
+    return () => {
+      releaseWakeLock();
+    };
+  }, [session, requestWakeLock, releaseWakeLock]);
 
   const handleLogout = async () => {
     try {
