@@ -1,8 +1,15 @@
-
 import { ExerciseFormData } from "@/components/workout/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+
+// Haptic feedback helper (used outside React components)
+const vibrate = (type: 'light' | 'success' | 'error') => {
+  const patterns = { light: 10, success: [10, 50, 20], error: [50, 30, 50, 30, 50] };
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(patterns[type]);
+  }
+};
 
 export async function saveExercise(
   data: ExerciseFormData, 
@@ -13,26 +20,31 @@ export async function saveExercise(
 ): Promise<boolean> {
   try {
     if (!selectedCategory) {
+      vibrate('error');
       toast.error("Please select a category");
       return false;
     }
 
     if (!userId) {
+      vibrate('error');
       toast.error("Please log in to save exercises");
       return false;
     }
 
     if (!data.exercise && selectedCategory !== "POWER SETS") {
+      vibrate('error');
       toast.error("Please select an exercise");
       return false;
     }
 
     if (selectedCategory === "POWER SETS" && !data.powerSetPair) {
+      vibrate('error');
       toast.error("Please select a power set");
       return false;
     }
 
     if (data.exercise === "custom" && !data.customExercise && selectedCategory !== "POWER SETS") {
+      vibrate('error');
       toast.error("Please enter a custom exercise name");
       return false;
     }
@@ -49,6 +61,7 @@ export async function saveExercise(
       );
       
       if (hasInvalidExercise1Sets || hasInvalidExercise2Sets) {
+        vibrate('error');
         toast.error("Please enter valid values. Weight must be 0 or greater, and reps must be a positive whole number.");
         return false;
       }
@@ -59,6 +72,7 @@ export async function saveExercise(
       );
 
       if (hasInvalidSets) {
+        vibrate('error');
         toast.error("Please enter valid values. Weight must be 0 or greater, and reps must be a positive whole number.");
         return false;
       }
@@ -135,10 +149,12 @@ export async function saveExercise(
       invalidateQueries();
     }
 
+    vibrate('success');
     toast.success("Exercise logged successfully!");
     return true;
   } catch (error) {
     console.error("Error logging exercise:", error);
+    vibrate('error');
     toast.error("Failed to log exercise");
     return false;
   }

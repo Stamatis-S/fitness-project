@@ -93,7 +93,8 @@ export function useRestTimer(defaultDuration: number = 90) {
 
   const triggerHaptic = useCallback(() => {
     if ('vibrate' in navigator) {
-      navigator.vibrate([300, 100, 300, 100, 300]);
+      // Success pattern: longer vibration for timer completion
+      navigator.vibrate([200, 80, 200, 80, 200]);
     }
   }, []);
 
