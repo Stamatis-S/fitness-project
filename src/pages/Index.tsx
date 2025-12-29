@@ -66,6 +66,10 @@ const Index = () => {
             <img 
               src="/lovable-uploads/fe89902d-f9fe-48fd-bee9-26aab489a8ad.png"
               alt="Fitness Project Logo"
+              width={112}
+              height={98}
+              loading="eager"
+              decoding="async"
               className="w-24 md:w-28" 
             />
             <div className="flex-1 flex justify-end">
