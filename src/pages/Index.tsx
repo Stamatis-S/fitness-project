@@ -10,7 +10,6 @@ import { UserRecordPopup } from "@/components/UserRecordPopup";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import { RepeatLastWorkout } from "@/components/workout/RepeatLastWorkout";
 import { WorkoutTemplates } from "@/components/workout/WorkoutTemplates";
 
 const Index = () => {
@@ -88,20 +87,13 @@ const Index = () => {
             <UserRecordPopup />
           </DataErrorBoundary>
 
-          {/* Quick Actions - Repeat & Templates */}
+          {/* Quick Actions - Templates */}
           <DataErrorBoundary>
-            <div className="flex gap-3">
-              <RepeatLastWorkout 
-                onRepeat={(exercises) => {
-                  toast.success(`Loaded ${exercises.length} exercise${exercises.length > 1 ? 's' : ''} from last workout`);
-                }} 
-              />
-              <WorkoutTemplates 
-                onLoadTemplate={(template) => {
-                  toast.success(`Loaded template: ${template.name}`);
-                }}
-              />
-            </div>
+            <WorkoutTemplates 
+              onLoadTemplate={(template) => {
+                toast.success(`Loaded template: ${template.name}`);
+              }}
+            />
           </DataErrorBoundary>
 
           {/* Exercise Entry Form */}
