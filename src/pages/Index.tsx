@@ -10,7 +10,7 @@ import { UserRecordPopup } from "@/components/UserRecordPopup";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import { WorkoutTemplates } from "@/components/workout/WorkoutTemplates";
+
 
 const Index = () => {
   const { session, isLoading } = useAuth();
@@ -87,14 +87,6 @@ const Index = () => {
             <UserRecordPopup />
           </DataErrorBoundary>
 
-          {/* Quick Actions - Templates */}
-          <DataErrorBoundary>
-            <WorkoutTemplates 
-              onLoadTemplate={(template) => {
-                toast.success(`Loaded template: ${template.name}`);
-              }}
-            />
-          </DataErrorBoundary>
 
           {/* Exercise Entry Form */}
           <div className="pt-2">
