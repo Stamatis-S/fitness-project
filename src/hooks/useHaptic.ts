@@ -93,26 +93,25 @@ if (typeof window !== 'undefined') {
 const playTone = async (frequency: number, duration: number, volume: number = 0.3) => {
   // Always check current state
   const enabled = getStoredSoundEnabled();
-  console.log('playTone called, soundEnabled:', enabled);
   
   if (!enabled) {
-    console.log('Sound disabled, skipping');
     return;
   }
   
   try {
     const ctx = getAudioContext();
     if (!ctx) {
-      console.log('No audio context available');
       return;
     }
     
-    console.log('AudioContext state:', ctx.state);
-    
-    // Ensure audio is resumed
+    // Ensure audio is resumed - critical for iOS
     if (ctx.state === 'suspended') {
       await ctx.resume();
-      console.log('AudioContext resumed');
+    }
+    
+    // Wait a tiny bit after resume for iOS to be ready
+    if (ctx.state !== 'running') {
+      await new Promise(resolve => setTimeout(resolve, 50));
     }
     
     const oscillator = ctx.createOscillator();
@@ -130,9 +129,8 @@ const playTone = async (frequency: number, duration: number, volume: number = 0.
     
     oscillator.start(startTime);
     oscillator.stop(startTime + duration);
-    console.log('Tone played:', frequency, 'Hz');
   } catch (e) {
-    console.log('Audio playback failed:', e);
+    // Silent fail - audio not supported
   }
 };
 
