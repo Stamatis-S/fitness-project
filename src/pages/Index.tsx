@@ -3,19 +3,40 @@ import { useAuth } from "@/components/AuthProvider";
 import { PageTransition } from "@/components/PageTransition";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut } from "lucide-react";
+import { LogOut, BookOpen } from "lucide-react";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { UserRecordPopup } from "@/components/UserRecordPopup";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { useWakeLock } from "@/hooks/useWakeLock";
+import { Button } from "@/components/ui/button";
+import type { WorkoutTemplate } from "@/hooks/useWorkoutTemplates";
 
 
 const Index = () => {
   const { session, isLoading } = useAuth();
   const navigate = useNavigate();
   const { requestWakeLock, releaseWakeLock } = useWakeLock();
+  const [loadedTemplate, setLoadedTemplate] = useState<WorkoutTemplate | null>(null);
+
+  // Check for loaded template from sessionStorage
+  useEffect(() => {
+    const storedTemplate = sessionStorage.getItem("loadedTemplate");
+    if (storedTemplate) {
+      try {
+        const template = JSON.parse(storedTemplate) as WorkoutTemplate;
+        setLoadedTemplate(template);
+        sessionStorage.removeItem("loadedTemplate");
+      } catch (e) {
+        console.error("Failed to parse template:", e);
+      }
+    }
+  }, []);
+
+  const clearLoadedTemplate = useCallback(() => {
+    setLoadedTemplate(null);
+  }, []);
 
   useEffect(() => {
     if (!isLoading && !session) {
@@ -72,7 +93,14 @@ const Index = () => {
               decoding="async"
               className="w-24 md:w-28" 
             />
-            <div className="flex-1 flex justify-end">
+            <div className="flex-1 flex justify-end gap-2">
+              <button
+                onClick={() => navigate("/templates")}
+                className="p-3 rounded-xl bg-ios-surface-elevated hover:bg-ios-fill transition-all active:scale-95 touch-target"
+                title="Templates"
+              >
+                <BookOpen className="h-5 w-5 text-muted-foreground" />
+              </button>
               <button
                 onClick={handleLogout}
                 className="p-3 rounded-xl bg-ios-surface-elevated hover:bg-ios-fill transition-all active:scale-95 touch-target"
@@ -82,6 +110,19 @@ const Index = () => {
               </button>
             </div>
           </header>
+
+          {/* Loaded Template Banner */}
+          {loadedTemplate && (
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-primary">Template: {loadedTemplate.name}</p>
+                <p className="text-xs text-muted-foreground">{loadedTemplate.exercises.length} ασκήσεις</p>
+              </div>
+              <Button variant="ghost" size="sm" onClick={clearLoadedTemplate}>
+                Κλείσιμο
+              </Button>
+            </div>
+          )}
 
           {/* PWA Install Banner */}
           <PWAInstallBanner />
@@ -96,7 +137,10 @@ const Index = () => {
           <div className="pt-2">
             {session && (
               <DataErrorBoundary>
-                <ExerciseEntryForm />
+                <ExerciseEntryForm 
+                  loadedTemplate={loadedTemplate}
+                  onTemplateConsumed={clearLoadedTemplate}
+                />
               </DataErrorBoundary>
             )}
           </div>

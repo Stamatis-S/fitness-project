@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { FormErrorBoundary } from "@/components/ErrorBoundary";
 import { useForm, FormProvider, useFieldArray } from "react-hook-form";
@@ -14,13 +14,21 @@ import { FormStepCategory } from "@/components/workout/entry-form/FormStepCatego
 import { FormStepExercise } from "@/components/workout/entry-form/FormStepExercise";
 import { FormStepSets } from "@/components/workout/entry-form/FormStepSets";
 import { saveExercise } from "@/components/workout/entry-form/utils";
+import type { WorkoutTemplate } from "@/hooks/useWorkoutTemplates";
+import { toast } from "sonner";
 
-export function ExerciseEntryForm() {
+interface ExerciseEntryFormProps {
+  loadedTemplate?: WorkoutTemplate | null;
+  onTemplateConsumed?: () => void;
+}
+
+export function ExerciseEntryForm({ loadedTemplate, onTemplateConsumed }: ExerciseEntryFormProps) {
   const { session } = useAuth();
   const queryClient = useQueryClient();
   const [step, setStep] = useState<'category' | 'exercise' | 'sets'>('category');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [templateExerciseIndex, setTemplateExerciseIndex] = useState(0);
   
   // Create today's date at start of day in local timezone (simpler, safer approach)
   const getToday = () => {
@@ -45,6 +53,31 @@ export function ExerciseEntryForm() {
     name: "sets"
   });
 
+  // Load exercise from template when available
+  useEffect(() => {
+    if (loadedTemplate && templateExerciseIndex < loadedTemplate.exercises.length) {
+      const exercise = loadedTemplate.exercises[templateExerciseIndex];
+      
+      // Set the category
+      setSelectedCategory(exercise.category);
+      
+      // Set form values
+      methods.setValue("exercise", exercise.customExercise || exercise.name);
+      methods.setValue("customExercise", exercise.customExercise || undefined);
+      methods.setValue("sets", exercise.sets.length > 0 ? exercise.sets : [{ weight: 0, reps: 0 }]);
+      
+      // Go to sets step
+      setStep('sets');
+      
+      toast.info(`Άσκηση ${templateExerciseIndex + 1}/${loadedTemplate.exercises.length}: ${exercise.name}`);
+    } else if (loadedTemplate && templateExerciseIndex >= loadedTemplate.exercises.length) {
+      // All exercises from template have been processed
+      toast.success("Όλες οι ασκήσεις του template καταχωρήθηκαν!");
+      onTemplateConsumed?.();
+      setTemplateExerciseIndex(0);
+    }
+  }, [loadedTemplate, templateExerciseIndex]);
+
   const onSubmit = async (data: ExerciseFormData) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
@@ -62,24 +95,32 @@ export function ExerciseEntryForm() {
     );
     
     if (success) {
-      // Complete form reset with timeout to ensure proper state clearing
-      setTimeout(() => {
-        methods.reset({
-          date: getToday(),
-          exercise: "",
-          customExercise: "",
-          powerSetPair: undefined,
-          sets: [{ weight: 0, reps: 0 }],
-          exercise1Sets: [{ weight: 0, reps: 0 }],
-          exercise2Sets: [{ weight: 0, reps: 0 }],
-          isSubmitting: false
-        });
-        
-        // Reset all state variables
-        setSelectedCategory(null);
-        setStep('category');
+      // Check if we're loading from a template
+      if (loadedTemplate && templateExerciseIndex < loadedTemplate.exercises.length) {
+        // Move to next exercise in template
+        setTemplateExerciseIndex(prev => prev + 1);
         setIsSubmitting(false);
-      }, 100);
+        methods.setValue("isSubmitting", false);
+      } else {
+        // Complete form reset with timeout to ensure proper state clearing
+        setTimeout(() => {
+          methods.reset({
+            date: getToday(),
+            exercise: "",
+            customExercise: "",
+            powerSetPair: undefined,
+            sets: [{ weight: 0, reps: 0 }],
+            exercise1Sets: [{ weight: 0, reps: 0 }],
+            exercise2Sets: [{ weight: 0, reps: 0 }],
+            isSubmitting: false
+          });
+          
+          // Reset all state variables
+          setSelectedCategory(null);
+          setStep('category');
+          setIsSubmitting(false);
+        }, 100);
+      }
     } else {
       setIsSubmitting(false);
       methods.setValue("isSubmitting", false);
