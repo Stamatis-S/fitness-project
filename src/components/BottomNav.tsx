@@ -25,8 +25,11 @@ export function BottomNav() {
     { icon: BarChart2, label: "Stats", path: "/dashboard" },
     { icon: BookOpen, label: "Templates", path: "/templates" },
     { icon: Trophy, label: "Ranks", path: "/leaderboard" },
-    { icon: User, label: "Me", path: "/profile" },
+    { icon: User, label: "Profile", path: "/profile" },
   ];
+
+  // Secondary nav item accessible from profile or header
+  // Saved Exercises: /saved-exercises
 
   return (
     <motion.div 
