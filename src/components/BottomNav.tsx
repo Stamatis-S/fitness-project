@@ -1,6 +1,7 @@
 import React from "react";
 import { Home, BarChart2, Bookmark, User, Trophy } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useHaptic } from "@/hooks/useHaptic";
 
@@ -28,47 +29,64 @@ export function BottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-ios-surface/95 backdrop-blur-xl border-t border-ios-separator safe-area-bottom">
+    <motion.div 
+      initial={{ y: 100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="fixed bottom-0 left-0 right-0 z-50 bg-ios-surface/95 backdrop-blur-xl border-t border-ios-separator safe-area-bottom"
+    >
       <nav className="flex h-16 items-center justify-around px-2 max-w-lg mx-auto">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = path === location.pathname;
           
           return (
-            <button
+            <motion.button
               key={path}
               onClick={() => {
                 vibrate('light');
                 navigate(path);
               }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 flex-1 h-full py-2 rounded-xl transition-all duration-150 active:scale-95 active:opacity-70 touch-target",
+                "flex flex-col items-center justify-center gap-0.5 flex-1 h-full py-2 rounded-xl transition-colors duration-150 touch-target",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground"
               )}
               aria-label={label}
             >
-              <div className={cn(
-                "p-1.5 rounded-xl transition-colors duration-150",
-                isActive && "bg-primary/15"
-              )}>
-                <Icon className={cn(
-                  "h-6 w-6 transition-all duration-150",
-                  isActive && "scale-105"
-                )} strokeWidth={isActive ? 2.5 : 2} />
+              <div className="relative">
+                <AnimatePresence>
+                  {isActive && (
+                    <motion.div
+                      layoutId="nav-indicator"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      className="absolute inset-0 -m-1.5 rounded-xl bg-primary/15"
+                    />
+                  )}
+                </AnimatePresence>
+                <motion.div
+                  animate={{ scale: isActive ? 1.05 : 1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className="relative p-1.5"
+                >
+                  <Icon className="h-6 w-6" strokeWidth={isActive ? 2.5 : 2} />
+                </motion.div>
               </div>
-              <span 
-                className={cn(
-                  "text-[11px] font-medium transition-all duration-150",
-                  isActive ? "opacity-100" : "opacity-60"
-                )}
+              <motion.span 
+                animate={{ opacity: isActive ? 1 : 0.6 }}
+                className="text-[11px] font-medium"
               >
                 {label}
-              </span>
-            </button>
+              </motion.span>
+            </motion.button>
           );
         })}
       </nav>
-    </div>
+    </motion.div>
   );
 }
