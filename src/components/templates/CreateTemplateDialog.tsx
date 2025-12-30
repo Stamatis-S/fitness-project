@@ -4,20 +4,19 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { EXERCISE_CATEGORIES, type ExerciseCategory } from "@/lib/constants";
 import type { TemplateExercise } from "@/hooks/useWorkoutTemplates";
-import { Plus, Minus, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Minus, ChevronDown, ChevronUp, Dumbbell, X, Check } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Exercise {
   id: number;
@@ -154,147 +153,239 @@ export function CreateTemplateDialog({
     return EXERCISE_CATEGORIES[category as keyof typeof EXERCISE_CATEGORIES]?.color || "#888";
   };
 
+  const getSelectedExercisesList = () => {
+    return Array.from(selectedExercises.entries()).map(([id, config]) => {
+      const exercise = exercises.find((e) => e.id === id);
+      return exercise ? { ...exercise, sets: config.sets } : null;
+    }).filter(Boolean);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[85vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Δημιουργία Template</DialogTitle>
+      <DialogContent className="max-w-lg p-0 gap-0 max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="p-4 pb-3 border-b shrink-0">
+          <DialogTitle className="flex items-center gap-2">
+            <Dumbbell className="h-5 w-5 text-primary" />
+            Νέο Template
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
-          <div className="space-y-2">
-            <Label htmlFor="template-name">Όνομα Template</Label>
-            <Input
-              id="template-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="π.χ. Push Day, Leg Day..."
-              autoFocus
-            />
-          </div>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <div className="p-4 space-y-4">
+            {/* Name & Description */}
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="template-name" className="text-sm font-medium">
+                  Όνομα Template *
+                </Label>
+                <Input
+                  id="template-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="π.χ. Push Day, Leg Day, Upper Body..."
+                  className="mt-1.5"
+                  autoFocus
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="template-description">Περιγραφή (προαιρετικό)</Label>
-            <Textarea
-              id="template-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Περιέγραψε την προπόνηση..."
-              rows={2}
-            />
-          </div>
+              <div>
+                <Label htmlFor="template-description" className="text-sm font-medium">
+                  Περιγραφή <span className="text-muted-foreground font-normal">(προαιρετικό)</span>
+                </Label>
+                <Textarea
+                  id="template-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Σύντομη περιγραφή της προπόνησης..."
+                  rows={2}
+                  className="mt-1.5 resize-none"
+                />
+              </div>
+            </div>
 
-          <div className="space-y-2 flex-1 overflow-hidden flex flex-col">
-            <Label>Επιλογή Ασκήσεων ({selectedExercises.size} επιλεγμένες)</Label>
-            
-            <ScrollArea className="flex-1 border rounded-md">
-              <div className="p-2 space-y-1">
+            {/* Selected Exercises Summary */}
+            <AnimatePresence>
+              {selectedExercises.size > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-primary">
+                        Επιλεγμένες Ασκήσεις ({selectedExercises.size})
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {getSelectedExercisesList().map((exercise) => exercise && (
+                        <Badge
+                          key={exercise.id}
+                          variant="secondary"
+                          className="text-xs pl-2 pr-1 py-1 gap-1"
+                        >
+                          {exercise.name}
+                          <span className="text-muted-foreground">×{exercise.sets}</span>
+                          <button
+                            type="button"
+                            onClick={() => toggleExercise(exercise)}
+                            className="ml-0.5 hover:bg-destructive/20 rounded p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Exercise Selection */}
+            <div>
+              <Label className="text-sm font-medium mb-2 block">
+                Επιλογή Ασκήσεων
+              </Label>
+              
+              <div className="space-y-2">
                 {isLoading ? (
-                  <div className="text-center py-4 text-muted-foreground">
-                    Φόρτωση ασκήσεων...
+                  <div className="text-center py-8 text-muted-foreground">
+                    <div className="animate-pulse">Φόρτωση ασκήσεων...</div>
                   </div>
                 ) : (
                   Object.entries(exercisesByCategory)
                     .filter(([cat]) => cat !== "POWER SETS")
-                    .map(([category, categoryExercises]) => (
-                      <div key={category} className="border rounded-md overflow-hidden">
-                        <button
-                          type="button"
-                          onClick={() => toggleCategory(category)}
-                          className="w-full flex items-center justify-between p-2 hover:bg-accent/50 transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant="outline"
-                              style={{ borderColor: getCategoryColor(category), color: getCategoryColor(category) }}
-                            >
-                              {category}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">
-                              ({categoryExercises.length})
-                            </span>
-                          </div>
-                          {expandedCategories.has(category) ? (
-                            <ChevronUp className="h-4 w-4" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4" />
-                          )}
-                        </button>
+                    .map(([category, categoryExercises]) => {
+                      const selectedInCategory = categoryExercises.filter(e => selectedExercises.has(e.id)).length;
+                      const isExpanded = expandedCategories.has(category);
+                      
+                      return (
+                        <div key={category} className="border rounded-lg overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => toggleCategory(category)}
+                            className="w-full flex items-center justify-between p-3 hover:bg-accent/50 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: getCategoryColor(category) }}
+                              />
+                              <span className="font-medium text-sm">{category}</span>
+                              {selectedInCategory > 0 && (
+                                <Badge variant="secondary" className="text-xs px-1.5 py-0">
+                                  {selectedInCategory}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">
+                                {categoryExercises.length} ασκήσεις
+                              </span>
+                              {isExpanded ? (
+                                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </div>
+                          </button>
 
-                        {expandedCategories.has(category) && (
-                          <div className="border-t bg-muted/20 p-2 space-y-1">
-                            {categoryExercises.map((exercise) => {
-                              const isSelected = selectedExercises.has(exercise.id);
-                              const config = selectedExercises.get(exercise.id);
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ height: 0 }}
+                                animate={{ height: "auto" }}
+                                exit={{ height: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="border-t bg-muted/30 divide-y divide-border/50">
+                                  {categoryExercises.map((exercise) => {
+                                    const isSelected = selectedExercises.has(exercise.id);
+                                    const config = selectedExercises.get(exercise.id);
 
-                              return (
-                                <div
-                                  key={exercise.id}
-                                  className="flex items-center justify-between p-2 rounded hover:bg-accent/30 transition-colors"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Checkbox
-                                      id={`exercise-${exercise.id}`}
-                                      checked={isSelected}
-                                      onCheckedChange={() => toggleExercise(exercise)}
-                                    />
-                                    <label
-                                      htmlFor={`exercise-${exercise.id}`}
-                                      className="text-sm cursor-pointer"
-                                    >
-                                      {exercise.name}
-                                    </label>
-                                  </div>
-
-                                  {isSelected && config && (
-                                    <div className="flex items-center gap-1">
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6"
-                                        onClick={() => updateSets(exercise.id, -1)}
+                                    return (
+                                      <div
+                                        key={exercise.id}
+                                        className={`flex items-center justify-between p-3 transition-colors ${
+                                          isSelected ? "bg-primary/5" : "hover:bg-accent/30"
+                                        }`}
                                       >
-                                        <Minus className="h-3 w-3" />
-                                      </Button>
-                                      <span className="text-xs w-8 text-center">
-                                        {config.sets} σετ
-                                      </span>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6"
-                                        onClick={() => updateSets(exercise.id, 1)}
-                                      >
-                                        <Plus className="h-3 w-3" />
-                                      </Button>
-                                    </div>
-                                  )}
+                                        <label
+                                          htmlFor={`exercise-${exercise.id}`}
+                                          className="flex items-center gap-3 cursor-pointer flex-1"
+                                        >
+                                          <Checkbox
+                                            id={`exercise-${exercise.id}`}
+                                            checked={isSelected}
+                                            onCheckedChange={() => toggleExercise(exercise)}
+                                            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                          />
+                                          <span className={`text-sm ${isSelected ? "font-medium" : ""}`}>
+                                            {exercise.name}
+                                          </span>
+                                        </label>
+
+                                        {isSelected && config && (
+                                          <div className="flex items-center gap-1 bg-background rounded-full border px-1">
+                                            <Button
+                                              type="button"
+                                              variant="ghost"
+                                              size="icon"
+                                              className="h-7 w-7 rounded-full"
+                                              onClick={() => updateSets(exercise.id, -1)}
+                                            >
+                                              <Minus className="h-3 w-3" />
+                                            </Button>
+                                            <span className="text-sm font-medium w-12 text-center">
+                                              {config.sets} σετ
+                                            </span>
+                                            <Button
+                                              type="button"
+                                              variant="ghost"
+                                              size="icon"
+                                              className="h-7 w-7 rounded-full"
+                                              onClick={() => updateSets(exercise.id, 1)}
+                                            >
+                                              <Plus className="h-3 w-3" />
+                                            </Button>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    ))
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })
                 )}
               </div>
-            </ScrollArea>
+            </div>
           </div>
         </div>
 
-        <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        {/* Fixed Footer */}
+        <div className="p-4 border-t bg-background shrink-0 flex gap-3">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="flex-1"
+          >
             Άκυρο
           </Button>
           <Button
             onClick={handleSave}
             disabled={!name.trim() || selectedExercises.size === 0}
+            className="flex-1 gap-2"
           >
+            <Check className="h-4 w-4" />
             Δημιουργία
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
