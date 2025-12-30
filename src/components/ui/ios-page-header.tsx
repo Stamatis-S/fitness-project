@@ -1,6 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useHaptic } from "@/hooks/useHaptic";
 
 interface IOSPageHeaderProps {
   title: string;
@@ -10,6 +11,12 @@ interface IOSPageHeaderProps {
 
 export function IOSPageHeader({ title, backPath = "/", rightElement }: IOSPageHeaderProps) {
   const navigate = useNavigate();
+  const { vibrate } = useHaptic();
+  
+  const handleBack = () => {
+    vibrate('back');
+    navigate(backPath);
+  };
   
   return (
     <motion.div 
@@ -19,7 +26,7 @@ export function IOSPageHeader({ title, backPath = "/", rightElement }: IOSPageHe
     >
       <button
         className="flex items-center gap-1.5 text-primary active:opacity-70 transition-opacity touch-target"
-        onClick={() => navigate(backPath)}
+        onClick={handleBack}
       >
         <ArrowLeft className="h-5 w-5" />
         <span className="text-base font-medium">Back</span>

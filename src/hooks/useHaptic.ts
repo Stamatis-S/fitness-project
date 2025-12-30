@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-type FeedbackType = 'light' | 'success' | 'error';
+type FeedbackType = 'light' | 'success' | 'error' | 'back';
 
 const SOUND_ENABLED_KEY = 'sound-feedback-enabled';
 
@@ -168,6 +168,10 @@ const SOUND_PATTERNS: Record<FeedbackType, () => void> = {
   error: () => {
     playTone(200, 0.15, 0.3);
     setTimeout(() => playTone(180, 0.2, 0.3), 150);
+  },
+  back: () => {
+    playTone(600, 0.06, 0.12); // Quick descending tone
+    setTimeout(() => playTone(450, 0.08, 0.12), 50);
   },
 };
 

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import { useHaptic } from "@/hooks/useHaptic";
 
 interface FormHeaderProps {
   step: 'category' | 'exercise' | 'sets';
@@ -9,12 +10,19 @@ interface FormHeaderProps {
 }
 
 export function FormHeader({ step, handleBack, isSubmitting }: FormHeaderProps) {
+  const { vibrate } = useHaptic();
+  
+  const handleBackWithSound = () => {
+    vibrate('back');
+    handleBack();
+  };
+  
   return (
     <div className="flex items-center justify-between mb-2">
       {step !== 'category' ? (
         <Button
           type="button"
-          onClick={handleBack}
+          onClick={handleBackWithSound}
           variant="ghost"
           className="flex items-center gap-2 text-foreground p-3 -ml-2 touch-target"
           disabled={isSubmitting}
