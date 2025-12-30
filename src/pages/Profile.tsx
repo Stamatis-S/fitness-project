@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ProfilePhoto } from "@/components/profile/ProfilePhoto";
@@ -11,6 +12,7 @@ import { SoundSettings } from "@/components/profile/SoundSettings";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import { PageTransition } from "@/components/PageTransition";
 import { motion } from "framer-motion";
+import { Bookmark, Dumbbell } from "lucide-react";
 
 interface ProfileData {
   username: string | null;
@@ -123,11 +125,40 @@ export default function Profile() {
             </Card>
           </motion.div>
 
-          {/* Settings Card */}
+          {/* Quick Links Card */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
+          >
+            <Card className="p-5">
+              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  className="justify-start gap-2"
+                  onClick={() => navigate("/saved-exercises")}
+                >
+                  <Bookmark className="h-4 w-4" />
+                  Saved Exercises
+                </Button>
+                <Button
+                  variant="outline"
+                  className="justify-start gap-2"
+                  onClick={() => navigate("/workout-plan")}
+                >
+                  <Dumbbell className="h-4 w-4" />
+                  Workout Plan Generator
+                </Button>
+              </div>
+            </Card>
+          </motion.div>
+
+          {/* Settings Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
           >
             <Card className="p-5">
               <h3 className="text-lg font-semibold mb-4">Settings</h3>
