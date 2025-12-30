@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getSoundEnabled } from './useHaptic';
 
 interface RestTimerState {
   isRunning: boolean;
@@ -19,6 +20,7 @@ export function useRestTimer(defaultDuration: number = 90) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const isAudioUnlockedRef = useRef(false);
 
   // Pre-load audio on mount
   useEffect(() => {
@@ -33,47 +35,84 @@ export function useRestTimer(defaultDuration: number = 90) {
   }, []);
 
   // Unlock audio on iOS - must be called from user interaction
-  const unlockAudio = useCallback(() => {
-    if (audioRef.current) {
-      // Play and immediately pause to unlock on iOS
-      audioRef.current.play().then(() => {
-        audioRef.current?.pause();
-        audioRef.current!.currentTime = 0;
-      }).catch(() => {});
+  const unlockAudio = useCallback(async () => {
+    if (isAudioUnlockedRef.current) return;
+    
+    try {
+      // Method 1: Pre-loaded audio element
+      if (audioRef.current) {
+        await audioRef.current.play();
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    } catch (e) {
+      // Silently fail - will try again on next interaction
     }
     
-    // Also create AudioContext on user interaction
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    try {
+      // Method 2: AudioContext - create and resume
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+      
+      // Play silent sound to fully unlock
+      const buffer = audioContextRef.current.createBuffer(1, 1, 22050);
+      const source = audioContextRef.current.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContextRef.current.destination);
+      source.start(0);
+      
+      isAudioUnlockedRef.current = true;
+    } catch (e) {
+      console.log('Audio unlock failed:', e);
     }
   }, []);
 
-  const playLoudBeep = useCallback(() => {
+  const playLoudBeep = useCallback(async () => {
+    // Check if sound is enabled in settings
+    if (!getSoundEnabled()) {
+      return;
+    }
+
     // Method 1: Use pre-loaded Audio element
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.volume = 1.0;
-      const playPromise = audioRef.current.play();
-      if (playPromise) {
-        playPromise.catch(() => {});
+      try {
+        await audioRef.current.play();
+      } catch (e) {
+        // Audio play failed
       }
     }
 
     // Method 2: Also try AudioContext for extra sound
     try {
-      const ctx = audioContextRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
+      let ctx = audioContextRef.current;
+      if (!ctx) {
+        ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioContextRef.current = ctx;
+      }
+      
+      // Ensure context is resumed (required for iOS)
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
       
       const playBeep = (delay: number, frequency: number, duration: number) => {
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
+        const oscillator = ctx!.createOscillator();
+        const gainNode = ctx!.createGain();
         
         oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
+        gainNode.connect(ctx!.destination);
         
         oscillator.frequency.value = frequency;
         oscillator.type = 'square';
         
-        const startTime = ctx.currentTime + delay;
+        const startTime = ctx!.currentTime + delay;
         gainNode.gain.setValueAtTime(0.8, startTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
         
