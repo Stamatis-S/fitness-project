@@ -215,7 +215,7 @@ export function ExerciseSelector({
                       onValueChange(exercise.id.toString());
                     }}
                     className={cn(
-                      "w-full px-2 py-1 rounded-lg font-medium",
+                      "w-full px-2 py-1 rounded-lg font-medium uppercase",
                       "transition-all duration-200",
                       "text-center break-words bg-[#333333] dark:bg-slate-800",
                       isMobile ? (
