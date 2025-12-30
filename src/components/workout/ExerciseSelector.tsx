@@ -229,14 +229,14 @@ export function ExerciseSelector({
                       "w-full px-2 py-2 rounded-lg font-medium uppercase",
                       "transition-all duration-200",
                       "text-center bg-[#333333] dark:bg-slate-800",
-                      "h-[52px] text-[10px] leading-tight flex items-center justify-center",
+                      "min-h-[52px] text-[10px] leading-tight flex items-center justify-center",
                       value === exercise.id.toString()
                         ? "ring-2 ring-primary"
                         : "hover:bg-[#444444] dark:hover:bg-slate-700",
                       "text-white dark:text-white"
                     )}
                   >
-                    <span className="line-clamp-3">{removeAccents(exercise.name)}</span>
+                    <span>{removeAccents(exercise.name)}</span>
                   </motion.button>
                   
                   {exercise.isCustom && (
