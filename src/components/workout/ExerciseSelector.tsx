@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -13,6 +12,18 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { useHaptic } from "@/hooks/useHaptic";
+
+// Remove Greek accents from text
+const removeAccents = (text: string): string => {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ά/g, 'α').replace(/έ/g, 'ε').replace(/ή/g, 'η')
+    .replace(/ί/g, 'ι').replace(/ό/g, 'ο').replace(/ύ/g, 'υ').replace(/ώ/g, 'ω')
+    .replace(/Ά/g, 'Α').replace(/Έ/g, 'Ε').replace(/Ή/g, 'Η')
+    .replace(/Ί/g, 'Ι').replace(/Ό/g, 'Ο').replace(/Ύ/g, 'Υ').replace(/Ώ/g, 'Ω')
+    .replace(/ϊ/g, 'ι').replace(/ϋ/g, 'υ').replace(/ΐ/g, 'ι').replace(/ΰ/g, 'υ');
+};
 import {
   AlertDialog,
   AlertDialogAction,
@@ -215,21 +226,17 @@ export function ExerciseSelector({
                       onValueChange(exercise.id.toString());
                     }}
                     className={cn(
-                      "w-full px-2 py-1 rounded-lg font-medium uppercase",
+                      "w-full px-2 py-2 rounded-lg font-medium uppercase",
                       "transition-all duration-200",
-                      "text-center break-words bg-[#333333] dark:bg-slate-800",
-                      isMobile ? (
-                        "min-h-[30px] text-xs leading-tight"
-                      ) : (
-                        "min-h-[36px] text-xs px-2 py-1.5"
-                      ),
+                      "text-center bg-[#333333] dark:bg-slate-800",
+                      "h-[52px] text-[10px] leading-tight flex items-center justify-center",
                       value === exercise.id.toString()
                         ? "ring-2 ring-primary"
                         : "hover:bg-[#444444] dark:hover:bg-slate-700",
                       "text-white dark:text-white"
                     )}
                   >
-                    {exercise.name}
+                    <span className="line-clamp-3">{removeAccents(exercise.name)}</span>
                   </motion.button>
                   
                   {exercise.isCustom && (
