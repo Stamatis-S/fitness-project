@@ -14,6 +14,7 @@ interface WorkoutPlanContentProps {
   onExerciseDelete: (index: number) => void;
   onDecline: () => void;
   onSave: () => void;
+  onSaveAsTemplate?: () => void;
 }
 
 export function WorkoutPlanContent({
@@ -24,7 +25,8 @@ export function WorkoutPlanContent({
   onExerciseUpdate,
   onExerciseDelete,
   onDecline,
-  onSave
+  onSave,
+  onSaveAsTemplate
 }: WorkoutPlanContentProps) {
   // Group exercises by category
   const exercisesByCategory = workoutExercises.reduce<Record<ExerciseCategory, WorkoutExercise[]>>(
@@ -120,6 +122,7 @@ export function WorkoutPlanContent({
       <WorkoutPlanControls 
         onDecline={onDecline}
         onSave={onSave}
+        onSaveAsTemplate={onSaveAsTemplate}
         planCount={totalPlans}
         currentIndex={currentPlanIndex}
       />

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { PageTransition } from "@/components/PageTransition";
@@ -7,12 +7,15 @@ import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import { WorkoutPlanLoading } from "@/components/workout-plan/WorkoutPlanLoading";
 import { WorkoutPlanEmpty } from "@/components/workout-plan/WorkoutPlanEmpty";
 import { WorkoutPlanContent } from "@/components/workout-plan/WorkoutPlanContent";
+import { SaveTemplateDialog } from "@/components/templates/SaveTemplateDialog";
 import { useWorkoutPlan } from "@/components/workout-plan/use-workout-plan";
+import { useWorkoutTemplates, TemplateExercise } from "@/hooks/useWorkoutTemplates";
 import { motion } from "framer-motion";
 
 export default function WorkoutPlan() {
   const { session, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   
   useEffect(() => {
     if (!isLoading && !session) {
@@ -31,6 +34,20 @@ export default function WorkoutPlan() {
     handleSavePlan,
     handleDecline
   } = useWorkoutPlan(session?.user.id);
+
+  const { createTemplate } = useWorkoutTemplates(session?.user.id);
+
+  const handleSaveAsTemplate = (name: string, description: string, exercises: TemplateExercise[]) => {
+    createTemplate.mutate({ name, description, exercises });
+  };
+
+  const templateExercises: TemplateExercise[] = workoutExercises.map(ex => ({
+    name: ex.name,
+    category: ex.category,
+    exercise_id: ex.exercise_id,
+    customExercise: ex.customExercise,
+    sets: ex.sets
+  }));
 
   if (isLoading) {
     return (
@@ -67,6 +84,7 @@ export default function WorkoutPlan() {
                   onExerciseDelete={handleExerciseDelete}
                   onDecline={handleDecline}
                   onSave={handleSavePlan}
+                  onSaveAsTemplate={() => setSaveDialogOpen(true)}
                 />
               ) : (
                 <WorkoutPlanEmpty />
@@ -75,6 +93,13 @@ export default function WorkoutPlan() {
           </motion.div>
         </div>
       </div>
+
+      <SaveTemplateDialog
+        open={saveDialogOpen}
+        onOpenChange={setSaveDialogOpen}
+        onSave={handleSaveAsTemplate}
+        exercises={templateExercises}
+      />
     </PageTransition>
   );
 }
