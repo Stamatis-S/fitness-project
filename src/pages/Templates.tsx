@@ -3,11 +3,13 @@ import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { PageTransition } from "@/components/PageTransition";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import { TemplateList } from "@/components/templates/TemplateList";
 import { TemplateEditDialog } from "@/components/templates/TemplateEditDialog";
-import { useWorkoutTemplates, WorkoutTemplate } from "@/hooks/useWorkoutTemplates";
-import { Loader2, BookOpen } from "lucide-react";
+import { CreateTemplateDialog } from "@/components/templates/CreateTemplateDialog";
+import { useWorkoutTemplates, WorkoutTemplate, TemplateExercise } from "@/hooks/useWorkoutTemplates";
+import { Loader2, BookOpen, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -15,8 +17,9 @@ export default function Templates() {
   const { session, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [editingTemplate, setEditingTemplate] = useState<WorkoutTemplate | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const { templates, isLoading, updateTemplate, deleteTemplate } = useWorkoutTemplates(
+  const { templates, isLoading, createTemplate, updateTemplate, deleteTemplate } = useWorkoutTemplates(
     session?.user.id
   );
 
@@ -27,7 +30,6 @@ export default function Templates() {
   }, [session, authLoading, navigate]);
 
   const handleLoadTemplate = (template: WorkoutTemplate) => {
-    // Store template in sessionStorage to load in exercise entry
     sessionStorage.setItem("loadedTemplate", JSON.stringify(template));
     toast.success(`Template "${template.name}" φορτώθηκε`);
     navigate("/");
@@ -43,6 +45,10 @@ export default function Templates() {
 
   const handleDeleteTemplate = (id: string) => {
     deleteTemplate.mutate(id);
+  };
+
+  const handleCreateTemplate = (name: string, description: string, exercises: TemplateExercise[]) => {
+    createTemplate.mutate({ name, description, exercises });
   };
 
   if (authLoading) {
@@ -68,9 +74,19 @@ export default function Templates() {
             animate={{ opacity: 1, y: 0 }}
           >
             <Card className="p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <BookOpen className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold">Τα Templates μου</h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  <h2 className="text-lg font-semibold">Τα Templates μου</h2>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className="gap-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  Νέο
+                </Button>
               </div>
 
               {isLoading ? (
@@ -95,6 +111,12 @@ export default function Templates() {
         open={!!editingTemplate}
         onOpenChange={(open) => !open && setEditingTemplate(null)}
         onSave={handleSaveEdit}
+      />
+
+      <CreateTemplateDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSave={handleCreateTemplate}
       />
     </PageTransition>
   );
