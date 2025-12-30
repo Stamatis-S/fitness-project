@@ -90,6 +90,33 @@ if (typeof window !== 'undefined') {
   });
 }
 
+const forceWakeAudio = async (): Promise<AudioContext | null> => {
+  const ctx = getAudioContext();
+  if (!ctx) return null;
+  
+  try {
+    // Force resume every time - don't trust the state
+    await ctx.resume();
+    
+    // If still not running, play silent buffer to force wake on iOS
+    if (ctx.state !== 'running') {
+      const buffer = ctx.createBuffer(1, 1, 22050);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      source.start(0);
+      
+      // Wait for iOS to actually wake up
+      await new Promise(resolve => setTimeout(resolve, 50));
+      await ctx.resume();
+    }
+    
+    return ctx;
+  } catch (e) {
+    return null;
+  }
+};
+
 const playTone = async (frequency: number, duration: number, volume: number = 0.3) => {
   // Always check current state
   const enabled = getStoredSoundEnabled();
@@ -99,19 +126,10 @@ const playTone = async (frequency: number, duration: number, volume: number = 0.
   }
   
   try {
-    const ctx = getAudioContext();
-    if (!ctx) {
+    // Force wake audio system every time
+    const ctx = await forceWakeAudio();
+    if (!ctx || ctx.state !== 'running') {
       return;
-    }
-    
-    // Ensure audio is resumed - critical for iOS
-    if (ctx.state === 'suspended') {
-      await ctx.resume();
-    }
-    
-    // Wait a tiny bit after resume for iOS to be ready
-    if (ctx.state !== 'running') {
-      await new Promise(resolve => setTimeout(resolve, 50));
     }
     
     const oscillator = ctx.createOscillator();
