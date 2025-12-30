@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 
 type FeedbackType = 'light' | 'success' | 'error';
 
@@ -29,89 +29,94 @@ export const setSoundEnabled = (enabled: boolean) => {
   }
 };
 
-// Audio context singleton
+// Audio context - recreated when needed
 let audioContext: AudioContext | null = null;
-let isAudioUnlocked = false;
 
-const getAudioContext = (): AudioContext | null => {
+const createFreshAudioContext = (): AudioContext | null => {
   if (typeof window === 'undefined') return null;
   
-  if (!audioContext) {
+  // Close old context if exists
+  if (audioContext) {
     try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioContextClass) {
-        audioContext = new AudioContextClass();
+      audioContext.close();
+    } catch (e) {
+      // Ignore close errors
+    }
+    audioContext = null;
+  }
+  
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioContextClass) {
+      audioContext = new AudioContextClass();
+      return audioContext;
+    }
+  } catch (e) {
+    return null;
+  }
+  return null;
+};
+
+const getOrCreateAudioContext = async (): Promise<AudioContext | null> => {
+  if (typeof window === 'undefined') return null;
+  
+  // If no context exists, create one
+  if (!audioContext) {
+    return createFreshAudioContext();
+  }
+  
+  // If context is closed, create new one
+  if (audioContext.state === 'closed') {
+    return createFreshAudioContext();
+  }
+  
+  // Try to resume if suspended
+  if (audioContext.state === 'suspended') {
+    try {
+      await audioContext.resume();
+      
+      // Wait a bit for iOS
+      await new Promise(resolve => setTimeout(resolve, 50));
+      
+      // If still suspended after resume attempt, context is dead - recreate
+      if (audioContext.state === 'suspended') {
+        return createFreshAudioContext();
       }
     } catch (e) {
-      console.log('AudioContext not supported:', e);
-      return null;
+      return createFreshAudioContext();
     }
   }
+  
   return audioContext;
 };
 
-// Unlock audio on first user interaction (required for iOS/mobile)
-const unlockAudio = async () => {
-  if (isAudioUnlocked) return;
-  
-  const ctx = getAudioContext();
-  if (!ctx) return;
+// Force wake and get working audio context
+const getWorkingAudioContext = async (): Promise<AudioContext | null> => {
+  const ctx = await getOrCreateAudioContext();
+  if (!ctx) return null;
   
   try {
-    if (ctx.state === 'suspended') {
+    // Always try to resume
+    if (ctx.state !== 'running') {
       await ctx.resume();
     }
     
-    // Play a silent sound to unlock audio on iOS
+    // Play silent buffer to unlock on iOS
     const buffer = ctx.createBuffer(1, 1, 22050);
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     source.connect(ctx.destination);
     source.start(0);
     
-    isAudioUnlocked = true;
-  } catch (e) {
-    console.log('Audio unlock failed:', e);
-  }
-};
-
-// Initialize audio unlock listeners
-if (typeof window !== 'undefined') {
-  const events = ['touchstart', 'touchend', 'click', 'keydown'];
-  const unlockHandler = () => {
-    unlockAudio();
-    // Remove listeners after first interaction
-    events.forEach(event => {
-      document.removeEventListener(event, unlockHandler, true);
-    });
-  };
-  events.forEach(event => {
-    document.addEventListener(event, unlockHandler, true);
-  });
-}
-
-const forceWakeAudio = async (): Promise<AudioContext | null> => {
-  const ctx = getAudioContext();
-  if (!ctx) return null;
-  
-  try {
-    // Force resume every time - don't trust the state
-    await ctx.resume();
+    // Wait for iOS to actually wake up
+    await new Promise(resolve => setTimeout(resolve, 30));
     
-    // If still not running, play silent buffer to force wake on iOS
+    // Final resume attempt
     if (ctx.state !== 'running') {
-      const buffer = ctx.createBuffer(1, 1, 22050);
-      const source = ctx.createBufferSource();
-      source.buffer = buffer;
-      source.connect(ctx.destination);
-      source.start(0);
-      
-      // Wait for iOS to actually wake up
-      await new Promise(resolve => setTimeout(resolve, 50));
       await ctx.resume();
     }
     
-    return ctx;
+    return ctx.state === 'running' ? ctx : null;
   } catch (e) {
     return null;
   }
@@ -126,8 +131,7 @@ const playTone = async (frequency: number, duration: number, volume: number = 0.
   }
   
   try {
-    // Force wake audio system every time
-    const ctx = await forceWakeAudio();
+    const ctx = await getWorkingAudioContext();
     if (!ctx || ctx.state !== 'running') {
       return;
     }
@@ -168,11 +172,6 @@ const SOUND_PATTERNS: Record<FeedbackType, () => void> = {
 };
 
 export const useHaptic = () => {
-  // Unlock audio when hook is used
-  useEffect(() => {
-    unlockAudio();
-  }, []);
-
   const vibrate = useCallback((type: FeedbackType = 'light') => {
     // Always check current state from localStorage
     const enabled = getStoredSoundEnabled();
@@ -186,7 +185,8 @@ export const useHaptic = () => {
 
 // Helper for non-React contexts
 export const playFeedback = (type: FeedbackType) => {
-  if (soundEnabled) {
+  const enabled = getStoredSoundEnabled();
+  if (enabled) {
     SOUND_PATTERNS[type]();
   }
 };
