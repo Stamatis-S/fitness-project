@@ -10,6 +10,42 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React libraries
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // Heavy charting library
+          'vendor-charts': ['recharts'],
+          // Animation library
+          'vendor-motion': ['framer-motion'],
+          // Radix UI components
+          'vendor-radix': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-select',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-checkbox',
+            '@radix-ui/react-progress',
+            '@radix-ui/react-scroll-area',
+            '@radix-ui/react-separator',
+            '@radix-ui/react-slider',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tooltip',
+          ],
+          // Supabase
+          'vendor-supabase': ['@supabase/supabase-js'],
+          // TanStack Query
+          'vendor-query': ['@tanstack/react-query'],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     mode === 'development' && componentTagger(),

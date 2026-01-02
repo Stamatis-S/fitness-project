@@ -1,4 +1,5 @@
 
+import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -7,23 +8,29 @@ import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/BottomNav";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ErrorProvider } from "@/components/ErrorProvider";
-import Index from "@/pages/Index";
-import Auth from "@/pages/Auth";
-import Dashboard from "@/pages/Dashboard";
-import Profile from "@/pages/Profile";
-import SavedExercises from "@/pages/SavedExercises";
-import Leaderboard from "@/pages/Leaderboard";
-import WorkoutPlan from "@/pages/WorkoutPlan";
-import Install from "@/pages/Install";
-import Templates from "@/pages/Templates";
-import NotFound from "@/pages/NotFound";
-import { useIsMobile } from "@/hooks/use-mobile";
+
+// Lazy load pages for better performance
+const Index = lazy(() => import("@/pages/Index"));
+const Auth = lazy(() => import("@/pages/Auth"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const SavedExercises = lazy(() => import("@/pages/SavedExercises"));
+const Leaderboard = lazy(() => import("@/pages/Leaderboard"));
+const WorkoutPlan = lazy(() => import("@/pages/WorkoutPlan"));
+const Install = lazy(() => import("@/pages/Install"));
+const Templates = lazy(() => import("@/pages/Templates"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="animate-pulse text-muted-foreground">Φόρτωση...</div>
+  </div>
+);
 
 const queryClient = new QueryClient();
 
 function App() {
-  const isMobile = useIsMobile();
-
   return (
     <ErrorProvider
       onError={(error, context) => {
@@ -58,54 +65,56 @@ function App() {
             )}>
               <AuthProvider>
                 <ErrorBoundary>
-                  <Routes>
-                    <Route path="/" element={
-                      <ErrorBoundary>
-                        <Index />
-                      </ErrorBoundary>
-                    } />
-                    <Route path="/auth" element={
-                      <ErrorBoundary>
-                        <Auth />
-                      </ErrorBoundary>
-                    } />
-                    <Route path="/dashboard" element={
-                      <ErrorBoundary>
-                        <Dashboard />
-                      </ErrorBoundary>
-                    } />
-                    <Route path="/profile" element={
-                      <ErrorBoundary>
-                        <Profile />
-                      </ErrorBoundary>
-                    } />
-                    <Route path="/saved-exercises" element={
-                      <ErrorBoundary>
-                        <SavedExercises />
-                      </ErrorBoundary>
-                    } />
-                    <Route path="/leaderboard" element={
-                      <ErrorBoundary>
-                        <Leaderboard />
-                      </ErrorBoundary>
-                    } />
-                    <Route path="/workout-plan" element={
-                      <ErrorBoundary>
-                        <WorkoutPlan />
-                      </ErrorBoundary>
-                    } />
-                    <Route path="/templates" element={
-                      <ErrorBoundary>
-                        <Templates />
-                      </ErrorBoundary>
-                    } />
-                    <Route path="/install" element={
-                      <ErrorBoundary>
-                        <Install />
-                      </ErrorBoundary>
-                    } />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      <Route path="/" element={
+                        <ErrorBoundary>
+                          <Index />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/auth" element={
+                        <ErrorBoundary>
+                          <Auth />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/dashboard" element={
+                        <ErrorBoundary>
+                          <Dashboard />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/profile" element={
+                        <ErrorBoundary>
+                          <Profile />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/saved-exercises" element={
+                        <ErrorBoundary>
+                          <SavedExercises />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/leaderboard" element={
+                        <ErrorBoundary>
+                          <Leaderboard />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/workout-plan" element={
+                        <ErrorBoundary>
+                          <WorkoutPlan />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/templates" element={
+                        <ErrorBoundary>
+                          <Templates />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/install" element={
+                        <ErrorBoundary>
+                          <Install />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
                 </ErrorBoundary>
                 <BottomNav />
                 <Toaster />
