@@ -53,7 +53,7 @@ interface Exercise {
 interface ExerciseSelectorProps {
   category: ExerciseCategory;
   value: string;
-  onValueChange: (value: string) => void;
+  onValueChange: (value: string, exerciseName: string, isCustom: boolean) => void;
   customExercise?: string;
   onCustomExerciseChange: (value: string) => void;
 }
@@ -137,8 +137,8 @@ export function ExerciseSelector({
       setDialogOpen(false);
       setSearchQuery("");
       // Auto-select the new exercise
-      if (data?.id) {
-        onValueChange(data.id.toString());
+      if (data?.id && data?.name) {
+        onValueChange(data.id.toString(), data.name, true);
       }
     },
     onError: (error) => {
@@ -160,7 +160,7 @@ export function ExerciseSelector({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom_exercises'] });
       toast.success("Η άσκηση διαγράφηκε επιτυχώς!");
-      onValueChange("");
+      onValueChange("", "", false);
     },
     onError: (error) => {
       console.error('Error deleting custom exercise:', error);
@@ -229,7 +229,7 @@ export function ExerciseSelector({
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     vibrate('light');
-                    onValueChange(exercise.id.toString());
+                    onValueChange(exercise.id.toString(), exercise.name, exercise.isCustom || false);
                   }}
                   className={cn(
                     "w-full px-2 py-2 rounded-lg font-medium uppercase",

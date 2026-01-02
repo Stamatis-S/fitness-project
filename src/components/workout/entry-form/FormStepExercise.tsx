@@ -39,8 +39,10 @@ export function FormStepExercise({
           <ExerciseSelector 
             category={selectedCategory}
             value={watch("exercise")}
-            onValueChange={(value) => {
+            onValueChange={(value, exerciseName, isCustom) => {
               setValue("exercise", value);
+              setValue("exerciseName", exerciseName);
+              setValue("isCustomExercise", isCustom);
               handleNext();
             }}
             customExercise={watch("customExercise")}

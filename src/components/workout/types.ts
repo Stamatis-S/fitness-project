@@ -5,6 +5,8 @@ export interface ExerciseFormData {
   date: Date;
   category?: ExerciseCategory;
   exercise: string;
+  exerciseName?: string;      // The actual name of the selected exercise
+  isCustomExercise?: boolean; // Flag to indicate if this is a custom exercise
   customExercise?: string;
   powerSetPair?: ExercisePair;
   sets: SetData[];

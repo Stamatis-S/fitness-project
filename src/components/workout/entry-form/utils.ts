@@ -72,8 +72,8 @@ export async function saveExercise(
       }
     }
 
-    const isCustomExercise = data.exercise === "custom";
-    
+    // Check if this is a custom exercise using the flag from ExerciseSelector
+    const isCustomExercise = data.isCustomExercise === true;
     const year = data.date.getFullYear();
     const month = data.date.getMonth();
     const day = data.date.getDate();
@@ -119,12 +119,12 @@ export async function saveExercise(
         }
       }
     } else {
-      // Standard exercise logic
+      // Standard exercise logic - for custom exercises, store the name in custom_exercise field
       exerciseSets = data.sets.map((set, index) => ({
         workout_date: dateString,
         category: selectedCategory,
         exercise_id: isCustomExercise ? null : parseInt(data.exercise) || null,
-        custom_exercise: isCustomExercise ? data.customExercise : null,
+        custom_exercise: isCustomExercise ? data.exerciseName : null,
         set_number: index + 1,
         weight_kg: set.weight,
         reps: set.reps,
