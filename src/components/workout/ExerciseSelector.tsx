@@ -194,36 +194,21 @@ export function ExerciseSelector({
 
   return (
     <div className="space-y-3">
-      {/* Search Input with Add Button */}
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className={cn(
-            "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground",
-            isMobile ? "h-3 w-3" : "h-4 w-4"
-          )} />
-          <Input
-            placeholder="Αναζήτηση άσκησης..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={cn(
-              "pl-9 pr-4",
-              isMobile ? "h-8 text-xs" : "h-9 text-sm"
-            )}
-          />
-        </div>
-        <Button
-          type="button"
-          onClick={() => handleOpenDialog(searchQuery)}
-          size={isMobile ? "sm" : "default"}
-          variant="outline"
+      {/* Search Input */}
+      <div className="relative">
+        <Search className={cn(
+          "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground",
+          isMobile ? "h-3 w-3" : "h-4 w-4"
+        )} />
+        <Input
+          placeholder="Αναζήτηση άσκησης..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className={cn(
-            "shrink-0 gap-1",
-            isMobile ? "h-8 px-2" : "h-9 px-3"
+            "pl-9 pr-4",
+            isMobile ? "h-8 text-xs" : "h-9 text-sm"
           )}
-        >
-          <Plus className={cn(isMobile ? "h-3 w-3" : "h-4 w-4")} />
-          {!isMobile && <span>Νέα</span>}
-        </Button>
+        />
       </div>
 
       {/* Exercises Grid */}
