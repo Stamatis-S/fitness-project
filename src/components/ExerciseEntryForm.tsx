@@ -41,6 +41,8 @@ export function ExerciseEntryForm({ loadedTemplate, onTemplateConsumed }: Exerci
     defaultValues: {
       date: getToday(),
       exercise: "",
+      exerciseName: "",
+      isCustomExercise: false,
       sets: [{ weight: 0, reps: 0 }],
       exercise1Sets: [{ weight: 0, reps: 0 }],
       exercise2Sets: [{ weight: 0, reps: 0 }],
@@ -107,6 +109,8 @@ export function ExerciseEntryForm({ loadedTemplate, onTemplateConsumed }: Exerci
           methods.reset({
             date: getToday(),
             exercise: "",
+            exerciseName: "",
+            isCustomExercise: false,
             customExercise: "",
             powerSetPair: undefined,
             sets: [{ weight: 0, reps: 0 }],
