@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,9 +10,10 @@ import { ProgressTracking } from "@/components/dashboard/ProgressTracking";
 import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics";
 import { AchievementBadges } from "@/components/dashboard/AchievementBadges";
 import { PageTransition } from "@/components/PageTransition";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/components/AuthProvider";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import type { Database } from "@/integrations/supabase/types";
@@ -41,6 +42,7 @@ export default function Dashboard() {
   const isMobile = useIsMobile();
   const { session, isLoading } = useAuth();
   const [dataRange, setDataRange] = useState<DataTimeRange>("3M");
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!isLoading && !session) {
@@ -125,6 +127,11 @@ export default function Dashboard() {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['workout_logs', session?.user.id, dataRange] });
+    toast.success("Ανανεώθηκε!");
+  }, [queryClient, session?.user.id, dataRange]);
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -139,71 +146,73 @@ export default function Dashboard() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background pb-24">
-        <IOSPageHeader 
-          title="Dashboard" 
-          rightElement={
-            <Button
-              variant="ios"
-              size="sm"
-              onClick={() => navigate("/")}
-              className="h-9 px-3 gap-1.5"
-            >
-              <Plus className="h-4 w-4" />
-              New
-            </Button>
-          }
-        />
+      <PullToRefresh onRefresh={handleRefresh} className="h-screen">
+        <div className="min-h-screen bg-background pb-24">
+          <IOSPageHeader 
+            title="Dashboard" 
+            rightElement={
+              <Button
+                variant="ios"
+                size="sm"
+                onClick={() => navigate("/")}
+                className="h-9 px-3 gap-1.5"
+              >
+                <Plus className="h-4 w-4" />
+                New
+              </Button>
+            }
+          />
 
-        {workoutLogs && (
-          <div className="px-4 pt-4 space-y-4">
-            <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="progress">Progress</TabsTrigger>
-                <TabsTrigger value="statistics">Statistics</TabsTrigger>
-              </TabsList>
+          {workoutLogs && (
+            <div className="px-4 pt-4 space-y-4">
+              <Tabs defaultValue="overview" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="progress">Progress</TabsTrigger>
+                  <TabsTrigger value="statistics">Statistics</TabsTrigger>
+                </TabsList>
 
-              <div className="mt-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                  <DataErrorBoundary>
-                    <WorkoutInsights logs={workoutLogs} />
-                  </DataErrorBoundary>
+                <div className="mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                    <DataErrorBoundary>
+                      <WorkoutInsights logs={workoutLogs} />
+                    </DataErrorBoundary>
+                  </div>
+
+                  <TabsContent value="overview" className="m-0 space-y-4">
+                    {workoutLogs && (
+                      <>
+                        <DataErrorBoundary>
+                          <DashboardOverview workoutLogs={workoutLogs} />
+                        </DataErrorBoundary>
+                        <DataErrorBoundary>
+                          <AchievementBadges workoutLogs={workoutLogs} />
+                        </DataErrorBoundary>
+                      </>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="progress" className="m-0 w-full">
+                    {workoutLogs && (
+                      <DataErrorBoundary>
+                        <ProgressTracking workoutLogs={workoutLogs} />
+                      </DataErrorBoundary>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="statistics" className="m-0 w-full">
+                    {workoutLogs && (
+                      <DataErrorBoundary>
+                        <DashboardStatistics workoutLogs={workoutLogs} />
+                      </DataErrorBoundary>
+                    )}
+                  </TabsContent>
                 </div>
-
-                <TabsContent value="overview" className="m-0 space-y-4">
-                  {workoutLogs && (
-                    <>
-                      <DataErrorBoundary>
-                        <DashboardOverview workoutLogs={workoutLogs} />
-                      </DataErrorBoundary>
-                      <DataErrorBoundary>
-                        <AchievementBadges workoutLogs={workoutLogs} />
-                      </DataErrorBoundary>
-                    </>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="progress" className="m-0 w-full">
-                  {workoutLogs && (
-                    <DataErrorBoundary>
-                      <ProgressTracking workoutLogs={workoutLogs} />
-                    </DataErrorBoundary>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="statistics" className="m-0 w-full">
-                  {workoutLogs && (
-                    <DataErrorBoundary>
-                      <DashboardStatistics workoutLogs={workoutLogs} />
-                    </DataErrorBoundary>
-                  )}
-                </TabsContent>
-              </div>
-            </Tabs>
-          </div>
-        )}
-      </div>
+              </Tabs>
+            </div>
+          )}
+        </div>
+      </PullToRefresh>
     </PageTransition>
   );
 }

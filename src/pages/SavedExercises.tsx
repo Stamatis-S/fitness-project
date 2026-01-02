@@ -1,13 +1,14 @@
 import { PageTransition } from "@/components/PageTransition";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { WorkoutTable } from "@/components/saved-exercises/WorkoutTable";
 import { WorkoutFilters } from "@/components/saved-exercises/WorkoutFilters";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { subDays } from "date-fns";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
@@ -24,6 +25,7 @@ import {
 export default function SavedExercises() {
   const { session, isLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
@@ -193,6 +195,14 @@ export default function SavedExercises() {
     }
   };
 
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['all_workout_dates', session?.user.id] }),
+      queryClient.invalidateQueries({ queryKey: ['workout_logs_paginated', session?.user.id] }),
+    ]);
+    toast.success("Ανανεώθηκε!");
+  }, [queryClient, session?.user.id]);
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -207,8 +217,9 @@ export default function SavedExercises() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background pb-24">
-        <IOSPageHeader title="Saved Exercises" />
+      <PullToRefresh onRefresh={handleRefresh} className="h-screen">
+        <div className="min-h-screen bg-background pb-24">
+          <IOSPageHeader title="Saved Exercises" />
         
         <div className="px-4 pt-4 space-y-4">
           <motion.div
@@ -298,8 +309,9 @@ export default function SavedExercises() {
           <p className="text-center text-sm text-muted-foreground">
             Page {currentPage} of {totalPages} • {currentDates.length} days
           </p>
+          </div>
         </div>
-      </div>
+      </PullToRefresh>
     </PageTransition>
   );
 }

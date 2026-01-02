@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { PageTransition } from "@/components/PageTransition";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
@@ -16,6 +18,7 @@ import { motion } from "framer-motion";
 export default function Templates() {
   const { session, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [editingTemplate, setEditingTemplate] = useState<WorkoutTemplate | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -51,6 +54,11 @@ export default function Templates() {
     createTemplate.mutate({ name, description, exercises });
   };
 
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['workout_templates', session?.user.id] });
+    toast.success("Ανανεώθηκε!");
+  }, [queryClient, session?.user.id]);
+
   if (authLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -65,6 +73,7 @@ export default function Templates() {
 
   return (
     <PageTransition>
+      <PullToRefresh onRefresh={handleRefresh} className="h-screen">
       <div className="min-h-screen bg-background pb-24">
         <IOSPageHeader title="Workout Templates" />
 
@@ -104,7 +113,8 @@ export default function Templates() {
             </Card>
           </motion.div>
         </div>
-      </div>
+        </div>
+      </PullToRefresh>
 
       <TemplateEditDialog
         template={editingTemplate}
