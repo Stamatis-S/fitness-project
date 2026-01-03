@@ -162,7 +162,7 @@ export function ExerciseEntryForm({ loadedTemplate, onTemplateConsumed }: Exerci
 
   return (
     <FormErrorBoundary>
-      <Card className="mx-auto p-5 rounded-ios-xl">
+      <Card className="mx-auto p-5 rounded-2xl bg-gradient-to-b from-card to-card/80 border border-white/5 backdrop-blur-xl shadow-2xl">
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
             <FormHeader 
