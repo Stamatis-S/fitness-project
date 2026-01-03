@@ -1,16 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
-import { 
-  CalendarCheck, 
-  Target, 
-  Dumbbell, 
-  Zap, 
-  Heart, 
-  Footprints,
-  Activity,
-  Flame,
-  Layers
-} from "lucide-react";
+import { CalendarCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { ExerciseCategory } from "@/lib/constants";
 import { useHaptic } from "@/hooks/useHaptic";
@@ -24,19 +14,18 @@ interface CategorySelectorProps {
 const categories: Array<{
   label: string;
   value: ExerciseCategory;
-  icon: React.ElementType;
   gradient: string;
   color: string;
 }> = [
-  { label: "Στήθος", value: "ΣΤΗΘΟΣ", icon: Target, gradient: "from-red-500 to-red-600", color: "text-red-400" },
-  { label: "Πλάτη", value: "ΠΛΑΤΗ", icon: Dumbbell, gradient: "from-cyan-500 to-cyan-600", color: "text-cyan-400" },
-  { label: "Δικέφαλα", value: "ΔΙΚΕΦΑΛΑ", icon: Zap, gradient: "from-purple-500 to-purple-600", color: "text-purple-400" },
-  { label: "Τρικέφαλα", value: "ΤΡΙΚΕΦΑΛΑ", icon: Activity, gradient: "from-indigo-500 to-indigo-600", color: "text-indigo-400" },
-  { label: "Ώμοι", value: "ΩΜΟΙ", icon: Target, gradient: "from-green-500 to-green-600", color: "text-green-400" },
-  { label: "Πόδια", value: "ΠΟΔΙΑ", icon: Footprints, gradient: "from-yellow-500 to-amber-600", color: "text-yellow-400" },
-  { label: "Κορμός", value: "ΚΟΡΜΟΣ", icon: Heart, gradient: "from-pink-500 to-pink-600", color: "text-pink-400" },
-  { label: "Cardio", value: "CARDIO", icon: Flame, gradient: "from-orange-500 to-orange-600", color: "text-orange-400" },
-  { label: "Power Sets", value: "POWER SETS", icon: Layers, gradient: "from-pink-600 to-red-600", color: "text-pink-400" }
+  { label: "Στήθος", value: "ΣΤΗΘΟΣ", gradient: "from-red-500 to-red-600", color: "text-red-400" },
+  { label: "Πλάτη", value: "ΠΛΑΤΗ", gradient: "from-cyan-500 to-cyan-600", color: "text-cyan-400" },
+  { label: "Δικέφαλα", value: "ΔΙΚΕΦΑΛΑ", gradient: "from-purple-500 to-purple-600", color: "text-purple-400" },
+  { label: "Τρικέφαλα", value: "ΤΡΙΚΕΦΑΛΑ", gradient: "from-indigo-500 to-indigo-600", color: "text-indigo-400" },
+  { label: "Ώμοι", value: "ΩΜΟΙ", gradient: "from-green-500 to-green-600", color: "text-green-400" },
+  { label: "Πόδια", value: "ΠΟΔΙΑ", gradient: "from-yellow-500 to-amber-600", color: "text-yellow-400" },
+  { label: "Κορμός", value: "ΚΟΡΜΟΣ", gradient: "from-pink-500 to-pink-600", color: "text-pink-400" },
+  { label: "Cardio", value: "CARDIO", gradient: "from-orange-500 to-orange-600", color: "text-orange-400" },
+  { label: "Power Sets", value: "POWER SETS", gradient: "from-pink-600 to-red-600", color: "text-pink-400" }
 ];
 
 export function CategorySelector({
@@ -80,7 +69,7 @@ export function CategorySelector({
         
         {/* Category Grid */}
         <div className="grid grid-cols-3 gap-3">
-          {categories.map(({ label, value, icon: Icon, gradient, color }, index) => {
+        {categories.map(({ label, value, gradient, color }, index) => {
             const isSelected = selectedCategory === value;
             
             return (
@@ -94,7 +83,7 @@ export function CategorySelector({
                   onCategoryChange(value);
                 }}
                 className={cn(
-                  "group relative flex flex-col items-center justify-center gap-2 h-20 rounded-2xl transition-all duration-300 overflow-hidden",
+                  "group relative flex items-center justify-center h-16 rounded-2xl transition-all duration-300 overflow-hidden",
                   "bg-gradient-to-b from-ios-surface-elevated to-ios-surface border",
                   isSelected 
                     ? "border-primary/60 shadow-[0_0_30px_hsl(var(--primary)/0.25)]" 
@@ -110,24 +99,10 @@ export function CategorySelector({
                   />
                 )}
                 
-                {/* Icon with glow */}
-                <div className={cn(
-                  "relative transition-all duration-300",
-                  isSelected && "scale-110"
-                )}>
-                  <Icon className={cn(
-                    "h-6 w-6 transition-all duration-300",
-                    isSelected ? color : "text-muted-foreground group-hover:text-foreground"
-                  )} />
-                  {isSelected && (
-                    <div className={cn("absolute inset-0 blur-lg opacity-60", color)} />
-                  )}
-                </div>
-                
                 {/* Label */}
                 <span className={cn(
-                  "text-xs font-semibold transition-colors duration-300",
-                  isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                  "text-sm font-semibold transition-colors duration-300 relative z-10",
+                  isSelected ? color : "text-muted-foreground group-hover:text-foreground"
                 )}>
                   {label}
                 </span>
