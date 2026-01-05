@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PowerSetInfo } from "@/components/workout/PowerSetInfo";
-import { SwipeableSetInput } from "@/components/workout/SwipeableSetInput";
+import { SetInput } from "@/components/workout/set-input/SetInput";
 import { RestTimer } from "@/components/workout/RestTimer";
 import { PlusCircle, Save, Timer, ChevronDown } from "lucide-react";
 import type { UseFieldArrayReturn } from "react-hook-form";
@@ -22,13 +22,8 @@ export function FormStepSets({
   fieldsArray,
   isSubmitting
 }: FormStepSetsProps) {
-  const { fields, append, remove, insert } = fieldsArray;
+  const { fields, append, remove } = fieldsArray;
   const [showRestTimer, setShowRestTimer] = useState(false);
-
-  const handleDuplicate = (index: number) => {
-    const currentSet = fields[index];
-    insert(index + 1, { weight: (currentSet as any).weight || 0, reps: (currentSet as any).reps || 0 });
-  };
   
   return (
     <motion.div
@@ -62,20 +57,18 @@ export function FormStepSets({
           </Collapsible>
 
           <ScrollArea className="flex-1 px-1 pb-1 overflow-hidden">
-            <div className="space-y-2 touch-pan-y">
+            <div className="space-y-2">
               <AnimatePresence>
                 {fields.map((field, index) => (
                   <motion.div
                     key={field.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -100 }}
+                    exit={{ opacity: 0, y: -10 }}
                   >
-                    <SwipeableSetInput
+                    <SetInput
                       index={index}
-                      onRemove={remove}
-                      onDuplicate={handleDuplicate}
-                      canDelete={index > 0}
+                      onRemove={index > 0 ? remove : undefined}
                     />
                   </motion.div>
                 ))}

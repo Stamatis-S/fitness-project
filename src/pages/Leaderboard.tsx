@@ -1,14 +1,11 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageTransition } from "@/components/PageTransition";
-import { PullToRefresh } from "@/components/PullToRefresh";
 import { useAuth } from "@/components/AuthProvider";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import { useCallback } from "react";
-import { Trophy, Medal, Star } from "lucide-react";
+import { Trophy, Medal } from "lucide-react";
 import { LeaderboardStats } from "@/components/leaderboard/LeaderboardStats";
 import { Skeleton } from "@/components/ui/skeleton";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
@@ -25,7 +22,6 @@ interface Profile {
 
 export default function Leaderboard() {
   const { session } = useAuth();
-  const queryClient = useQueryClient();
   
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['leaderboard'],
@@ -95,15 +91,9 @@ export default function Leaderboard() {
     }
   };
 
-  const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
-    toast.success("Ανανεώθηκε!");
-  }, [queryClient]);
-
   return (
     <PageTransition>
-      <PullToRefresh onRefresh={handleRefresh} className="h-screen">
-        <div className="flex flex-col h-screen bg-background">
+      <div className="flex flex-col h-screen bg-background overflow-y-auto">
           <IOSPageHeader title="Leaderboard" />
           
         <div className="flex-1 overflow-hidden px-4 pt-4 pb-24">
@@ -193,7 +183,6 @@ export default function Leaderboard() {
           </Tabs>
           </div>
         </div>
-      </PullToRefresh>
     </PageTransition>
   );
 }

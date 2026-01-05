@@ -12,7 +12,6 @@ import { useState, useEffect, useCallback } from "react";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { subDays } from "date-fns";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
-import { motion } from "framer-motion";
 import {
   Pagination,
   PaginationContent,
@@ -222,43 +221,27 @@ export default function SavedExercises() {
           <IOSPageHeader title="Saved Exercises" />
         
         <div className="px-4 pt-4 space-y-4">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Card className="p-4">
-              <WorkoutFilters
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                categoryFilter={categoryFilter}
-                onCategoryChange={setCategoryFilter}
-                dateFilter={dateFilter}
-                onDateChange={setDateFilter}
-              />
-            </Card>
-          </motion.div>
+          <Card className="p-4">
+            <WorkoutFilters
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              categoryFilter={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              dateFilter={dateFilter}
+              onDateChange={setDateFilter}
+            />
+          </Card>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card className="overflow-hidden">
-              <WorkoutTable 
-                logs={workoutLogs || []} 
-                onDelete={handleDelete} 
-                cycleStartDates={workoutCycles || []}
-              />
-            </Card>
-          </motion.div>
+          <Card className="overflow-hidden">
+            <WorkoutTable 
+              logs={workoutLogs || []} 
+              onDelete={handleDelete} 
+              cycleStartDates={workoutCycles || []}
+            />
+          </Card>
 
           {totalPages > 1 && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="flex justify-center"
-            >
+            <div className="flex justify-center">
               <Pagination>
                 <PaginationContent className="gap-1">
                   <PaginationItem>
@@ -303,7 +286,7 @@ export default function SavedExercises() {
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
-            </motion.div>
+            </div>
           )}
 
           <p className="text-center text-sm text-muted-foreground">
