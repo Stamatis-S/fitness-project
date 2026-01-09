@@ -113,22 +113,36 @@ export function WorkoutTable({ logs, onDelete, cycleStartDates = [] }: WorkoutTa
                 key={`${dateGroup.date}-${exercise.name}`}
                 className="bg-neutral-900/50 rounded-md px-2 py-1.5 mx-0.5"
               >
-                <div className="flex items-center justify-between gap-1">
-                  <div className="flex items-center gap-1 min-w-0 flex-1">
-                    <h4 className="text-xs font-medium text-neutral-200 truncate">
+                <div className="flex flex-col gap-1">
+                  {/* Exercise name row */}
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-xs font-medium text-neutral-200 flex-1">
                       {exercise.name}
                     </h4>
-                    <Badge 
-                      className="px-1 py-0 rounded text-[9px] font-medium shrink-0"
-                      style={{
-                        backgroundColor: `${CATEGORY_COLORS[exercise.category as keyof typeof CATEGORY_COLORS]}20`,
-                        color: CATEGORY_COLORS[exercise.category as keyof typeof CATEGORY_COLORS],
-                      }}
-                    >
-                      {exercise.category.slice(0, 4)}
-                    </Badge>
+                    <div className="flex items-center gap-1">
+                      <Badge 
+                        className="px-1 py-0 rounded text-[9px] font-medium shrink-0"
+                        style={{
+                          backgroundColor: `${CATEGORY_COLORS[exercise.category as keyof typeof CATEGORY_COLORS]}20`,
+                          color: CATEGORY_COLORS[exercise.category as keyof typeof CATEGORY_COLORS],
+                        }}
+                      >
+                        {exercise.category.slice(0, 4)}
+                      </Badge>
+                      {onDelete && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onDelete(exercise.sets[0].id)}
+                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-5 w-5"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-0.5 flex-wrap justify-end">
+                  {/* Sets row */}
+                  <div className="flex items-center gap-1 flex-wrap">
                     {exercise.sets.map((set) => (
                       <span 
                         key={set.id}
@@ -140,16 +154,6 @@ export function WorkoutTable({ logs, onDelete, cycleStartDates = [] }: WorkoutTa
                         }
                       </span>
                     ))}
-                    {onDelete && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDelete(exercise.sets[0].id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-5 w-5 ml-0.5"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
                   </div>
                 </div>
               </div>
