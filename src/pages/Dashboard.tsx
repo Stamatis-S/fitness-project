@@ -173,15 +173,14 @@ export default function Dashboard() {
                 </TabsList>
 
                 <div className="mt-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                    <DataErrorBoundary>
-                      <WorkoutInsights logs={workoutLogs} />
-                    </DataErrorBoundary>
-                  </div>
-
                   <TabsContent value="overview" className="m-0 space-y-4">
                     {workoutLogs && (
                       <>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                          <DataErrorBoundary>
+                            <WorkoutInsights logs={workoutLogs} />
+                          </DataErrorBoundary>
+                        </div>
                         <DataErrorBoundary>
                           <DashboardOverview workoutLogs={workoutLogs} />
                         </DataErrorBoundary>
