@@ -236,15 +236,19 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                 <p className="text-muted-foreground text-xs p-1 col-span-full">No exercises found</p>
               ) : (
                 filteredExercises.map(name => (
-                  <div key={name} className="flex items-center space-x-1.5 p-1.5 hover:bg-accent rounded transition-colors">
+                  <div 
+                    key={name} 
+                    className="flex items-center space-x-1.5 p-1.5 hover:bg-accent rounded transition-colors cursor-pointer"
+                    onClick={() => toggleExercise(name, !selectedExercises.includes(name))}
+                  >
                     <Checkbox
                       checked={selectedExercises.includes(name)}
                       onCheckedChange={(checked) => toggleExercise(name, checked)}
-                      className="h-3.5 w-3.5"
+                      className="h-3.5 w-3.5 pointer-events-none"
                     />
-                    <label className="text-xs text-foreground cursor-pointer truncate flex-1">
+                    <span className="text-xs text-foreground truncate flex-1">
                       {name}
-                    </label>
+                    </span>
                   </div>
                 ))
               )}

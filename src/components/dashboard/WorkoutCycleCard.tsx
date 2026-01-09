@@ -19,6 +19,7 @@ import { toast } from "sonner";
 interface WorkoutCycleCardProps {
   lastWorkoutDate: string | null;
   workoutDates: string[];
+  compact?: boolean;
 }
 
 interface WorkoutCycle {
@@ -36,7 +37,7 @@ interface WorkoutCycle {
 const CYCLE_DAYS = 12;
 const STORAGE_KEY = 'workout_cycle_start_date';
 
-export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycleCardProps) {
+export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: WorkoutCycleCardProps) {
   const { session } = useAuth();
   const navigate = useNavigate();
   const [isComplete, setIsComplete] = useState(false);
@@ -177,23 +178,23 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
     : CYCLE_DAYS;
 
   return (
-    <Card className="flex flex-col gap-3 p-4">
+    <Card className={`flex flex-col ${compact ? 'gap-2 p-2.5' : 'gap-3 p-4'}`}>
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h3 className="font-semibold">Workout Cycle</h3>
+        <div className="space-y-0.5">
+          <h3 className={`font-semibold ${compact ? 'text-sm' : ''}`}>Workout Cycle</h3>
           {currentCycle?.start_date ? (
             <>
-              <p className="text-sm text-muted-foreground">
-                Cycle started on: {format(new Date(currentCycle.start_date), 'MMM d, yyyy')}
+              <p className={`text-muted-foreground ${compact ? 'text-[10px]' : 'text-sm'}`}>
+                Started: {format(new Date(currentCycle.start_date), compact ? 'MMM d' : 'MMM d, yyyy')}
               </p>
               {currentCycle.is_active && (
-                <p className="text-sm">
-                  {daysLeft} workout days left to complete cycle
+                <p className={compact ? 'text-xs' : 'text-sm'}>
+                  {daysLeft} days left
                 </p>
               )}
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className={`text-muted-foreground ${compact ? 'text-[10px]' : 'text-sm'}`}>
               Set your first workout day
             </p>
           )}
@@ -202,9 +203,9 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
         {(!currentCycle?.is_active || !currentCycle) && (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                <CalendarIcon className="h-4 w-4 mr-2" />
-                Set First Day
+              <Button variant="outline" size={compact ? "sm" : "default"} className={compact ? 'text-xs' : ''}>
+                <CalendarIcon className={compact ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'} />
+                {compact ? 'Set' : 'Set First Day'}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
@@ -223,7 +224,7 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates }: WorkoutCycle
       {currentCycle?.is_active && (
         <Progress
           value={progress}
-          className="h-2"
+          className={compact ? 'h-1.5' : 'h-2'}
         />
       )}
     </Card>

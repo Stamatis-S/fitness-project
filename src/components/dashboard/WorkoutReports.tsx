@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
@@ -9,9 +8,10 @@ import { calculateStrengthProgress, generateWorkoutSummary } from "./utils/repor
 
 interface WorkoutReportsProps {
   workoutLogs: WorkoutLog[];
+  compact?: boolean;
 }
 
-export function WorkoutReports({ workoutLogs }: WorkoutReportsProps) {
+export function WorkoutReports({ workoutLogs, compact }: WorkoutReportsProps) {
   const { session } = useAuth();
   const navigate = useNavigate();
 
@@ -29,31 +29,31 @@ export function WorkoutReports({ workoutLogs }: WorkoutReportsProps) {
       animate={{ opacity: 1, y: 0 }}
       className="col-span-full"
     >
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">Workout Reports</h2>
+      <Card className={compact ? 'p-2.5' : 'p-6'}>
+        <div className={`flex items-center justify-between ${compact ? 'mb-2' : 'mb-4'}`}>
+          <h2 className={`font-bold ${compact ? 'text-sm' : 'text-2xl'}`}>Reports</h2>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="p-4 bg-muted/50">
-            <h3 className="text-lg font-semibold mb-2">Weekly Summary</h3>
-            <ul className="space-y-2">
-              {summary.weeklyInsights.map((insight, index) => (
-                <li key={index} className="flex items-center gap-2 text-sm">
-                  <FileText className="h-4 w-4 text-primary" />
-                  {insight}
+        <div className={`grid gap-2 ${compact ? 'grid-cols-1' : 'md:grid-cols-2 gap-4'}`}>
+          <Card className={`bg-muted/50 ${compact ? 'p-2' : 'p-4'}`}>
+            <h3 className={`font-semibold ${compact ? 'text-xs mb-1' : 'text-lg mb-2'}`}>Weekly Summary</h3>
+            <ul className={compact ? 'space-y-0.5' : 'space-y-2'}>
+              {summary.weeklyInsights.slice(0, compact ? 2 : undefined).map((insight, index) => (
+                <li key={index} className={`flex items-center gap-1.5 ${compact ? 'text-[10px]' : 'text-sm'}`}>
+                  <FileText className={`text-primary shrink-0 ${compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                  <span className="truncate">{insight}</span>
                 </li>
               ))}
             </ul>
           </Card>
 
-          <Card className="p-4 bg-muted/50">
-            <h3 className="text-lg font-semibold mb-2">Strength Progress</h3>
-            <ul className="space-y-2">
-              {strengthProgress.map((progress, index) => (
-                <li key={index} className="flex items-center gap-2 text-sm">
-                  <FileText className="h-4 w-4 text-primary" />
-                  {progress}
+          <Card className={`bg-muted/50 ${compact ? 'p-2' : 'p-4'}`}>
+            <h3 className={`font-semibold ${compact ? 'text-xs mb-1' : 'text-lg mb-2'}`}>Strength Progress</h3>
+            <ul className={compact ? 'space-y-0.5' : 'space-y-2'}>
+              {strengthProgress.slice(0, compact ? 2 : undefined).map((progress, index) => (
+                <li key={index} className={`flex items-center gap-1.5 ${compact ? 'text-[10px]' : 'text-sm'}`}>
+                  <FileText className={`text-primary shrink-0 ${compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                  <span className="truncate">{progress}</span>
                 </li>
               ))}
             </ul>
