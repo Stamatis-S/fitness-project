@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
@@ -9,6 +8,7 @@ import { PRTracker } from "./metrics/PRTracker";
 import { WorkoutReports } from "./WorkoutReports";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   calculateExerciseStats, 
   getMostUsedExercise, 
@@ -22,6 +22,7 @@ interface DashboardOverviewProps {
 export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   const { session } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   if (!session) {
     navigate('/auth');
@@ -46,7 +47,7 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
 
   const topExercises = Array.from(maxWeightMap.entries())
     .sort(([, a], [, b]) => b - a)
-    .slice(0, 3)
+    .slice(0, isMobile ? 2 : 3)
     .map(([exercise, weight]) => ({
       exercise,
       weight
@@ -55,19 +56,19 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   const personalRecords = getPersonalRecords(workoutLogs);
 
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div className={`grid grid-cols-1 ${isMobile ? 'gap-2' : 'gap-4'}`}>
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="col-span-full"
       >
         <Card className="h-full p-0 overflow-hidden">
-          <div className="grid grid-cols-2 h-full divide-x divide-ios-separator">
-            <div className="p-4">
-              <MostUsedExercise {...mostUsed} />
+          <div className="grid grid-cols-2 h-full divide-x divide-border">
+            <div className={isMobile ? 'p-2.5' : 'p-4'}>
+              <MostUsedExercise {...mostUsed} compact={isMobile} />
             </div>
-            <div className="p-4">
-              <MaxWeightMetric topExercises={topExercises} />
+            <div className={isMobile ? 'p-2.5' : 'p-4'}>
+              <MaxWeightMetric topExercises={topExercises} compact={isMobile} />
             </div>
           </div>
         </Card>
@@ -79,12 +80,12 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
         transition={{ delay: 0.1 }}
         className="col-span-full"
       >
-        <Card className="p-4">
-          <PRTracker records={personalRecords} />
+        <Card className={isMobile ? 'p-2.5' : 'p-4'}>
+          <PRTracker records={personalRecords} compact={isMobile} />
         </Card>
       </motion.div>
 
-      <WorkoutReports workoutLogs={workoutLogs} />
+      <WorkoutReports workoutLogs={workoutLogs} compact={isMobile} />
     </div>
   );
 }
