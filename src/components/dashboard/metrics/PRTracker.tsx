@@ -68,10 +68,8 @@ export function PRTracker({ records, compact }: PRTrackerProps) {
               className={`flex items-center justify-between bg-muted rounded-md ${compact ? 'p-1.5' : 'p-2'}`}
             >
               <div className="flex-1 min-w-0">
-                <p className={`font-medium truncate ${compact ? 'text-xs' : 'text-sm'}`}>
-                  {compact && group.exercise.length > 15 
-                    ? group.exercise.substring(0, 15) + '...' 
-                    : group.exercise}
+                <p className={`font-medium ${compact ? 'text-xs' : 'text-sm'}`}>
+                  {group.exercise}
                 </p>
                 <div className="flex flex-wrap gap-1 mt-0.5">
                   {group.achievements.slice(0, compact ? 1 : undefined).map((achievement, i) => (
