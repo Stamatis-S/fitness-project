@@ -15,8 +15,8 @@ interface MaxWeightBarChartProps {
 }
 
 export function MaxWeightBarChart({ maxWeightData, isMobile }: MaxWeightBarChartProps) {
-  // Limit data on mobile for better readability
-  const displayData = isMobile ? maxWeightData.slice(0, 8) : maxWeightData;
+  // Show all 10 exercises
+  const displayData = maxWeightData.slice(0, 10);
   const chartHeight = isMobile ? Math.max(200, displayData.length * 28) : 400;
   
   return (
@@ -89,9 +89,9 @@ export function MaxWeightBarChart({ maxWeightData, isMobile }: MaxWeightBarChart
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      {isMobile && maxWeightData.length > 8 && (
+      {maxWeightData.length > 10 && (
         <p className="text-xs text-muted-foreground text-center mt-2">
-          Showing top 8 of {maxWeightData.length} exercises
+          Showing top 10 of {maxWeightData.length} exercises
         </p>
       )}
     </div>
