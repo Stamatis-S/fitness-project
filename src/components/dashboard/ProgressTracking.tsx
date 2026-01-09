@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Tooltip,
   TooltipContent,
@@ -25,7 +26,7 @@ import { toast } from "sonner";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { CustomTooltip } from "./CustomTooltip";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, ChevronDown, ChevronUp } from "lucide-react";
 
 const COLORS = [
   "#8884d8",
@@ -48,8 +49,10 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [compareMode, setCompareMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showExercises, setShowExercises] = useState(false);
   const { session } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   if (!session) {
     navigate('/auth');
@@ -177,132 +180,154 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
   };
 
   return (
-    <Card className="p-3 bg-[#1E1E1E] border-[#333333]">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-        <h2 className="text-xl font-semibold text-white">Progress Over Time</h2>
+    <Card className="p-3 bg-card border-border">
+      {/* Header - Compact on mobile */}
+      <div className="flex justify-between items-center gap-2 mb-3">
+        <h2 className={`font-semibold text-foreground ${isMobile ? 'text-base' : 'text-xl'}`}>
+          Progress Over Time
+        </h2>
         <Button
           variant="outline"
+          size={isMobile ? "sm" : "default"}
           onClick={() => {
             if (!compareMode && selectedExercises.length > 2) {
               setSelectedExercises(prev => prev.slice(0, 2));
             }
             setCompareMode(!compareMode);
           }}
-          className="shrink-0 bg-[#333333] text-white border-[#444444] hover:bg-[#444444]"
+          className="shrink-0 text-xs"
         >
-          {compareMode ? "Exit Compare Mode" : "Compare Exercises"}
+          {compareMode ? "Exit Compare" : "Compare"}
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
-        <div className="lg:col-span-1">
-          <h3 className="text-sm font-medium mb-2 text-gray-300">Exercises</h3>
-          <div className="bg-[#252525] border border-[#333333] rounded-md p-2">
+      {/* Exercise Selector - Collapsible on mobile */}
+      <div className="mb-3">
+        <button
+          onClick={() => setShowExercises(!showExercises)}
+          className="flex items-center justify-between w-full p-2 bg-muted rounded-lg text-sm"
+        >
+          <span className="text-muted-foreground">
+            {selectedExercises.length > 0 
+              ? `${selectedExercises.length} exercise(s) selected` 
+              : "Select exercises"}
+          </span>
+          {showExercises ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
+        </button>
+        
+        {showExercises && (
+          <div className="mt-2 bg-muted border border-border rounded-lg p-2">
             <div className="relative mb-2">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
               <Input
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-7 h-7 text-xs bg-[#333333] border-[#444444] text-white"
+                className="pl-7 h-8 text-xs"
               />
             </div>
             
-            <div className="max-h-[260px] overflow-y-auto pr-1 grid grid-cols-1 gap-1">
+            <div className={`overflow-y-auto pr-1 grid ${isMobile ? 'grid-cols-2' : 'grid-cols-3'} gap-1`} style={{ maxHeight: isMobile ? '150px' : '200px' }}>
               {filteredExercises.length === 0 ? (
-                <p className="text-gray-400 text-xs p-1">No exercises found</p>
+                <p className="text-muted-foreground text-xs p-1 col-span-full">No exercises found</p>
               ) : (
                 filteredExercises.map(name => (
-                  <TooltipProvider key={name}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex items-center space-x-2 p-1 hover:bg-[#333333] rounded-md transition-colors">
-                          <Checkbox
-                            checked={selectedExercises.includes(name)}
-                            onCheckedChange={(checked) => toggleExercise(name, checked)}
-                            className="h-3 w-3 border-[#555555] data-[state=checked]:bg-[#E22222] data-[state=checked]:border-[#E22222]"
-                          />
-                          <label className="text-xs font-medium text-gray-200 cursor-pointer whitespace-normal break-words truncate">
-                            {name}
-                          </label>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent className="bg-[#333333] text-white border-[#444444]">
-                        <p>{name}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <div key={name} className="flex items-center space-x-1.5 p-1.5 hover:bg-accent rounded transition-colors">
+                    <Checkbox
+                      checked={selectedExercises.includes(name)}
+                      onCheckedChange={(checked) => toggleExercise(name, checked)}
+                      className="h-3.5 w-3.5"
+                    />
+                    <label className="text-xs text-foreground cursor-pointer truncate flex-1">
+                      {name}
+                    </label>
+                  </div>
                 ))
               )}
             </div>
           </div>
-        </div>
-        
-        <div className="lg:col-span-11">
-          <div className="h-[500px] bg-[#252525] border border-[#333333] rounded-md p-2">
-            {progressData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={progressData}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 70 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333333" opacity={0.4} />
-                  <XAxis
-                    dataKey="date"
-                    angle={-45}
-                    textAnchor="end"
-                    height={70}
-                    tick={{ fontSize: 11, fill: "#CCCCCC" }}
-                    padding={{ left: 0, right: 0 }}
-                    stroke="#555555"
-                    interval={getTickInterval()}
-                    tickMargin={15}
-                  />
-                  <YAxis
-                    label={{ 
-                      value: 'Weight (kg)', 
-                      angle: -90, 
-                      position: 'insideLeft',
-                      style: { textAnchor: 'middle', fontSize: 12, fill: "#CCCCCC" }
-                    }}
-                    tick={{ fontSize: 12, fill: "#CCCCCC" }}
-                    stroke="#555555"
-                    domain={['auto', 'auto']}
-                    padding={{ top: 20, bottom: 20 }}
-                    width={40}
-                  />
-                  <RechartsTooltip content={<CustomTooltip />} />
-                  <Legend 
-                    wrapperStyle={{ paddingTop: 10, fontSize: 12 }}
-                    align="center"
-                    formatter={(value) => <span style={{ color: "#FFFFFF" }}>{value}</span>}
-                  />
-                  {selectedExercises
-                    .slice(0, compareMode ? 2 : undefined)
-                    .map((exercise, index) => (
-                      <Line
-                        key={exercise}
-                        type="monotone"
-                        dataKey={exercise}
-                        stroke={COLORS[index % COLORS.length]}
-                        dot={{ r: 4, strokeWidth: 1, fill: "#252525" }}
-                        activeDot={{ r: 6, strokeWidth: 2, fill: "#252525" }}
-                        connectNulls
-                        strokeWidth={2}
-                      />
-                    ))}
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-gray-400">
-                {selectedExercises.length === 0 
-                  ? "Select exercises to view progress"
-                  : "No data available for selected exercises"}
-              </div>
-            )}
-          </div>
-        </div>
+        )}
       </div>
+      
+      {/* Chart - Compact height on mobile */}
+      <div className={`bg-muted border border-border rounded-lg p-2 ${isMobile ? 'h-[280px]' : 'h-[400px]'}`}>
+        {progressData.length > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={progressData}
+              margin={isMobile 
+                ? { top: 5, right: 10, left: 0, bottom: 50 }
+                : { top: 10, right: 20, left: 10, bottom: 70 }
+              }
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+              <XAxis
+                dataKey="date"
+                angle={-45}
+                textAnchor="end"
+                height={isMobile ? 50 : 70}
+                tick={{ fontSize: isMobile ? 9 : 11, fill: "hsl(var(--muted-foreground))" }}
+                stroke="hsl(var(--border))"
+                interval={getTickInterval()}
+                tickMargin={10}
+              />
+              <YAxis
+                tick={{ fontSize: isMobile ? 10 : 12, fill: "hsl(var(--muted-foreground))" }}
+                stroke="hsl(var(--border))"
+                domain={['auto', 'auto']}
+                width={isMobile ? 35 : 45}
+                tickFormatter={(val) => `${val}kg`}
+              />
+              <RechartsTooltip content={<CustomTooltip />} />
+              {!isMobile && (
+                <Legend 
+                  wrapperStyle={{ paddingTop: 10, fontSize: 12 }}
+                  align="center"
+                />
+              )}
+              {selectedExercises
+                .slice(0, compareMode ? 2 : undefined)
+                .map((exercise, index) => (
+                  <Line
+                    key={exercise}
+                    type="monotone"
+                    dataKey={exercise}
+                    stroke={COLORS[index % COLORS.length]}
+                    dot={{ r: isMobile ? 2 : 4, strokeWidth: 1 }}
+                    activeDot={{ r: isMobile ? 4 : 6, strokeWidth: 2 }}
+                    connectNulls
+                    strokeWidth={isMobile ? 1.5 : 2}
+                  />
+                ))}
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
+            {selectedExercises.length === 0 
+              ? "Select exercises to view progress"
+              : "No data available"}
+          </div>
+        )}
+      </div>
+      
+      {/* Selected exercises chips on mobile */}
+      {isMobile && selectedExercises.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {selectedExercises.map((exercise, index) => (
+            <span 
+              key={exercise}
+              className="text-xs px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: COLORS[index % COLORS.length] + '20', color: COLORS[index % COLORS.length] }}
+            >
+              {exercise.length > 15 ? exercise.substring(0, 15) + '...' : exercise}
+            </span>
+          ))}
+        </div>
+      )}
     </Card>
   );
 }

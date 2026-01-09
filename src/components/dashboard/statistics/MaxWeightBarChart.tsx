@@ -15,65 +15,71 @@ interface MaxWeightBarChartProps {
 }
 
 export function MaxWeightBarChart({ maxWeightData, isMobile }: MaxWeightBarChartProps) {
+  // Limit data on mobile for better readability
+  const displayData = isMobile ? maxWeightData.slice(0, 8) : maxWeightData;
+  const chartHeight = isMobile ? Math.max(200, displayData.length * 28) : 400;
+  
   return (
-    <div className="h-[500px] w-full">
+    <div style={{ height: `${chartHeight}px` }} className="w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
-          data={maxWeightData}
+          data={displayData}
           layout="vertical"
           margin={{
-            left: isMobile ? 55 : 80,
-            right: 5,
+            left: isMobile ? 2 : 5,
+            right: isMobile ? 8 : 15,
             top: 5,
-            bottom: 20,
+            bottom: 5,
           }}
-          barCategoryGap={isMobile ? 3 : 5}
+          barCategoryGap={isMobile ? 2 : 4}
         >
           <CartesianGrid 
             strokeDasharray="3 3" 
             horizontal={true}
             vertical={false}
-            stroke="#444444"
+            stroke="hsl(var(--border))"
+            opacity={0.5}
           />
           <XAxis 
             type="number"
-            tickFormatter={(value) => `${value}kg`}
+            tickFormatter={(value) => `${value}`}
             domain={[0, "auto"]}
             tick={{ 
-              fontSize: isMobile ? 10 : 12,
-              fill: "#CCCCCC"
+              fontSize: isMobile ? 9 : 11,
+              fill: "hsl(var(--muted-foreground))"
             }}
-            stroke="#555555"
+            stroke="hsl(var(--border))"
+            tickCount={isMobile ? 4 : 6}
           />
           <YAxis 
             type="category" 
             dataKey="exercise" 
-            width={isMobile ? 55 : 80}
+            width={isMobile ? 65 : 90}
             tick={{ 
-              fontSize: isMobile ? 9 : 11,
-              fill: "#CCCCCC",
-              width: isMobile ? 55 : 75,
+              fontSize: isMobile ? 10 : 11,
+              fill: "hsl(var(--foreground))",
             }}
             tickFormatter={(value) => {
-              const maxChars = isMobile ? 8 : 12;
+              const maxChars = isMobile ? 9 : 14;
               if (value.length > maxChars) {
-                return value.substring(0, maxChars) + "...";
+                return value.substring(0, maxChars) + "…";
               }
               return value;
             }}
-            stroke="#555555"
+            stroke="hsl(var(--border))"
           />
           <Tooltip 
             content={<CustomTooltip />}
-            cursor={{ fill: "rgba(255, 255, 255, 0.1)" }}
+            cursor={{ fill: "hsl(var(--accent) / 0.3)" }}
           />
           <Bar 
             dataKey="maxWeight"
-            name="Max Weight"
+            name="Max Weight (kg)"
             minPointSize={2}
-            barSize={isMobile ? 14 : 18}
+            barSize={isMobile ? 16 : 20}
+            radius={[0, 4, 4, 0]}
           >
-            {maxWeightData.map((entry, index) => (
+            {displayData.map((entry, index) => (
               <Cell 
                 key={`cell-${index}`}
                 fill={entry.color}
@@ -83,6 +89,11 @@ export function MaxWeightBarChart({ maxWeightData, isMobile }: MaxWeightBarChart
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+      {isMobile && maxWeightData.length > 8 && (
+        <p className="text-xs text-muted-foreground text-center mt-2">
+          Showing top 8 of {maxWeightData.length} exercises
+        </p>
+      )}
     </div>
   );
 }

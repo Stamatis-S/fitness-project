@@ -28,9 +28,12 @@ export function CategoryDistributionChart({
   categoryDistribution,
   isMobile
 }: CategoryDistributionChartProps) {
+  // Compact label for mobile - only show if percentage > 5%
   const renderCustomLabel = ({ percentage, cx, cy, midAngle, innerRadius, outerRadius }: LabelProps) => {
+    if (isMobile && percentage < 8) return null;
+    
     const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
+    const radius = innerRadius + (outerRadius - innerRadius) * (isMobile ? 1.3 : 1.2);
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -38,10 +41,10 @@ export function CategoryDistributionChart({
       <text
         x={x}
         y={y}
-        fill="currentColor"
+        fill="hsl(var(--foreground))"
         textAnchor={x > cx ? "start" : "end"}
         dominantBaseline="central"
-        fontSize={isMobile ? "10px" : "12px"}
+        fontSize={isMobile ? "9px" : "12px"}
         fontWeight="500"
       >
         {`${percentage}%`}
@@ -50,7 +53,7 @@ export function CategoryDistributionChart({
   };
 
   return (
-    <div className={`${isMobile ? "h-[340px]" : "h-[450px]"} w-full`}>
+    <div className={`${isMobile ? "h-[240px]" : "h-[380px]"} w-full`}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -58,16 +61,16 @@ export function CategoryDistributionChart({
             dataKey="value"
             nameKey="name"
             cx="50%"
-            cy="50%"
-            outerRadius={isMobile ? 120 : 180}
-            innerRadius={isMobile ? 40 : 60}
+            cy={isMobile ? "45%" : "50%"}
+            outerRadius={isMobile ? 70 : 140}
+            innerRadius={isMobile ? 25 : 50}
             label={renderCustomLabel}
-            labelLine={{
-              stroke: "currentColor",
+            labelLine={isMobile ? false : {
+              stroke: "hsl(var(--muted-foreground))",
               strokeWidth: 0.5,
               strokeOpacity: 0.5,
-              type: "polyline"
             }}
+            paddingAngle={1}
           >
             {categoryDistribution.map((entry, index) => (
               <Cell 
@@ -82,10 +85,16 @@ export function CategoryDistributionChart({
             layout="horizontal"
             align="center"
             verticalAlign="bottom"
+            iconSize={isMobile ? 8 : 10}
             wrapperStyle={{ 
-              paddingTop: "20px",
-              fontSize: isMobile ? "10px" : "12px"
+              paddingTop: isMobile ? "8px" : "16px",
+              fontSize: isMobile ? "9px" : "12px"
             }}
+            formatter={(value) => (
+              <span className="text-foreground">
+                {isMobile && value.length > 8 ? value.substring(0, 8) + '...' : value}
+              </span>
+            )}
           />
         </PieChart>
       </ResponsiveContainer>
