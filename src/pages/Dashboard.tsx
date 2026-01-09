@@ -25,6 +25,7 @@ type ExerciseCategory = Database['public']['Enums']['exercise_category'];
 
 // Time range options for data filtering
 type DataTimeRange = "3M" | "6M" | "1Y" | "ALL";
+type ProgressDataTimeRange = "ALL";
 
 // Calculate date range for filtering
 const getDateRangeFilter = (range: DataTimeRange): Date => {
@@ -42,6 +43,7 @@ export default function Dashboard() {
   const isMobile = useIsMobile();
   const { session, isLoading } = useAuth();
   const [dataRange, setDataRange] = useState<DataTimeRange>("3M");
+  const [progressDataRange] = useState<ProgressDataTimeRange>("ALL");
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -127,6 +129,54 @@ export default function Dashboard() {
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
+  // Separate query for Progress tab - always fetch ALL data
+  const { data: allWorkoutLogs } = useQuery({
+    queryKey: ['workout_logs_all', session?.user.id],
+    queryFn: async () => {
+      if (!session?.user.id) {
+        throw new Error('Not authenticated');
+      }
+
+      let allData: WorkoutLog[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('workout_logs')
+          .select(`
+            *,
+            exercises (
+              id,
+              name
+            )
+          `)
+          .eq('user_id', session.user.id)
+          .order('workout_date', { ascending: false })
+          .range(from, from + batchSize - 1);
+
+        if (error) {
+          toast.error("Failed to load workout logs");
+          throw error;
+        }
+
+        if (data && data.length > 0) {
+          allData = [...allData, ...data];
+          from += batchSize;
+          hasMore = data.length === batchSize;
+        } else {
+          hasMore = false;
+        }
+      }
+      
+      console.log(`Progress Tab - Loaded ALL: ${allData.length} total workout logs`);
+      return allData as WorkoutLog[];
+    },
+    enabled: !!session?.user.id,
+    staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+  });
+
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['workout_logs', session?.user.id, dataRange] });
     toast.success("Ανανεώθηκε!");
@@ -192,9 +242,9 @@ export default function Dashboard() {
                   </TabsContent>
 
                   <TabsContent value="progress" className="m-0 w-full">
-                    {workoutLogs && (
+                    {allWorkoutLogs && (
                       <DataErrorBoundary>
-                        <ProgressTracking workoutLogs={workoutLogs} />
+                        <ProgressTracking workoutLogs={allWorkoutLogs} />
                       </DataErrorBoundary>
                     )}
                   </TabsContent>
