@@ -121,13 +121,13 @@ export function WorkoutTable({ logs, onDelete, cycleStartDates = [] }: WorkoutTa
                     </h4>
                     <div className="flex items-center gap-1">
                       <Badge 
-                        className="px-1 py-0 rounded text-[9px] font-medium shrink-0"
+                        className="px-1.5 py-0 rounded text-[9px] font-medium shrink-0"
                         style={{
                           backgroundColor: `${CATEGORY_COLORS[exercise.category as keyof typeof CATEGORY_COLORS]}20`,
                           color: CATEGORY_COLORS[exercise.category as keyof typeof CATEGORY_COLORS],
                         }}
                       >
-                        {exercise.category.slice(0, 4)}
+                        {exercise.category}
                       </Badge>
                       {onDelete && (
                         <Button
