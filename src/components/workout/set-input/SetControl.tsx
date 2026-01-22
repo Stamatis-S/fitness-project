@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Minus, Plus } from "lucide-react";
 import { SetControlProps } from "./types";
+import { VoiceInputButton } from "./VoiceInputButton";
 
 export function SetControl({
   value,
@@ -15,6 +16,11 @@ export function SetControl({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(e.target.value) || 0;
     const clampedValue = Math.min(max, Math.max(min, newValue));
+    onChange(clampedValue);
+  };
+
+  const handleVoiceResult = (voiceValue: number) => {
+    const clampedValue = Math.min(max, Math.max(min, voiceValue));
     onChange(clampedValue);
   };
 
@@ -40,6 +46,8 @@ export function SetControl({
         className="flex-1 min-w-[60px] text-center text-base font-bold h-11 bg-background/50 border-border/30 rounded-xl px-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         inputMode="decimal"
       />
+      
+      <VoiceInputButton onResult={handleVoiceResult} />
       
       <Button
         type="button"
