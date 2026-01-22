@@ -21,13 +21,16 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
   
   const selectedExercise = watch('exercise');
   const formCustomExercise = watch('customExercise');
+  const formExerciseName = watch('exerciseName');
+  const formIsCustomExercise = watch('isCustomExercise');
   const selectedCategory = watch('category');
   const isCardio = selectedCategory === 'CARDIO';
   
-  const effectiveCustomExercise = customExercise || formCustomExercise;
-
-  // Check if selected exercise is a custom one (not a numeric ID)
-  const isCustomExercise = selectedExercise && isNaN(parseInt(selectedExercise));
+  // Use the form's isCustomExercise flag, or fallback to prop, or check if name is not numeric
+  const isCustomExercise = formIsCustomExercise || !!customExercise || (selectedExercise && isNaN(parseInt(selectedExercise)));
+  
+  // Get the effective custom exercise name from form or prop
+  const effectiveCustomExercise = customExercise || formExerciseName || formCustomExercise;
 
   const { data: frequentValues } = useQuery({
     queryKey: ['frequent-workout-values', session?.user.id, selectedExercise, effectiveCustomExercise, isCustomExercise],
@@ -40,12 +43,13 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
 
-      // For custom exercises, match by custom_exercise name
-      if (isCustomExercise || effectiveCustomExercise) {
-        const customName = effectiveCustomExercise || selectedExercise;
-        query.eq('custom_exercise', customName);
+      // For custom exercises, always match by custom_exercise name
+      if (isCustomExercise && effectiveCustomExercise) {
+        query.eq('custom_exercise', effectiveCustomExercise);
       } else if (selectedExercise && !isNaN(parseInt(selectedExercise))) {
         query.eq('exercise_id', parseInt(selectedExercise));
+      } else {
+        return { weights: [], reps: [] };
       }
 
       const { data, error } = await query;
@@ -99,12 +103,16 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
         .order('workout_date', { ascending: false })
         .order('created_at', { ascending: false });
       
-      // For custom exercises, match by custom_exercise name
-      if (isCustomExercise || effectiveCustomExercise || fieldArrayPath !== 'sets') {
-        const customName = effectiveCustomExercise || selectedExercise;
-        query.eq('custom_exercise', customName);
+      // For custom exercises, always match by custom_exercise name
+      if (isCustomExercise && effectiveCustomExercise) {
+        query.eq('custom_exercise', effectiveCustomExercise);
+      } else if (fieldArrayPath !== 'sets' && effectiveCustomExercise) {
+        // For power sets, match by the custom exercise name prop
+        query.eq('custom_exercise', effectiveCustomExercise);
       } else if (selectedExercise && !isNaN(parseInt(selectedExercise))) {
         query.eq('exercise_id', parseInt(selectedExercise));
+      } else {
+        return { lastWeight: null, lastReps: null, lastDate: null };
       }
 
       const { data, error } = await query.limit(1);
