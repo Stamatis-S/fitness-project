@@ -224,18 +224,18 @@ export default function Dashboard() {
 
                 <div className="mt-4">
                   <TabsContent value="overview" className="m-0 space-y-4">
-                    {workoutLogs && (
+                    {(allWorkoutLogs || workoutLogs) && (
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                           <DataErrorBoundary>
-                            <WorkoutInsights logs={workoutLogs} />
+                            <WorkoutInsights logs={allWorkoutLogs || workoutLogs || []} />
                           </DataErrorBoundary>
                         </div>
                         <DataErrorBoundary>
-                          <DashboardOverview workoutLogs={workoutLogs} />
+                          <DashboardOverview workoutLogs={allWorkoutLogs || workoutLogs || []} />
                         </DataErrorBoundary>
                         <DataErrorBoundary>
-                          <AchievementBadges workoutLogs={workoutLogs} />
+                          <AchievementBadges workoutLogs={allWorkoutLogs || workoutLogs || []} />
                         </DataErrorBoundary>
                       </>
                     )}
