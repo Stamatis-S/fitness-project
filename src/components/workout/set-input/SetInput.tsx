@@ -26,8 +26,11 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
   
   const effectiveCustomExercise = customExercise || formCustomExercise;
 
+  // Check if selected exercise is a custom one (not a numeric ID)
+  const isCustomExercise = selectedExercise && isNaN(parseInt(selectedExercise));
+
   const { data: frequentValues } = useQuery({
-    queryKey: ['frequent-workout-values', session?.user.id, selectedExercise, effectiveCustomExercise],
+    queryKey: ['frequent-workout-values', session?.user.id, selectedExercise, effectiveCustomExercise, isCustomExercise],
     queryFn: async () => {
       if (!session?.user.id) return { weights: [], reps: [] };
 
@@ -37,9 +40,11 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
 
-      if (selectedExercise === 'custom' && effectiveCustomExercise) {
-        query.eq('custom_exercise', effectiveCustomExercise);
-      } else if (selectedExercise && selectedExercise !== 'custom') {
+      // For custom exercises, match by custom_exercise name
+      if (isCustomExercise || effectiveCustomExercise) {
+        const customName = effectiveCustomExercise || selectedExercise;
+        query.eq('custom_exercise', customName);
+      } else if (selectedExercise && !isNaN(parseInt(selectedExercise))) {
         query.eq('exercise_id', parseInt(selectedExercise));
       }
 
@@ -80,7 +85,7 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
   });
 
   const { data: lastWorkoutValues, isLoading: isLoadingLast } = useQuery({
-    queryKey: ['last-workout-values', session?.user.id, selectedExercise, effectiveCustomExercise, index + 1],
+    queryKey: ['last-workout-values', session?.user.id, selectedExercise, effectiveCustomExercise, index + 1, isCustomExercise],
     queryFn: async () => {
       if (!session?.user.id) {
         return { lastWeight: null, lastReps: null, lastDate: null };
@@ -94,9 +99,11 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
         .order('workout_date', { ascending: false })
         .order('created_at', { ascending: false });
       
-      if ((selectedExercise === 'custom' || fieldArrayPath !== 'sets') && effectiveCustomExercise) {
-        query.eq('custom_exercise', effectiveCustomExercise);
-      } else if (selectedExercise && selectedExercise !== 'custom') {
+      // For custom exercises, match by custom_exercise name
+      if (isCustomExercise || effectiveCustomExercise || fieldArrayPath !== 'sets') {
+        const customName = effectiveCustomExercise || selectedExercise;
+        query.eq('custom_exercise', customName);
+      } else if (selectedExercise && !isNaN(parseInt(selectedExercise))) {
         query.eq('exercise_id', parseInt(selectedExercise));
       }
 
