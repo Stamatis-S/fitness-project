@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, BookOpen } from "lucide-react";
 import { toast } from "sonner";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { UserRecordPopup } from "@/components/UserRecordPopup";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
@@ -13,13 +13,26 @@ import { useWakeLock } from "@/hooks/useWakeLock";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import type { WorkoutTemplate } from "@/hooks/useWorkoutTemplates";
+import { QuickAddButton } from "@/components/QuickAddButton";
+import type { ExerciseCategory } from "@/lib/constants";
 
+
+interface QuickExercise {
+  exerciseName: string;
+  category: ExerciseCategory;
+  exercise_id: number | null;
+  customExercise: string | null;
+  lastWeight: number;
+  lastReps: number;
+  lastDate: string;
+}
 
 const Index = () => {
   const { session, isLoading } = useAuth();
   const navigate = useNavigate();
   const { requestWakeLock, releaseWakeLock } = useWakeLock();
   const [loadedTemplate, setLoadedTemplate] = useState<WorkoutTemplate | null>(null);
+  const [quickExercise, setQuickExercise] = useState<QuickExercise | null>(null);
 
   // Check for loaded template from sessionStorage
   useEffect(() => {
@@ -37,6 +50,15 @@ const Index = () => {
 
   const clearLoadedTemplate = useCallback(() => {
     setLoadedTemplate(null);
+  }, []);
+
+  const handleQuickAdd = useCallback((exercise: QuickExercise) => {
+    setQuickExercise(exercise);
+    toast.success(`${exercise.exerciseName} loaded!`);
+  }, []);
+
+  const clearQuickExercise = useCallback(() => {
+    setQuickExercise(null);
   }, []);
 
   useEffect(() => {
@@ -167,11 +189,16 @@ const Index = () => {
                 <ExerciseEntryForm 
                   loadedTemplate={loadedTemplate}
                   onTemplateConsumed={clearLoadedTemplate}
+                  quickExercise={quickExercise}
+                  onQuickExerciseConsumed={clearQuickExercise}
                 />
               </DataErrorBoundary>
             )}
           </motion.div>
         </div>
+
+        {/* Quick Add Button */}
+        <QuickAddButton onSelectExercise={handleQuickAdd} />
       </div>
     </PageTransition>
   );

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { WorkoutInsights } from "@/components/dashboard/WorkoutInsights";
+import { WorkoutInsightsCarousel } from "@/components/dashboard/WorkoutInsightsCarousel";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { ProgressTracking } from "@/components/dashboard/ProgressTracking";
 import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics";
@@ -226,11 +226,9 @@ export default function Dashboard() {
                   <TabsContent value="overview" className="m-0 space-y-4">
                     {(allWorkoutLogs || workoutLogs) && (
                       <>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                          <DataErrorBoundary>
-                            <WorkoutInsights logs={allWorkoutLogs || workoutLogs || []} />
-                          </DataErrorBoundary>
-                        </div>
+                        <DataErrorBoundary>
+                          <WorkoutInsightsCarousel logs={allWorkoutLogs || workoutLogs || []} />
+                        </DataErrorBoundary>
                         <DataErrorBoundary>
                           <DashboardOverview workoutLogs={allWorkoutLogs || workoutLogs || []} />
                         </DataErrorBoundary>
