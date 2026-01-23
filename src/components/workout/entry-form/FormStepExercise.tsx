@@ -1,26 +1,35 @@
-
+import React, { memo, useCallback } from "react";
 import { motion } from "framer-motion";
+import { useFormContext } from "react-hook-form";
 import { ExerciseSelector } from "@/components/workout/ExerciseSelector";
 import { PowerSetSelector } from "@/components/workout/PowerSetSelector";
 import type { ExerciseCategory } from "@/lib/constants";
-import type { UseFormWatch, UseFormSetValue } from "react-hook-form";
 import type { ExerciseFormData, ExercisePair } from "@/components/workout/types";
 
 interface FormStepExerciseProps {
   selectedCategory: ExerciseCategory | null;
-  watch: UseFormWatch<ExerciseFormData>;
-  setValue: UseFormSetValue<ExerciseFormData>;
   onPowerSetChange: (value: string, pair?: ExercisePair) => void;
   handleNext: () => void;
 }
 
-export function FormStepExercise({
+export const FormStepExercise = memo(function FormStepExercise({
   selectedCategory,
-  watch,
-  setValue,
   onPowerSetChange,
   handleNext
 }: FormStepExerciseProps) {
+  const { watch, setValue } = useFormContext<ExerciseFormData>();
+  
+  const handleExerciseChange = useCallback((value: string, exerciseName: string, isCustom: boolean) => {
+    setValue("exercise", value);
+    setValue("exerciseName", exerciseName);
+    setValue("isCustomExercise", isCustom);
+    handleNext();
+  }, [setValue, handleNext]);
+
+  const handleCustomExerciseChange = useCallback((value: string) => {
+    setValue("customExercise", value);
+  }, [setValue]);
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 5 }}
@@ -39,17 +48,12 @@ export function FormStepExercise({
           <ExerciseSelector 
             category={selectedCategory}
             value={watch("exercise")}
-            onValueChange={(value, exerciseName, isCustom) => {
-              setValue("exercise", value);
-              setValue("exerciseName", exerciseName);
-              setValue("isCustomExercise", isCustom);
-              handleNext();
-            }}
+            onValueChange={handleExerciseChange}
             customExercise={watch("customExercise")}
-            onCustomExerciseChange={(value) => setValue("customExercise", value)}
+            onCustomExerciseChange={handleCustomExerciseChange}
           />
         </div>
       )}
     </motion.div>
   );
-}
+});

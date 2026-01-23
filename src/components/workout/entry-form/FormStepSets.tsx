@@ -1,5 +1,6 @@
-import { useState } from "react";
+import React, { useState, memo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useFormContext, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -7,23 +8,28 @@ import { PowerSetInfo } from "@/components/workout/PowerSetInfo";
 import { SetInput } from "@/components/workout/set-input/SetInput";
 import { RestTimer } from "@/components/workout/RestTimer";
 import { PlusCircle, Save, Timer, ChevronDown } from "lucide-react";
-import type { UseFieldArrayReturn } from "react-hook-form";
 import type { ExerciseCategory } from "@/lib/constants";
-import type { ExerciseFormData, SetData } from "@/components/workout/types";
+import type { ExerciseFormData } from "@/components/workout/types";
 
 interface FormStepSetsProps {
   selectedCategory: ExerciseCategory | null;
-  fieldsArray: UseFieldArrayReturn<ExerciseFormData, "sets", "id">;
   isSubmitting: boolean;
 }
 
-export function FormStepSets({
+export const FormStepSets = memo(function FormStepSets({
   selectedCategory,
-  fieldsArray,
   isSubmitting
 }: FormStepSetsProps) {
-  const { fields, append, remove } = fieldsArray;
+  const { control } = useFormContext<ExerciseFormData>();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "sets"
+  });
   const [showRestTimer, setShowRestTimer] = useState(false);
+  
+  const handleAddSet = useCallback(() => {
+    append({ weight: 0, reps: 0 });
+  }, [append]);
   
   return (
     <motion.div
@@ -85,7 +91,7 @@ export function FormStepSets({
                 type="button"
                 variant="outline"
                 className="w-full h-11 bg-secondary hover:bg-secondary/80 text-secondary-foreground border-0"
-                onClick={() => append({ weight: 0, reps: 0 })}
+                onClick={handleAddSet}
                 disabled={isSubmitting}
               >
                 <PlusCircle className="h-4 w-4 mr-2" />
@@ -126,4 +132,4 @@ export function FormStepSets({
       )}
     </motion.div>
   );
-}
+});
