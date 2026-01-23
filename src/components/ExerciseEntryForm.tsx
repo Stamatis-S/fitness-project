@@ -17,12 +17,29 @@ import { saveExercise } from "@/components/workout/entry-form/utils";
 import type { WorkoutTemplate } from "@/hooks/useWorkoutTemplates";
 import { toast } from "sonner";
 
+interface QuickExercise {
+  exerciseName: string;
+  category: ExerciseCategory;
+  exercise_id: number | null;
+  customExercise: string | null;
+  lastWeight: number;
+  lastReps: number;
+  lastDate: string;
+}
+
 interface ExerciseEntryFormProps {
   loadedTemplate?: WorkoutTemplate | null;
   onTemplateConsumed?: () => void;
+  quickExercise?: QuickExercise | null;
+  onQuickExerciseConsumed?: () => void;
 }
 
-export function ExerciseEntryForm({ loadedTemplate, onTemplateConsumed }: ExerciseEntryFormProps) {
+export function ExerciseEntryForm({ 
+  loadedTemplate, 
+  onTemplateConsumed,
+  quickExercise,
+  onQuickExerciseConsumed 
+}: ExerciseEntryFormProps) {
   const { session } = useAuth();
   const queryClient = useQueryClient();
   const [step, setStep] = useState<'category' | 'exercise' | 'sets'>('category');
@@ -79,6 +96,32 @@ export function ExerciseEntryForm({ loadedTemplate, onTemplateConsumed }: Exerci
       setTemplateExerciseIndex(0);
     }
   }, [loadedTemplate, templateExerciseIndex]);
+
+  // Load exercise from quick add
+  useEffect(() => {
+    if (quickExercise) {
+      // Set the category
+      setSelectedCategory(quickExercise.category);
+      
+      // Set form values - use exercise_id if it's a standard exercise, otherwise custom
+      const isCustom = quickExercise.customExercise !== null;
+      methods.setValue("exercise", isCustom ? quickExercise.customExercise! : String(quickExercise.exercise_id || ''));
+      methods.setValue("exerciseName", quickExercise.exerciseName);
+      methods.setValue("isCustomExercise", isCustom);
+      if (isCustom) {
+        methods.setValue("customExercise", quickExercise.customExercise!);
+      }
+      
+      // Pre-fill with last weight/reps
+      methods.setValue("sets", [{ weight: quickExercise.lastWeight, reps: quickExercise.lastReps }]);
+      
+      // Go directly to sets step
+      setStep('sets');
+      
+      // Consume the quick exercise
+      onQuickExerciseConsumed?.();
+    }
+  }, [quickExercise]);
 
   const onSubmit = async (data: ExerciseFormData) => {
     if (isSubmitting) return;
