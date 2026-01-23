@@ -21,12 +21,15 @@ interface InsightCardProps {
 }
 
 function InsightCard({ icon, label, value, subtext, gradient, delay = 0 }: InsightCardProps) {
+  // Check if value is long (like "POWER SETS")
+  const isLongValue = typeof value === 'string' && value.length > 8;
+  
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay, duration: 0.3 }}
-      className="flex-shrink-0 w-32"
+      className={`flex-shrink-0 ${isLongValue ? 'w-36' : 'w-32'}`}
     >
       <Card className={`h-full p-3 bg-gradient-to-br ${gradient} border-0`}>
         <div className="flex flex-col h-full">
@@ -34,7 +37,9 @@ function InsightCard({ icon, label, value, subtext, gradient, delay = 0 }: Insig
             {icon}
           </div>
           <p className="text-[10px] text-white/70 font-medium">{label}</p>
-          <p className="text-lg font-bold text-white truncate">{value}</p>
+          <p className={`font-bold text-white ${isLongValue ? 'text-sm' : 'text-lg'}`}>
+            {value}
+          </p>
           {subtext && (
             <p className="text-[9px] text-white/60 mt-auto">{subtext}</p>
           )}
