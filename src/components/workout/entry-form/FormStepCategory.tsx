@@ -1,27 +1,24 @@
-
-import React from "react";
+import React, { memo } from "react";
 import { motion } from "framer-motion";
+import { useFormContext } from "react-hook-form";
 import { DateSelector } from "@/components/workout/DateSelector";
 import { CategorySelector } from "@/components/workout/CategorySelector";
 import type { ExerciseCategory } from "@/lib/constants";
-import type { UseFormWatch, UseFormSetValue } from "react-hook-form";
 import type { ExerciseFormData } from "@/components/workout/types";
 
 interface FormStepCategoryProps {
-  watch: UseFormWatch<ExerciseFormData>;
-  setValue: UseFormSetValue<ExerciseFormData>;
   selectedCategory: ExerciseCategory | null;
   setSelectedCategory: (category: ExerciseCategory | null) => void;
   setStep: (step: 'category' | 'exercise' | 'sets') => void;
 }
 
-export function FormStepCategory({
-  watch,
-  setValue,
+export const FormStepCategory = memo(function FormStepCategory({
   selectedCategory,
   setSelectedCategory,
   setStep
 }: FormStepCategoryProps) {
+  const { watch, setValue } = useFormContext<ExerciseFormData>();
+  
   return (
     <>
       <motion.div
@@ -50,4 +47,4 @@ export function FormStepCategory({
       </motion.div>
     </>
   );
-}
+});

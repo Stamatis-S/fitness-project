@@ -1,8 +1,8 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useState } from "react";
 import { FormErrorBoundary } from "@/components/ErrorBoundary";
-import { useForm, FormProvider, useFieldArray } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { useAuth } from "@/components/AuthProvider";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
@@ -65,11 +65,6 @@ export function ExerciseEntryForm({
       exercise2Sets: [{ weight: 0, reps: 0 }],
       isSubmitting: false
     }
-  });
-
-  const fieldsArray = useFieldArray({
-    control: methods.control,
-    name: "sets"
   });
 
   // Load exercise from template when available
@@ -174,16 +169,16 @@ export function ExerciseEntryForm({
     }
   };
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (step === 'sets') {
       setStep('exercise');
     } else if (step === 'exercise') {
       setStep('category');
       setSelectedCategory(null);
     }
-  };
+  }, [step]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (step === 'category' && selectedCategory) {
       setStep('exercise');
     } else if (step === 'exercise') {
@@ -193,15 +188,15 @@ export function ExerciseEntryForm({
         setStep('sets');
       }
     }
-  };
+  }, [step, selectedCategory, methods]);
 
-  const handlePowerSetChange = (value: string, pair?: ExercisePair) => {
+  const handlePowerSetChange = useCallback((value: string, pair?: ExercisePair) => {
     methods.setValue("exercise", value);
     if (pair) {
       methods.setValue("powerSetPair", pair);
     }
     handleNext();
-  };
+  }, [methods, handleNext]);
 
   return (
     <FormErrorBoundary>
@@ -218,8 +213,6 @@ export function ExerciseEntryForm({
               <TabsContent value="category" className="m-0 space-y-4">
                 <FormErrorBoundary>
                   <FormStepCategory
-                    watch={methods.watch}
-                    setValue={methods.setValue}
                     selectedCategory={selectedCategory}
                     setSelectedCategory={setSelectedCategory}
                     setStep={setStep}
@@ -231,8 +224,6 @@ export function ExerciseEntryForm({
                 <FormErrorBoundary>
                   <FormStepExercise
                     selectedCategory={selectedCategory}
-                    watch={methods.watch}
-                    setValue={methods.setValue}
                     onPowerSetChange={handlePowerSetChange}
                     handleNext={handleNext}
                   />
@@ -243,7 +234,6 @@ export function ExerciseEntryForm({
                 <FormErrorBoundary>
                   <FormStepSets
                     selectedCategory={selectedCategory}
-                    fieldsArray={fieldsArray}
                     isSubmitting={isSubmitting}
                   />
                 </FormErrorBoundary>
