@@ -71,9 +71,28 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Horizontal scroll carousel with snap */
+.scroll-carousel {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  touch-action: pan-x;
+}
+.scroll-carousel::-webkit-scrollbar {
+  display: none;
+}
+.scroll-carousel > * {
+  scroll-snap-align: start;
 }
 
 /* Premium glass card */

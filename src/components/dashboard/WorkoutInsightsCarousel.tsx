@@ -139,8 +139,8 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
       </motion.div>
 
       {/* Horizontal Scrolling Insights */}
-      <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-        <div className="flex gap-3 pb-2 w-max">
+      <div className="overflow-x-auto scroll-carousel -mx-4 px-4">
+        <div className="flex gap-3 pb-2 w-max pr-4">
           <InsightCard
             icon={<Award className="h-4 w-4 text-white" />}
             label="Total Workouts"
