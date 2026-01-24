@@ -66,6 +66,16 @@
   }
 }
 
+/* Hide scrollbar but keep scrolling */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Premium glass card */
 .glass-card {
   @apply bg-card/60 backdrop-blur-2xl border border-white/5 shadow-2xl;
