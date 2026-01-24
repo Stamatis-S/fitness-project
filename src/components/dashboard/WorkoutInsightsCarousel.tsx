@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { Activity, Award, TrendingUp, Target, Flame } from "lucide-react";
 import { motion } from "framer-motion";
@@ -140,8 +139,8 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
       </motion.div>
 
       {/* Horizontal Scrolling Insights */}
-      <ScrollArea className="w-full">
-        <div className="flex gap-3 pb-2">
+      <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+        <div className="flex gap-3 pb-2 w-max">
           <InsightCard
             icon={<Award className="h-4 w-4 text-white" />}
             label="Total Workouts"
@@ -188,8 +187,7 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
             delay={0.2}
           />
         </div>
-        <ScrollBar orientation="horizontal" className="h-1.5" />
-      </ScrollArea>
+      </div>
     </div>
   );
 }
