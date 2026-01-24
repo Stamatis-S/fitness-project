@@ -1,4 +1,4 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { motion } from "framer-motion";
 import { CalendarCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -36,7 +36,7 @@ export function CategorySelector({
   const { vibrate } = useHaptic();
   
   return (
-    <ScrollArea className="w-full">
+    <div className="w-full">
       <div className="space-y-5 pb-2">
         {/* Workout Plan Button */}
         <motion.button
@@ -120,6 +120,6 @@ export function CategorySelector({
           })}
         </div>
       </div>
-    </ScrollArea>
+    </div>
   );
 }
