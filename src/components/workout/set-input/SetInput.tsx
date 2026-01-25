@@ -13,6 +13,7 @@ export function SetInput({
   exerciseLabel,
   fieldArrayPath = "sets",
   customExercise,
+  category,
 }: SetInputProps) {
   const { watch, setValue } = useFormContext<ExerciseFormData>();
 
@@ -24,8 +25,7 @@ export function SetInput({
   const formCustomExercise = watch("customExercise");
   const formExerciseName = watch("exerciseName");
   const formIsCustomExercise = watch("isCustomExercise");
-  const selectedCategory = watch("category");
-  const isCardio = selectedCategory === "CARDIO";
+  const isCardio = category === "CARDIO";
 
   // Use the form's isCustomExercise flag, or fallback to prop, or check if name is not numeric
   const isCustomExercise =
