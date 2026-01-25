@@ -74,8 +74,7 @@ export const FormStepSets = memo(function FormStepSets({
                   >
                     <SetInput
                       index={index}
-                      onRemove={remove}
-                      category={selectedCategory}
+                      onRemove={index > 0 ? remove : undefined}
                     />
                   </motion.div>
                 ))}

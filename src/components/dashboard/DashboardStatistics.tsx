@@ -1,5 +1,10 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
+import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CategoryDistributionChart } from "./statistics/CategoryDistributionChart";
@@ -10,6 +15,7 @@ import {
   calculateCategoryDistribution, 
   calculateMaxWeightData 
 } from "./statistics/utils/statisticsDataProcessor";
+import { subMonths } from "date-fns";
 
 interface DashboardStatisticsProps {
   workoutLogs: WorkoutLog[];
@@ -18,9 +24,59 @@ interface DashboardStatisticsProps {
 export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("ALL");
   const isMobile = useIsMobile();
+  const { session } = useAuth();
+  const navigate = useNavigate();
 
-  // Use the shared workoutLogs from parent and filter by time range
-  const filteredLogs = getFilteredLogsByTimeRange(workoutLogs, timeRange);
+  // Fetch all data when "ALL" is selected, otherwise use passed workoutLogs
+  const { data: allWorkoutLogs } = useQuery({
+    queryKey: ['statistics_all_logs', session?.user.id],
+    queryFn: async () => {
+      if (!session?.user.id) throw new Error('Not authenticated');
+
+      let allLogs: WorkoutLog[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('workout_logs')
+          .select(`
+            *,
+            exercises (
+              id,
+              name
+            )
+          `)
+          .eq('user_id', session.user.id)
+          .order('workout_date', { ascending: false })
+          .range(from, from + batchSize - 1);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          allLogs = [...allLogs, ...data as WorkoutLog[]];
+          from += batchSize;
+          hasMore = data.length === batchSize;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      return allLogs;
+    },
+    enabled: !!session?.user.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  if (!session) {
+    navigate('/auth');
+    return null;
+  }
+
+  // Use all fetched logs and filter by time range
+  const logsToUse = allWorkoutLogs || workoutLogs;
+  const filteredLogs = getFilteredLogsByTimeRange(logsToUse, timeRange);
   const categoryDistribution = calculateCategoryDistribution(filteredLogs);
   const maxWeightData = calculateMaxWeightData(filteredLogs);
 
