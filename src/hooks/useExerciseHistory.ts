@@ -28,14 +28,14 @@ export function useExerciseHistory({
   return useQuery({
     queryKey: [
       "exercise-history",
-      session?.user.id,
+      session?.user?.id,
       exerciseId,
       customExercise,
       isCustomExercise,
       setNumber,
     ],
     queryFn: async (): Promise<ExerciseHistoryData> => {
-      if (!session?.user.id) {
+      if (!session?.user?.id) {
         return {
           frequentWeight: null,
           frequentReps: null,
@@ -124,7 +124,7 @@ export function useExerciseHistory({
       };
     },
     enabled:
-      !!session?.user.id &&
+      !!session?.user?.id &&
       ((!!exerciseId && !isCustomExercise) || (!!customExercise && isCustomExercise)),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
