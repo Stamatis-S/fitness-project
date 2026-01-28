@@ -1,10 +1,9 @@
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { Activity, Award, TrendingUp, Target, Flame } from "lucide-react";
-import { motion } from "framer-motion";
 import { WorkoutCycleCard } from "./WorkoutCycleCard";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { format, differenceInDays, parseISO } from "date-fns";
+import { differenceInDays, parseISO } from "date-fns";
 
 interface WorkoutInsightsCarouselProps {
   logs: WorkoutLog[];
@@ -16,20 +15,13 @@ interface InsightCardProps {
   value: string | number;
   subtext?: string;
   gradient: string;
-  delay?: number;
 }
 
-function InsightCard({ icon, label, value, subtext, gradient, delay = 0 }: InsightCardProps) {
-  // Check if value is long (like "POWER SETS")
+function InsightCard({ icon, label, value, subtext, gradient }: InsightCardProps) {
   const isLongValue = typeof value === 'string' && value.length > 8;
   
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay, duration: 0.3 }}
-      className={`flex-shrink-0 ${isLongValue ? 'w-36' : 'w-32'}`}
-    >
+    <div className={`flex-shrink-0 ${isLongValue ? 'w-36' : 'w-32'}`}>
       <Card className={`h-full p-3 bg-gradient-to-br ${gradient} border-0`}>
         <div className="flex flex-col h-full">
           <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center mb-2">
@@ -44,7 +36,7 @@ function InsightCard({ icon, label, value, subtext, gradient, delay = 0 }: Insig
           )}
         </div>
       </Card>
-    </motion.div>
+    </div>
   );
 }
 
@@ -126,19 +118,13 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
   return (
     <div className="space-y-3">
       {/* Workout Cycle Card - Full Width */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <WorkoutCycleCard 
-          lastWorkoutDate={lastWorkoutDate} 
-          workoutDates={workoutDates}
-          compact={isMobile}
-        />
-      </motion.div>
+      <WorkoutCycleCard 
+        lastWorkoutDate={lastWorkoutDate} 
+        workoutDates={workoutDates}
+        compact={isMobile}
+      />
 
-      {/* Horizontal Scrolling Insights */}
+      {/* Horizontal Scrolling Insights - No framer-motion for smooth touch scrolling */}
       <div className="overflow-x-auto scroll-carousel -mx-4 px-4">
         <div className="flex gap-3 pb-2 w-max pr-4">
           <InsightCard
@@ -147,7 +133,6 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
             value={uniqueWorkouts}
             subtext="All time"
             gradient="from-yellow-500 to-amber-600"
-            delay={0}
           />
           
           {mostTrained && (
@@ -156,7 +141,6 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
               label="Most Trained"
               value={mostTrained}
               gradient="from-green-500 to-emerald-600"
-              delay={0.05}
             />
           )}
 
@@ -166,7 +150,6 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
             value={thisWeekWorkouts}
             subtext="days trained"
             gradient="from-blue-500 to-cyan-600"
-            delay={0.1}
           />
 
           <InsightCard
@@ -175,7 +158,6 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
             value={`${streak}d`}
             subtext={streak > 0 ? "Keep it up!" : "Start today!"}
             gradient="from-orange-500 to-red-600"
-            delay={0.15}
           />
 
           <InsightCard
@@ -184,7 +166,6 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
             value={`${totalVolume}kg`}
             subtext="weight × reps"
             gradient="from-purple-500 to-violet-600"
-            delay={0.2}
           />
         </div>
       </div>
