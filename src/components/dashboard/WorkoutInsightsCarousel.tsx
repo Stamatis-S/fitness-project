@@ -124,9 +124,9 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
         compact={isMobile}
       />
 
-      {/* Horizontal Scrolling Insights - No framer-motion for smooth touch scrolling */}
-      <div className="overflow-x-auto scroll-carousel -mx-4 px-4">
-        <div className="flex gap-3 pb-2 w-max pr-4">
+      {/* Simple horizontal scroll frame */}
+      <div className="overflow-x-auto scrollbar-hide -mx-4 px-4" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex gap-3 pb-2" style={{ width: 'max-content' }}>
           <InsightCard
             icon={<Award className="h-4 w-4 text-white" />}
             label="Total Workouts"
