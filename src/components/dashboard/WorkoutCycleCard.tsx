@@ -111,37 +111,45 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
     },
   });
 
-  useEffect(() => {
-    if (currentCycle?.start_date && session?.user?.id) {
-      // Count actual workout days since cycle start
-      const cycleStartDate = new Date(currentCycle.start_date);
-      const workoutDaysSinceCycleStart = workoutDates.filter(date => 
-        !isBefore(new Date(date), cycleStartDate)
-      ).length;
+  // Calculate workout days since cycle start
+  const workoutDaysSinceCycleStart = currentCycle?.start_date 
+    ? workoutDates.filter(date => {
+        const cycleStartDate = new Date(currentCycle.start_date);
+        cycleStartDate.setHours(0, 0, 0, 0);
+        const workoutDate = new Date(date);
+        workoutDate.setHours(0, 0, 0, 0);
+        return workoutDate >= cycleStartDate;
+      }).length
+    : 0;
 
-      if (workoutDaysSinceCycleStart >= CYCLE_DAYS && currentCycle.is_active) {
-        setIsComplete(true);
-        updateCycleMutation.mutate({
-          id: currentCycle.id,
-          completedDays: CYCLE_DAYS,
-          isActive: false
-        });
-        
-        // Send payment reminder
-        if (currentCycle.notifications_enabled) {
-          sendReminderMutation.mutate();
+  useEffect(() => {
+    if (currentCycle?.start_date && session?.user?.id && currentCycle.is_active) {
+      // Only update if the count has changed
+      if (workoutDaysSinceCycleStart !== currentCycle.completed_days) {
+        if (workoutDaysSinceCycleStart >= CYCLE_DAYS) {
+          setIsComplete(true);
+          updateCycleMutation.mutate({
+            id: currentCycle.id,
+            completedDays: CYCLE_DAYS,
+            isActive: false
+          });
+          
+          // Send payment reminder
+          if (currentCycle.notifications_enabled) {
+            sendReminderMutation.mutate();
+          }
+          
+          toast.success("Congratulations! You've completed your 12-day workout cycle! 🎉");
+        } else {
+          updateCycleMutation.mutate({
+            id: currentCycle.id,
+            completedDays: workoutDaysSinceCycleStart,
+            isActive: true
+          });
         }
-        
-        toast.success("Congratulations! You've completed your 12-day workout cycle! 🎉");
-      } else if (currentCycle.is_active) {
-        updateCycleMutation.mutate({
-          id: currentCycle.id,
-          completedDays: workoutDaysSinceCycleStart,
-          isActive: true
-        });
       }
     }
-  }, [currentCycle, workoutDates, session?.user?.id]);
+  }, [currentCycle?.id, currentCycle?.start_date, currentCycle?.is_active, currentCycle?.completed_days, workoutDaysSinceCycleStart, session?.user?.id]);
 
   const handleDateSelect = async (date: Date | undefined) => {
     if (!date || !session?.user?.id) return;
@@ -169,12 +177,12 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
     }
   };
 
-  const progress = currentCycle 
-    ? (currentCycle.completed_days / CYCLE_DAYS) * 100 
+  const progress = currentCycle?.is_active 
+    ? (workoutDaysSinceCycleStart / CYCLE_DAYS) * 100 
     : 0;
 
   const daysLeft = currentCycle?.is_active 
-    ? CYCLE_DAYS - (currentCycle.completed_days || 0)
+    ? CYCLE_DAYS - workoutDaysSinceCycleStart
     : CYCLE_DAYS;
 
   return (
