@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useHaptic } from "@/hooks/useHaptic";
 import { cn } from "@/lib/utils";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, startOfDay, isSameDay } from "date-fns";
 import { el } from "date-fns/locale";
 import type { ExerciseCategory } from "@/lib/constants";
 
@@ -88,11 +88,13 @@ export function QuickAddButton({ onSelectExercise }: QuickAddButtonProps) {
     staleTime: 1000 * 60 * 2
   });
 
-  // Fetch last 3 workout days with exercises
+  // Fetch last 3 workout days with exercises (excluding today)
   const { data: workoutDays = [] } = useQuery({
     queryKey: ['workout-days', session?.user.id],
     queryFn: async () => {
       if (!session?.user.id) return [];
+
+      const today = startOfDay(new Date());
 
       // Get unique workout dates
       const { data: dates, error: datesError } = await supabase
@@ -104,7 +106,10 @@ export function QuickAddButton({ onSelectExercise }: QuickAddButtonProps) {
 
       if (datesError) throw datesError;
 
-      const uniqueDates = [...new Set(dates?.map(d => d.workout_date) || [])].slice(0, 3);
+      // Filter out today's date and get the last 3 previous workout days
+      const uniqueDates = [...new Set(dates?.map(d => d.workout_date) || [])]
+        .filter(dateStr => !isSameDay(parseISO(dateStr), today))
+        .slice(0, 3);
 
       if (uniqueDates.length === 0) return [];
 
