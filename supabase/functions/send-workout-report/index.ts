@@ -1,13 +1,13 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
 serve(async (req) => {
@@ -17,19 +17,78 @@ serve(async (req) => {
   }
 
   try {
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing Supabase environment variables')
+    // VERIFY AUTHENTICATION
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.error('Missing or invalid authorization header')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { 
+          status: 401, 
+          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        }
+      )
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
-    const { workoutLogs, userEmail } = await req.json()
+    // Create client with user's auth token to verify identity
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    })
+
+    // Verify JWT and get user claims
+    const token = authHeader.replace('Bearer ', '')
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token)
     
-    if (!workoutLogs || !Array.isArray(workoutLogs)) {
-      throw new Error('Invalid workout logs data')
+    if (claimsError || !claimsData?.claims) {
+      console.error('Failed to verify JWT:', claimsError)
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { 
+          status: 401, 
+          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        }
+      )
     }
+
+    const userId = claimsData.claims.sub as string
+    const userEmail = claimsData.claims.email as string
 
     if (!userEmail) {
-      throw new Error('User email is required')
+      console.error('User email not found in claims')
+      return new Response(
+        JSON.stringify({ error: 'User email not found' }),
+        { 
+          status: 400, 
+          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        }
+      )
+    }
+
+    // Use service role client to fetch data server-side
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey)
+
+    // FETCH DATA SERVER-SIDE instead of accepting from client
+    const { data: workoutLogs, error: logsError } = await supabase
+      .from('workout_logs')
+      .select(`
+        *,
+        exercises (name)
+      `)
+      .eq('user_id', userId)
+      .order('workout_date', { ascending: false })
+    
+    if (logsError) {
+      console.error('Error fetching workout logs:', logsError)
+      throw new Error('Failed to fetch workout logs')
+    }
+
+    if (!workoutLogs || workoutLogs.length === 0) {
+      return new Response(
+        JSON.stringify({ message: 'No workout data to report' }),
+        { 
+          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+        }
+      )
     }
 
     // Calculate workout stats
@@ -100,7 +159,7 @@ serve(async (req) => {
       throw error
     }
 
-    console.log("Email sent successfully via Supabase SMTP")
+    console.log("Email sent successfully to authenticated user")
 
     return new Response(
       JSON.stringify({ message: 'Workout report sent successfully!' }),
@@ -111,10 +170,11 @@ serve(async (req) => {
         } 
       }
     )
-  } catch (error: any) {
-    console.error('Error sending workout report:', error)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Error sending workout report:', errorMessage)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { 
         status: 400, 
         headers: { 
@@ -126,11 +186,19 @@ serve(async (req) => {
   }
 })
 
-function calculateStrengthProgress(workoutLogs: any[]) {
+interface WorkoutLog {
+  workout_date: string;
+  weight_kg: number | null;
+  reps: number | null;
+  custom_exercise: string | null;
+  exercises: { name: string } | null;
+}
+
+function calculateStrengthProgress(workoutLogs: WorkoutLog[]) {
   const now = new Date()
   const fourWeeksAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000)
   
-  const exerciseGroups = workoutLogs.reduce((groups: any, log: any) => {
+  const exerciseGroups = workoutLogs.reduce((groups: Record<string, WorkoutLog[]>, log: WorkoutLog) => {
     const exerciseName = log.custom_exercise || log.exercises?.name
     if (!exerciseName || !log.weight_kg) return groups
     
@@ -143,7 +211,7 @@ function calculateStrengthProgress(workoutLogs: any[]) {
 
   const progressInsights: string[] = []
 
-  Object.entries(exerciseGroups).forEach(([exercise, logs]: [string, any[]]) => {
+  Object.entries(exerciseGroups).forEach(([exercise, logs]) => {
     const recentLogs = logs.filter(log => new Date(log.workout_date) >= fourWeeksAgo)
     if (recentLogs.length < 2) return
 
@@ -168,8 +236,8 @@ function calculateStrengthProgress(workoutLogs: any[]) {
   return progressInsights.length > 0 ? progressInsights : ['Start logging more workouts to track your strength progress!']
 }
 
-function calculateWeightProgressions(workoutLogs: any[]) {
-  const exerciseGroups = workoutLogs.reduce((groups: any, log: any) => {
+function calculateWeightProgressions(workoutLogs: WorkoutLog[]) {
+  const exerciseGroups = workoutLogs.reduce((groups: Record<string, WorkoutLog[]>, log: WorkoutLog) => {
     const exerciseName = log.custom_exercise || log.exercises?.name
     if (!exerciseName || !log.weight_kg) return groups
     
@@ -182,9 +250,9 @@ function calculateWeightProgressions(workoutLogs: any[]) {
 
   const weightInsights: string[] = []
 
-  Object.entries(exerciseGroups).forEach(([exercise, logs]: [string, any[]]) => {
+  Object.entries(exerciseGroups).forEach(([exercise, logs]) => {
     // Sort logs by date (oldest first)
-    const sortedLogs = logs.sort((a: any, b: any) => 
+    const sortedLogs = logs.sort((a, b) => 
       new Date(a.workout_date).getTime() - new Date(b.workout_date).getTime()
     )
     
