@@ -56,32 +56,10 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
     return `${volume} kg`;
   };
 
-  const getPRsThisWeek = () => {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
-    const recentLogs = logs.filter(log => new Date(log.workout_date) >= oneWeekAgo);
-    const historicalLogs = logs.filter(log => new Date(log.workout_date) < oneWeekAgo);
-    
-    let prCount = 0;
-    
-    recentLogs.forEach(recentLog => {
-      const exerciseName = recentLog.custom_exercise || recentLog.exercises?.name;
-      if (!exerciseName || !recentLog.weight_kg) return;
-      
-      const previousMax = Math.max(
-        0,
-        ...historicalLogs
-          .filter(log => (log.custom_exercise || log.exercises?.name) === exerciseName)
-          .map(log => log.weight_kg || 0)
-      );
-      
-      if (recentLog.weight_kg > previousMax && previousMax > 0) {
-        prCount++;
-      }
-    });
-    
-    return prCount;
+  const getBestLift = () => {
+    const maxWeight = Math.max(0, ...logs.map(log => log.weight_kg || 0));
+    if (maxWeight === 0) return "—";
+    return `${maxWeight}kg`;
   };
 
   const getAvgSetsPerDay = () => {
@@ -142,8 +120,8 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
 
         <InsightCard
           icon={<Trophy className="h-3.5 w-3.5 text-white" />}
-          label="PRs This Week"
-          value={getPRsThisWeek()}
+          label="Best Lift"
+          value={getBestLift()}
           gradient="from-orange-500 to-red-600"
         />
 
