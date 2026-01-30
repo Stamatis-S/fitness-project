@@ -56,10 +56,29 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
     return `${volume} kg`;
   };
 
-  const getBestLift = () => {
-    const maxWeight = Math.max(0, ...logs.map(log => log.weight_kg || 0));
-    if (maxWeight === 0) return "—";
-    return `${maxWeight}kg`;
+  const getLongestStreak = () => {
+    if (logs.length === 0) return 0;
+    
+    const uniqueDates = [...new Set(logs.map(log => log.workout_date))].sort();
+    if (uniqueDates.length === 0) return 0;
+    
+    let longestStreak = 1;
+    let currentStreak = 1;
+    
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const prevDate = new Date(uniqueDates[i - 1]);
+      const currDate = new Date(uniqueDates[i]);
+      const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) {
+        currentStreak++;
+        longestStreak = Math.max(longestStreak, currentStreak);
+      } else {
+        currentStreak = 1;
+      }
+    }
+    
+    return longestStreak;
   };
 
   const getAvgSetsPerDay = () => {
@@ -120,8 +139,8 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
 
         <InsightCard
           icon={<Trophy className="h-3.5 w-3.5 text-white" />}
-          label="Best Lift"
-          value={getBestLift()}
+          label="Longest Streak"
+          value={`${getLongestStreak()} days`}
           gradient="from-orange-500 to-red-600"
         />
 
