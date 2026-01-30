@@ -56,29 +56,17 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
     return `${volume} kg`;
   };
 
-  const getLongestStreak = () => {
-    if (logs.length === 0) return 0;
+  const getWeeklyVolume = () => {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     
-    const uniqueDates = [...new Set(logs.map(log => log.workout_date))].sort();
-    if (uniqueDates.length === 0) return 0;
+    const weeklyVolume = logs
+      .filter(log => new Date(log.workout_date) >= oneWeekAgo)
+      .reduce((acc, log) => acc + ((log.weight_kg || 0) * (log.reps || 0)), 0);
     
-    let longestStreak = 1;
-    let currentStreak = 1;
-    
-    for (let i = 1; i < uniqueDates.length; i++) {
-      const prevDate = new Date(uniqueDates[i - 1]);
-      const currDate = new Date(uniqueDates[i]);
-      const diffDays = Math.round((currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (diffDays === 1) {
-        currentStreak++;
-        longestStreak = Math.max(longestStreak, currentStreak);
-      } else {
-        currentStreak = 1;
-      }
-    }
-    
-    return longestStreak;
+    if (weeklyVolume >= 1000000) return `${(weeklyVolume / 1000000).toFixed(1)}M kg`;
+    if (weeklyVolume >= 1000) return `${(weeklyVolume / 1000).toFixed(1)}K kg`;
+    return `${weeklyVolume} kg`;
   };
 
   const getAvgSetsPerDay = () => {
@@ -139,8 +127,8 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
 
         <InsightCard
           icon={<Trophy className="h-3.5 w-3.5 text-white" />}
-          label="Longest Streak"
-          value={`${getLongestStreak()} days`}
+          label="This Week"
+          value={getWeeklyVolume()}
           gradient="from-orange-500 to-red-600"
         />
 
