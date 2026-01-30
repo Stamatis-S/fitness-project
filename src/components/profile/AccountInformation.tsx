@@ -214,7 +214,6 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
                   size="sm"
                   onClick={() => {
                     vibrate('light');
-                    console.log('Update button clicked', { passwordForm });
                     handlePasswordChange();
                   }}
                   disabled={!passwordForm.currentPassword || 
