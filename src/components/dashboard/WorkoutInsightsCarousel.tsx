@@ -25,9 +25,9 @@ function InsightCard({ icon, label, value, gradient, subValue }: InsightCardProp
         </div>
         <div className="min-w-0 flex-1 overflow-hidden">
           <p className="text-[8px] sm:text-[9px] text-white/70 font-medium truncate">{label}</p>
-          <p className="text-xs sm:text-sm font-bold text-white leading-tight line-clamp-1">{value}</p>
+          <p className="text-[10px] sm:text-sm font-bold text-white leading-tight line-clamp-2">{value}</p>
           {subValue && (
-            <p className="text-[7px] sm:text-[8px] text-white/60 leading-tight line-clamp-1">{subValue}</p>
+            <p className="text-[7px] sm:text-[8px] text-white/60 leading-tight truncate">{subValue}</p>
           )}
         </div>
       </div>
@@ -173,7 +173,7 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
         <InsightCard
           icon={<Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Most Used"
-          value={mostUsed.name.length > 12 ? mostUsed.name.substring(0, 12) + '…' : mostUsed.name}
+          value={mostUsed.name}
           gradient="from-cyan-500 to-teal-600"
           subValue={`${mostUsed.sets} sets`}
         />
@@ -183,7 +183,7 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
           label="Max Weight"
           value={maxWeight.weight > 0 ? `${maxWeight.weight} kg` : "—"}
           gradient="from-rose-500 to-pink-600"
-          subValue={maxWeight.name.length > 12 ? maxWeight.name.substring(0, 12) + '…' : maxWeight.name}
+          subValue={maxWeight.name}
         />
 
         <InsightCard
