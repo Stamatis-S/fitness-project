@@ -18,16 +18,16 @@ interface InsightCardProps {
 
 function InsightCard({ icon, label, value, gradient, subValue }: InsightCardProps) {
   return (
-    <Card className={`p-2.5 bg-gradient-to-br ${gradient} border-0`}>
-      <div className="flex items-center gap-2">
-        <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+    <Card className={`p-2 sm:p-2.5 bg-gradient-to-br ${gradient} border-0`}>
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
           {icon}
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[9px] text-white/70 font-medium truncate">{label}</p>
-          <p className="text-sm font-bold text-white truncate">{value}</p>
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <p className="text-[8px] sm:text-[9px] text-white/70 font-medium truncate">{label}</p>
+          <p className="text-xs sm:text-sm font-bold text-white leading-tight line-clamp-1">{value}</p>
           {subValue && (
-            <p className="text-[8px] text-white/60 truncate">{subValue}</p>
+            <p className="text-[7px] sm:text-[8px] text-white/60 leading-tight line-clamp-1">{subValue}</p>
           )}
         </div>
       </div>
@@ -141,60 +141,60 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
       />
 
       {/* 4x2 Grid of insight cards */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
         <InsightCard
-          icon={<Award className="h-3.5 w-3.5 text-white" />}
+          icon={<Award className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Total Workouts"
           value={uniqueWorkouts}
           gradient="from-yellow-500 to-amber-600"
         />
         
         <InsightCard
-          icon={<Activity className="h-3.5 w-3.5 text-white" />}
+          icon={<Activity className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Most Trained"
           value={getMostTrainedCategory()}
           gradient="from-green-500 to-emerald-600"
         />
 
         <InsightCard
-          icon={<TrendingUp className="h-3.5 w-3.5 text-white" />}
+          icon={<TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Total Volume"
           value={getTotalVolume()}
           gradient="from-purple-500 to-violet-600"
         />
 
         <InsightCard
-          icon={<Trophy className="h-3.5 w-3.5 text-white" />}
+          icon={<Trophy className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="This Week"
           value={getWeeklyVolume()}
           gradient="from-orange-500 to-red-600"
         />
 
         <InsightCard
-          icon={<Target className="h-3.5 w-3.5 text-white" />}
+          icon={<Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Most Used"
-          value={mostUsed.name.length > 15 ? mostUsed.name.substring(0, 15) + '...' : mostUsed.name}
+          value={mostUsed.name.length > 12 ? mostUsed.name.substring(0, 12) + '…' : mostUsed.name}
           gradient="from-cyan-500 to-teal-600"
           subValue={`${mostUsed.sets} sets`}
         />
 
         <InsightCard
-          icon={<Dumbbell className="h-3.5 w-3.5 text-white" />}
+          icon={<Dumbbell className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Max Weight"
           value={maxWeight.weight > 0 ? `${maxWeight.weight} kg` : "—"}
           gradient="from-rose-500 to-pink-600"
-          subValue={maxWeight.name.length > 15 ? maxWeight.name.substring(0, 15) + '...' : maxWeight.name}
+          subValue={maxWeight.name.length > 12 ? maxWeight.name.substring(0, 12) + '…' : maxWeight.name}
         />
 
         <InsightCard
-          icon={<Dumbbell className="h-3.5 w-3.5 text-white" />}
+          icon={<Dumbbell className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Avg Sets/Day"
           value={getAvgSetsPerDay()}
           gradient="from-blue-500 to-cyan-600"
         />
 
         <InsightCard
-          icon={<Calendar className="h-3.5 w-3.5 text-white" />}
+          icon={<Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="This Month"
           value={`${getActiveDaysThisMonth()} days`}
           gradient="from-pink-500 to-rose-600"
