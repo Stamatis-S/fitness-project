@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
-import { Activity, Award, TrendingUp, Dumbbell, Calendar, Trophy } from "lucide-react";
+import { Activity, Award, TrendingUp, Dumbbell, Calendar, Trophy, Target } from "lucide-react";
 import { WorkoutCycleCard } from "./WorkoutCycleCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -13,9 +13,10 @@ interface InsightCardProps {
   label: string;
   value: string | number;
   gradient: string;
+  subValue?: string;
 }
 
-function InsightCard({ icon, label, value, gradient }: InsightCardProps) {
+function InsightCard({ icon, label, value, gradient, subValue }: InsightCardProps) {
   return (
     <Card className={`p-2.5 bg-gradient-to-br ${gradient} border-0`}>
       <div className="flex items-center gap-2">
@@ -25,6 +26,9 @@ function InsightCard({ icon, label, value, gradient }: InsightCardProps) {
         <div className="min-w-0 flex-1">
           <p className="text-[9px] text-white/70 font-medium truncate">{label}</p>
           <p className="text-sm font-bold text-white truncate">{value}</p>
+          {subValue && (
+            <p className="text-[8px] text-white/60 truncate">{subValue}</p>
+          )}
         </div>
       </div>
     </Card>
@@ -89,9 +93,43 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
     return thisMonthDates.size;
   };
 
+  // Calculate most used exercise
+  const getMostUsedExercise = () => {
+    const exerciseCounts: Record<string, number> = {};
+    
+    logs.forEach(log => {
+      const name = log.custom_exercise || log.exercises?.name;
+      if (name) {
+        exerciseCounts[name] = (exerciseCounts[name] || 0) + 1;
+      }
+    });
+    
+    const entries = Object.entries(exerciseCounts);
+    if (entries.length === 0) return { name: "—", sets: 0 };
+    
+    const [name, sets] = entries.reduce((a, b) => (a[1] > b[1] ? a : b));
+    return { name, sets };
+  };
+
+  // Calculate max weight exercise
+  const getMaxWeightExercise = () => {
+    let maxExercise = { name: "—", weight: 0 };
+    
+    logs.forEach(log => {
+      const name = log.custom_exercise || log.exercises?.name;
+      if (name && log.weight_kg && log.weight_kg > maxExercise.weight) {
+        maxExercise = { name, weight: log.weight_kg };
+      }
+    });
+    
+    return maxExercise;
+  };
+
   const uniqueWorkouts = new Set(logs.map(log => log.workout_date)).size;
   const workoutDates = [...new Set(logs.map(log => log.workout_date))];
   const lastWorkoutDate = workoutDates.length > 0 ? workoutDates[0] : null;
+  const mostUsed = getMostUsedExercise();
+  const maxWeight = getMaxWeightExercise();
 
   return (
     <div className="space-y-3">
@@ -102,8 +140,8 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
         compact={isMobile}
       />
 
-      {/* 3x2 Grid of insight cards */}
-      <div className="grid grid-cols-3 gap-2">
+      {/* 4x2 Grid of insight cards */}
+      <div className="grid grid-cols-2 gap-2">
         <InsightCard
           icon={<Award className="h-3.5 w-3.5 text-white" />}
           label="Total Workouts"
@@ -130,6 +168,22 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
           label="This Week"
           value={getWeeklyVolume()}
           gradient="from-orange-500 to-red-600"
+        />
+
+        <InsightCard
+          icon={<Target className="h-3.5 w-3.5 text-white" />}
+          label="Most Used"
+          value={mostUsed.name.length > 15 ? mostUsed.name.substring(0, 15) + '...' : mostUsed.name}
+          gradient="from-cyan-500 to-teal-600"
+          subValue={`${mostUsed.sets} sets`}
+        />
+
+        <InsightCard
+          icon={<Dumbbell className="h-3.5 w-3.5 text-white" />}
+          label="Max Weight"
+          value={maxWeight.weight > 0 ? `${maxWeight.weight} kg` : "—"}
+          gradient="from-rose-500 to-pink-600"
+          subValue={maxWeight.name.length > 15 ? maxWeight.name.substring(0, 15) + '...' : maxWeight.name}
         />
 
         <InsightCard
