@@ -129,8 +129,10 @@ export function ExerciseEntryForm({
       session?.user?.id || '',
       setIsSubmitting,
       () => {
-        // Invalidate all workout-related queries
+        // Invalidate all workout-related queries including cycle
         queryClient.invalidateQueries({ queryKey: ['workout_logs'] });
+        queryClient.invalidateQueries({ queryKey: ['workout_logs_all'] });
+        queryClient.invalidateQueries({ queryKey: ['workout_cycle'] });
       }
     );
     

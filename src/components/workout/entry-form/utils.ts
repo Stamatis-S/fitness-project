@@ -142,6 +142,9 @@ export async function saveExercise(
     if (invalidateQueries) {
       invalidateQueries();
     }
+    
+    // Also invalidate workout_cycle query to update the cycle progress
+    // This is done via a global invalidation pattern
 
     playFeedback('success');
     toast.success("Exercise logged successfully!");
