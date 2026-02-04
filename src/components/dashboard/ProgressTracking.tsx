@@ -52,15 +52,21 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
     return <Card className="p-4">Loading...</Card>;
   }
 
+  // Calculate exercise frequency and sort by most used
   const exerciseNames = useMemo(() => {
     try {
-      const names = new Set<string>();
+      const frequencyMap = new Map<string, number>();
       workoutLogs.forEach(log => {
         if (!log) return;
         const name = log.custom_exercise || (log.exercises && log.exercises.name);
-        if (name) names.add(name);
+        if (name) {
+          frequencyMap.set(name, (frequencyMap.get(name) || 0) + 1);
+        }
       });
-      return Array.from(names).sort();
+      // Sort by frequency (descending)
+      return Array.from(frequencyMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(([name]) => name);
     } catch (error) {
       console.error('Error processing exercise names:', error);
       return [];
@@ -173,7 +179,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
         
         {/* Exercise Pills */}
         <div 
-          className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto pb-1"
+          className="flex flex-wrap gap-2 max-h-[180px] overflow-y-auto pb-2"
           style={{ scrollbarWidth: 'thin' }}
         >
           {filteredExercises.length === 0 ? (
@@ -188,7 +194,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                   onClick={() => toggleExercise(name)}
                   whileTap={{ scale: 0.95 }}
                   className={`
-                    px-2.5 py-1.5 rounded-full text-xs font-medium transition-all
+                    px-3 py-2 rounded-full text-xs font-medium transition-all
                     ${isSelected 
                       ? 'text-white shadow-md' 
                       : 'bg-muted/50 text-muted-foreground hover:bg-muted'
