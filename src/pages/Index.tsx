@@ -17,6 +17,11 @@ import { QuickAddButton } from "@/components/QuickAddButton";
 import type { ExerciseCategory } from "@/lib/constants";
 
 
+interface SetData {
+  weight: number;
+  reps: number;
+}
+
 interface QuickExercise {
   exerciseName: string;
   category: ExerciseCategory;
@@ -25,6 +30,7 @@ interface QuickExercise {
   lastWeight: number;
   lastReps: number;
   lastDate: string;
+  sets?: SetData[];
 }
 
 const Index = () => {

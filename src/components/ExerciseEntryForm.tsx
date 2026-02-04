@@ -17,6 +17,11 @@ import { saveExercise } from "@/components/workout/entry-form/utils";
 import type { WorkoutTemplate } from "@/hooks/useWorkoutTemplates";
 import { toast } from "sonner";
 
+interface SetData {
+  weight: number;
+  reps: number;
+}
+
 interface QuickExercise {
   exerciseName: string;
   category: ExerciseCategory;
@@ -25,6 +30,7 @@ interface QuickExercise {
   lastWeight: number;
   lastReps: number;
   lastDate: string;
+  sets?: SetData[];
 }
 
 interface ExerciseEntryFormProps {
@@ -107,8 +113,12 @@ export function ExerciseEntryForm({
         methods.setValue("customExercise", quickExercise.customExercise!);
       }
       
-      // Pre-fill with last weight/reps
-      methods.setValue("sets", [{ weight: quickExercise.lastWeight, reps: quickExercise.lastReps }]);
+      // Pre-fill with all sets if available, otherwise use single set with last values
+      if (quickExercise.sets && quickExercise.sets.length > 0) {
+        methods.setValue("sets", quickExercise.sets);
+      } else {
+        methods.setValue("sets", [{ weight: quickExercise.lastWeight, reps: quickExercise.lastReps }]);
+      }
       
       // Go directly to sets step
       setStep('sets');
