@@ -10,6 +10,11 @@ import { format, parseISO, startOfDay, isSameDay } from "date-fns";
 import { el } from "date-fns/locale";
 import type { ExerciseCategory } from "@/lib/constants";
 
+interface SetData {
+  weight: number;
+  reps: number;
+}
+
 interface RecentExercise {
   exerciseName: string;
   category: ExerciseCategory;
@@ -18,6 +23,7 @@ interface RecentExercise {
   lastWeight: number;
   lastReps: number;
   lastDate: string;
+  sets?: SetData[]; // All sets from the workout
 }
 
 interface WorkoutDay {
@@ -133,37 +139,51 @@ export function QuickAddButton({ onSelectExercise }: QuickAddButtonProps) {
 
       if (error) throw error;
 
-      // Group by date and dedupe exercises per day
-      const dayMap = new Map<string, RecentExercise[]>();
+      // Group by date and collect all sets per exercise per day
+      const dayMap = new Map<string, Map<string, RecentExercise & { allSets: SetData[] }>>();
       
       for (const log of data || []) {
         const exerciseName = log.custom_exercise || log.exercises?.name;
         if (!exerciseName) continue;
 
         if (!dayMap.has(log.workout_date)) {
-          dayMap.set(log.workout_date, []);
+          dayMap.set(log.workout_date, new Map());
         }
 
         const dayExercises = dayMap.get(log.workout_date)!;
-        const exists = dayExercises.some(e => e.exerciseName === exerciseName);
         
-        if (!exists) {
-          dayExercises.push({
+        if (!dayExercises.has(exerciseName)) {
+          dayExercises.set(exerciseName, {
             exerciseName,
             category: log.category as ExerciseCategory,
             exercise_id: log.exercise_id,
             customExercise: log.custom_exercise,
             lastWeight: log.weight_kg || 0,
             lastReps: log.reps || 0,
-            lastDate: log.workout_date
+            lastDate: log.workout_date,
+            allSets: []
           });
         }
+
+        // Add this set to the exercise
+        const exercise = dayExercises.get(exerciseName)!;
+        exercise.allSets.push({
+          weight: log.weight_kg || 0,
+          reps: log.reps || 0
+        });
       }
 
       const days: WorkoutDay[] = [];
       for (const date of uniqueDates) {
-        const exercises = dayMap.get(date);
-        if (exercises && exercises.length > 0) {
+        const exerciseMap = dayMap.get(date);
+        if (exerciseMap && exerciseMap.size > 0) {
+          const exercises: RecentExercise[] = [];
+          exerciseMap.forEach((exercise) => {
+            exercises.push({
+              ...exercise,
+              sets: exercise.allSets
+            });
+          });
           days.push({ date, exercises });
         }
       }
@@ -323,10 +343,18 @@ export function QuickAddButton({ onSelectExercise }: QuickAddButtonProps) {
                         </div>
                         <div className="text-right flex-shrink-0 ml-2">
                           <p className="text-sm font-semibold text-foreground">
-                            {exercise.lastWeight}kg × {exercise.lastReps}
+                            {exercise.sets && exercise.sets.length > 1 
+                              ? `${exercise.sets.length} sets`
+                              : `${exercise.lastWeight}kg × ${exercise.lastReps}`
+                            }
                           </p>
                           <p className="text-[10px] text-muted-foreground">
-                            {activeTab === 'recent' ? 'Last used' : 'Tap to add'}
+                            {activeTab === 'recent' 
+                              ? 'Last used' 
+                              : exercise.sets && exercise.sets.length > 1 
+                                ? 'Tap to load all sets'
+                                : 'Tap to add'
+                            }
                           </p>
                         </div>
                       </motion.button>
