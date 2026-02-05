@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -16,20 +15,22 @@ import {
 import { format, parseISO } from "date-fns";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { CustomTooltip } from "./CustomTooltip";
-import { Input } from "@/components/ui/input";
-import { Search, TrendingUp, X } from "lucide-react";
+import { TrendingUp, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { CATEGORY_COLORS, type ExerciseCategory } from "@/lib/constants";
 
-const COLORS = [
-  "#8b5cf6", // violet
-  "#10b981", // emerald
-  "#f59e0b", // amber
-  "#ef4444", // red
-  "#3b82f6", // blue
-  "#ec4899", // pink
-  "#06b6d4", // cyan
-  "#84cc16", // lime
-];
+// Category display names for pills
+const CATEGORY_LABELS: Record<ExerciseCategory, string> = {
+  "ΣΤΗΘΟΣ": "Στήθος",
+  "ΠΛΑΤΗ": "Πλάτη",
+  "ΔΙΚΕΦΑΛΑ": "Δικέφαλα",
+  "ΤΡΙΚΕΦΑΛΑ": "Τρικέφαλα",
+  "ΩΜΟΙ": "Ώμοι",
+  "ΠΟΔΙΑ": "Πόδια",
+  "ΚΟΡΜΟΣ": "Κορμός",
+  "CARDIO": "Cardio",
+  "POWER SETS": "Power Sets",
+};
 
 interface ProgressTrackingProps {
   workoutLogs: WorkoutLog[];
@@ -37,50 +38,66 @@ interface ProgressTrackingProps {
 
 export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
   const { session } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  if (!session) {
-    navigate('/auth');
-    return null;
-  }
+  // Get available categories from workout logs
+  const availableCategories = useMemo(() => {
+    if (!Array.isArray(workoutLogs)) return [];
+    const categories = new Set<ExerciseCategory>();
+    workoutLogs.forEach(log => {
+      if (log?.category) {
+        categories.add(log.category as ExerciseCategory);
+      }
+    });
+    return Array.from(categories);
+  }, [workoutLogs]);
 
-  if (!Array.isArray(workoutLogs)) {
-    console.error('Invalid workoutLogs:', workoutLogs);
-    return <Card className="p-4">Loading...</Card>;
-  }
-
-  // Calculate exercise frequency and sort by most used
-  const exerciseNames = useMemo(() => {
+  // Calculate exercise frequency, category, and sort by most used
+  const exerciseData = useMemo(() => {
+    if (!Array.isArray(workoutLogs)) return [];
     try {
-      const frequencyMap = new Map<string, number>();
+      const dataMap = new Map<string, { count: number; category: ExerciseCategory }>();
       workoutLogs.forEach(log => {
         if (!log) return;
         const name = log.custom_exercise || (log.exercises && log.exercises.name);
         if (name) {
-          frequencyMap.set(name, (frequencyMap.get(name) || 0) + 1);
+          const existing = dataMap.get(name);
+          if (existing) {
+            existing.count++;
+          } else {
+            dataMap.set(name, { count: 1, category: log.category as ExerciseCategory });
+          }
         }
       });
       // Sort by frequency (descending)
-      return Array.from(frequencyMap.entries())
-        .sort((a, b) => b[1] - a[1])
-        .map(([name]) => name);
+      return Array.from(dataMap.entries())
+        .sort((a, b) => b[1].count - a[1].count)
+        .map(([name, data]) => ({ name, category: data.category }));
     } catch (error) {
-      console.error('Error processing exercise names:', error);
+      console.error('Error processing exercise data:', error);
       return [];
     }
   }, [workoutLogs]);
 
   const filteredExercises = useMemo(() => {
-    return searchTerm 
-      ? exerciseNames.filter(name => 
-          name.toLowerCase().includes(searchTerm.toLowerCase()))
-      : exerciseNames;
-  }, [exerciseNames, searchTerm]);
+    if (!selectedCategory) return exerciseData;
+    return exerciseData.filter(ex => ex.category === selectedCategory);
+  }, [exerciseData, selectedCategory]);
+
+  // Get category color for an exercise
+  const getExerciseColor = (exerciseName: string): string => {
+    const exercise = exerciseData.find(ex => ex.name === exerciseName);
+    if (exercise) {
+      return CATEGORY_COLORS[exercise.category] || "#8b5cf6";
+    }
+    return "#8b5cf6";
+  };
 
   const progressData = useMemo(() => {
+    if (!Array.isArray(workoutLogs)) return [];
     try {
       const dataMap = new Map<string, Map<string, { totalWeight: number; totalReps: number }>>();
       
@@ -123,9 +140,9 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
             };
             
             selectedExercises.forEach(exercise => {
-              const exerciseData = exerciseMap.get(exercise);
-              if (exerciseData && exerciseData.totalReps > 0) {
-                dataPoint[exercise] = Number((exerciseData.totalWeight / exerciseData.totalReps).toFixed(1));
+              const exData = exerciseMap.get(exercise);
+              if (exData && exData.totalReps > 0) {
+                dataPoint[exercise] = Number((exData.totalWeight / exData.totalReps).toFixed(1));
               } else {
                 dataPoint[exercise] = null;
               }
@@ -157,24 +174,58 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
     setSelectedExercises(prev => prev.filter(e => e !== name));
   };
 
+  const toggleCategory = (category: ExerciseCategory) => {
+    setSelectedCategory(prev => prev === category ? null : category);
+  };
+
   const getTickInterval = () => {
     if (progressData.length <= 6) return 0;
     if (progressData.length <= 12) return 1;
     return Math.floor(progressData.length / 6);
   };
 
+  // Early returns after all hooks
+  if (!session) {
+    navigate('/auth');
+    return null;
+  }
+
+  if (!Array.isArray(workoutLogs)) {
+    console.error('Invalid workoutLogs:', workoutLogs);
+    return <Card className="p-4">Loading...</Card>;
+  }
+
   return (
     <div className="space-y-3">
-      {/* Search & Exercise Selector */}
+      {/* Category Pills & Exercise Selector */}
       <Card className="p-3 bg-card/50 backdrop-blur border-border/50">
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Αναζήτηση άσκησης..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-10 bg-background/50 border-border/50"
-          />
+        {/* Category Filter Pills */}
+        <div className="flex flex-wrap gap-2 mb-3 pb-3 border-b border-border/30">
+          {availableCategories.map(category => {
+            const isSelected = selectedCategory === category;
+            const color = CATEGORY_COLORS[category];
+            return (
+              <motion.button
+                key={category}
+                onClick={() => toggleCategory(category)}
+                whileTap={{ scale: 0.95 }}
+                className={`
+                  px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+                  ${isSelected 
+                    ? 'text-white shadow-md scale-105' 
+                    : 'text-foreground/80'
+                  }
+                `}
+                style={{
+                  backgroundColor: isSelected ? color : `${color}30`,
+                  borderWidth: 2,
+                  borderColor: color,
+                }}
+              >
+                {CATEGORY_LABELS[category]}
+              </motion.button>
+            );
+          })}
         </div>
         
         {/* Exercise Pills */}
@@ -185,9 +236,9 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
           {filteredExercises.length === 0 ? (
             <p className="text-muted-foreground text-sm p-2">Δεν βρέθηκαν ασκήσεις</p>
           ) : (
-            filteredExercises.map(name => {
+            filteredExercises.map(({ name, category }) => {
               const isSelected = selectedExercises.includes(name);
-              const colorIndex = selectedExercises.indexOf(name);
+              const color = CATEGORY_COLORS[category];
               return (
                 <motion.button
                   key={name}
@@ -200,9 +251,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                       : 'bg-muted/50 text-muted-foreground hover:bg-muted'
                     }
                   `}
-                  style={isSelected ? { 
-                    backgroundColor: COLORS[colorIndex % COLORS.length],
-                  } : undefined}
+                  style={isSelected ? { backgroundColor: color } : undefined}
                 >
                   {name.length > 18 ? name.substring(0, 18) + '…' : name}
                 </motion.button>
@@ -221,24 +270,27 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
             exit={{ opacity: 0, height: 0 }}
             className="flex flex-wrap gap-2"
           >
-            {selectedExercises.map((exercise, index) => (
-              <motion.span
-                key={exercise}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-white"
-                style={{ backgroundColor: COLORS[index % COLORS.length] }}
-              >
-                <span className="max-w-[100px] truncate">{exercise}</span>
-                <button 
-                  onClick={() => removeExercise(exercise)}
-                  className="p-0.5 hover:bg-white/20 rounded-full transition-colors"
+            {selectedExercises.map((exercise) => {
+              const color = getExerciseColor(exercise);
+              return (
+                <motion.span
+                  key={exercise}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-white"
+                  style={{ backgroundColor: color }}
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              </motion.span>
-            ))}
+                  <span className="max-w-[100px] truncate">{exercise}</span>
+                  <button 
+                    onClick={() => removeExercise(exercise)}
+                    className="p-0.5 hover:bg-white/20 rounded-full transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </motion.span>
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
@@ -255,18 +307,6 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                   : { top: 15, right: 20, left: 0, bottom: 5 }
                 }
               >
-                <defs>
-                  {selectedExercises.map((_, index) => (
-                    <linearGradient 
-                      key={`gradient-${index}`} 
-                      id={`lineGradient-${index}`} 
-                      x1="0" y1="0" x2="1" y2="0"
-                    >
-                      <stop offset="0%" stopColor={COLORS[index % COLORS.length]} stopOpacity={0.8} />
-                      <stop offset="100%" stopColor={COLORS[index % COLORS.length]} stopOpacity={1} />
-                    </linearGradient>
-                  ))}
-                </defs>
                 <CartesianGrid 
                   strokeDasharray="3 3" 
                   stroke="hsl(var(--border))" 
@@ -293,28 +333,31 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
                   content={<CustomTooltip />}
                   cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '4 4' }}
                 />
-                {selectedExercises.map((exercise, index) => (
-                  <Line
-                    key={exercise}
-                    type="monotone"
-                    dataKey={exercise}
-                    stroke={COLORS[index % COLORS.length]}
-                    dot={{ 
-                      r: isMobile ? 3 : 4, 
-                      strokeWidth: 2,
-                      fill: 'hsl(var(--background))',
-                      stroke: COLORS[index % COLORS.length]
-                    }}
-                    activeDot={{ 
-                      r: isMobile ? 5 : 7, 
-                      strokeWidth: 2,
-                      fill: COLORS[index % COLORS.length],
-                      stroke: 'hsl(var(--background))'
-                    }}
-                    connectNulls
-                    strokeWidth={isMobile ? 2 : 2.5}
-                  />
-                ))}
+                {selectedExercises.map((exercise) => {
+                  const color = getExerciseColor(exercise);
+                  return (
+                    <Line
+                      key={exercise}
+                      type="monotone"
+                      dataKey={exercise}
+                      stroke={color}
+                      dot={{ 
+                        r: isMobile ? 3 : 4, 
+                        strokeWidth: 2,
+                        fill: 'hsl(var(--background))',
+                        stroke: color
+                      }}
+                      activeDot={{ 
+                        r: isMobile ? 5 : 7, 
+                        strokeWidth: 2,
+                        fill: color,
+                        stroke: 'hsl(var(--background))'
+                      }}
+                      connectNulls
+                      strokeWidth={isMobile ? 2 : 2.5}
+                    />
+                  );
+                })}
               </LineChart>
             </ResponsiveContainer>
           ) : (
