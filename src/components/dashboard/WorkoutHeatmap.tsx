@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { WorkoutLog } from '@/components/saved-exercises/types';
+import { calculateWorkoutStreak } from '@/lib/streakCalculation';
 import { Flame } from 'lucide-react';
 
 interface WorkoutHeatmapProps {
@@ -94,18 +95,9 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
     const periodDays = Math.min(totalDays, Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
     const consistency = periodDays > 0 ? Math.round((activeDays / periodDays) * 100) : 0;
 
-    // Current streak
-    let streak = 0;
-    const checkDate = new Date(today);
-    for (let i = 0; i < 365; i++) {
-      const dateStr = checkDate.toISOString().split('T')[0];
-      if (dateMap.has(dateStr)) {
-        streak++;
-      } else if (i > 0) {
-        break;
-      }
-      checkDate.setDate(checkDate.getDate() - 1);
-    }
+    // Current streak using shared utility (4-day tolerance)
+    const allDates = [...dateMap.keys()];
+    const streak = calculateWorkoutStreak(allDates);
 
     return {
       grid,
