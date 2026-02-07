@@ -9,6 +9,8 @@ import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { ProgressTracking } from "@/components/dashboard/ProgressTracking";
 import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics";
 import { AchievementBadges } from "@/components/dashboard/AchievementBadges";
+import { XPLevelCard } from "@/components/dashboard/XPLevelCard";
+import { WorkoutHeatmap } from "@/components/dashboard/WorkoutHeatmap";
 import { PageTransition } from "@/components/PageTransition";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -226,6 +228,12 @@ export default function Dashboard() {
                   <TabsContent value="overview" className="m-0 space-y-4">
                     {(allWorkoutLogs || workoutLogs) && (
                       <>
+                        <DataErrorBoundary>
+                          <XPLevelCard workoutLogs={allWorkoutLogs || workoutLogs || []} />
+                        </DataErrorBoundary>
+                        <DataErrorBoundary>
+                          <WorkoutHeatmap workoutLogs={allWorkoutLogs || workoutLogs || []} />
+                        </DataErrorBoundary>
                         <DataErrorBoundary>
                           <WorkoutInsightsCarousel logs={allWorkoutLogs || workoutLogs || []} />
                         </DataErrorBoundary>
