@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { WorkoutLog } from '@/components/saved-exercises/types';
+import { calculateWorkoutStreak } from '@/lib/streakCalculation';
 
 export interface Achievement {
   id: string;
@@ -23,24 +24,8 @@ export function useAchievements(workoutLogs: WorkoutLog[]) {
     const totalWorkouts = uniqueDates.size;
     const totalSets = workoutLogs.length;
 
-    // Calculate streak
-    const sortedDates = Array.from(uniqueDates).sort().reverse();
-    let currentStreak = 0;
-    const today = new Date().toISOString().split('T')[0];
-    
-    for (let i = 0; i < sortedDates.length; i++) {
-      const date = new Date(sortedDates[i]);
-      const expectedDate = new Date();
-      expectedDate.setDate(expectedDate.getDate() - i);
-      
-      if (date.toISOString().split('T')[0] === expectedDate.toISOString().split('T')[0]) {
-        currentStreak++;
-      } else if (i === 0 && date.toISOString().split('T')[0] === new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0]) {
-        currentStreak++;
-      } else {
-        break;
-      }
-    }
+    // Calculate streak using shared utility (4-day tolerance)
+    const currentStreak = calculateWorkoutStreak(workoutLogs.map(log => log.workout_date));
 
     return [
       {

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { WorkoutLog } from '@/components/saved-exercises/types';
+import { calculateWorkoutStreak } from '@/lib/streakCalculation';
 
 export interface XPLevel {
   level: number;
@@ -60,37 +61,7 @@ function getNextLevel(currentLevel: XPLevel): XPLevel | null {
   return idx < XP_LEVELS.length - 1 ? XP_LEVELS[idx + 1] : null;
 }
 
-function calculateStreak(dates: string[]): number {
-  if (dates.length === 0) return 0;
-
-  const sorted = [...new Set(dates)].sort().reverse();
-  let streak = 0;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  for (let i = 0; i < sorted.length; i++) {
-    const expected = new Date(today);
-    expected.setDate(expected.getDate() - i);
-    const dateStr = expected.toISOString().split('T')[0];
-
-    if (sorted.includes(dateStr)) {
-      streak++;
-    } else if (i === 0) {
-      // Allow starting from yesterday
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
-      if (sorted[0] === yesterday.toISOString().split('T')[0]) {
-        streak++;
-      } else {
-        break;
-      }
-    } else {
-      break;
-    }
-  }
-
-  return streak;
-}
+// Streak calculation moved to @/lib/streakCalculation.ts
 
 function countPersonalRecords(logs: WorkoutLog[]): number {
   // Group by exercise, track max weight over time
@@ -144,7 +115,7 @@ export function useXPSystem(workoutLogs: WorkoutLog[]): XPSystemResult {
     const uniqueDates = [...new Set(workoutLogs.map(l => l.workout_date))];
     const totalWorkoutDays = uniqueDates.length;
     const prCount = countPersonalRecords(workoutLogs);
-    const streak = calculateStreak(workoutLogs.map(l => l.workout_date));
+    const streak = calculateWorkoutStreak(workoutLogs.map(l => l.workout_date));
     const heavyLifts = workoutLogs.filter(l => (l.weight_kg || 0) >= 100).length;
 
     const breakdown: XPBreakdown = {
