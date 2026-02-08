@@ -12,7 +12,7 @@ interface WorkoutHeatmapProps {
 
 const WEEKS_TO_SHOW = 16;
 const DAYS_IN_WEEK = 7;
-const DAY_LABELS_SHORT = ['M', '', 'W', '', 'F', '', 'S'];
+const DAY_LABELS_FULL = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 function getIntensityClass(sets: number): string {
   if (sets === 0) return 'bg-muted/30';
@@ -100,16 +100,16 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
     };
   }, [workoutLogs]);
 
-  const cellSize = isMobile ? 11 : 14;
-  const cellGap = 2;
+  const cellSize = isMobile ? 13 : 15;
+  const cellGap = isMobile ? 3 : 3;
 
   return (
-    <Card className={isMobile ? 'p-3.5' : 'p-5'}>
+    <Card className={isMobile ? 'p-4' : 'p-5'}>
       {/* Header with title and stat pills */}
-      <div className={`flex items-center justify-between ${isMobile ? 'mb-3' : 'mb-4'}`}>
+      <div className={`flex items-center justify-between ${isMobile ? 'mb-4' : 'mb-5'}`}>
         <div className="flex items-center gap-2">
-          <CalendarDays className={`text-primary ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
-          <h2 className={`font-semibold text-foreground ${isMobile ? 'text-sm' : 'text-base'}`}>
+          <CalendarDays className={`text-primary ${isMobile ? 'h-5 w-5' : 'h-5 w-5'}`} />
+          <h2 className={`font-semibold text-foreground ${isMobile ? 'text-base' : 'text-base'}`}>
             Activity
           </h2>
         </div>
@@ -127,15 +127,15 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
           <div
             className="flex relative"
             style={{
-              marginLeft: isMobile ? 18 : 26,
-              height: isMobile ? 14 : 16,
-              marginBottom: 4,
+              marginLeft: isMobile ? 32 : 38,
+              height: isMobile ? 16 : 18,
+              marginBottom: isMobile ? 6 : 8,
             }}
           >
             {monthLabels.map((m, i) => (
               <span
                 key={i}
-                className={`absolute text-muted-foreground font-medium ${isMobile ? 'text-[9px]' : 'text-[10px]'}`}
+                className={`absolute text-muted-foreground font-medium ${isMobile ? 'text-[10px]' : 'text-[11px]'}`}
                 style={{
                   left: m.weekIndex * (cellSize + cellGap),
                 }}
@@ -148,16 +148,16 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
           <div className="flex" style={{ gap: cellGap }}>
             {/* Day labels */}
             <div
-              className="flex flex-col justify-between shrink-0"
-              style={{ width: isMobile ? 14 : 22, gap: cellGap }}
+              className="flex flex-col shrink-0"
+              style={{ width: isMobile ? 28 : 34, gap: cellGap }}
             >
-              {DAY_LABELS_SHORT.map((label, i) => (
+              {DAY_LABELS_FULL.map((label, i) => (
                 <span
                   key={i}
-                  className={`text-muted-foreground leading-none ${isMobile ? 'text-[8px]' : 'text-[10px]'}`}
+                  className={`text-muted-foreground font-medium leading-none ${isMobile ? 'text-[9px]' : 'text-[10px]'}`}
                   style={{ height: cellSize, display: 'flex', alignItems: 'center' }}
                 >
-                  {label}
+                  {isMobile ? label.charAt(0) : label}
                 </span>
               ))}
             </div>
@@ -174,7 +174,7 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
                       delay: weekIdx * 0.008 + dayIdx * 0.003,
                       duration: 0.15,
                     }}
-                    className={`rounded-[3px] ${cell.sets < 0 ? 'opacity-0' : getIntensityClass(cell.sets)}`}
+                    className={`rounded-sm ${cell.sets < 0 ? 'opacity-0' : getIntensityClass(cell.sets)}`}
                     style={{ width: cellSize, height: cellSize }}
                     title={
                       cell.date
@@ -190,16 +190,16 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
       </div>
 
       {/* Legend */}
-      <div className={`flex items-center justify-end gap-1.5 ${isMobile ? 'mt-2.5' : 'mt-3'}`}>
-        <span className={`text-muted-foreground ${isMobile ? 'text-[9px]' : 'text-[10px]'}`}>Less</span>
+      <div className={`flex items-center justify-end gap-2 ${isMobile ? 'mt-3.5' : 'mt-4'}`}>
+        <span className={`text-muted-foreground font-medium ${isMobile ? 'text-[10px]' : 'text-[11px]'}`}>Less</span>
         {[0, 3, 8, 15, 20].map((sets) => (
           <div
             key={sets}
-            className={`rounded-[2px] ${getIntensityClass(sets)}`}
+            className={`rounded-sm ${getIntensityClass(sets)}`}
             style={{ width: cellSize - 2, height: cellSize - 2 }}
           />
         ))}
-        <span className={`text-muted-foreground ${isMobile ? 'text-[9px]' : 'text-[10px]'}`}>More</span>
+        <span className={`text-muted-foreground font-medium ${isMobile ? 'text-[10px]' : 'text-[11px]'}`}>More</span>
       </div>
     </Card>
   );
