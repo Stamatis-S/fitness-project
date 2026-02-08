@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { useXPSystem, XP_LEVELS } from '@/hooks/useXPSystem';
 import type { WorkoutLog } from '@/components/saved-exercises/types';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Zap, TrendingUp, ChevronRight } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 interface XPLevelCardProps {
@@ -18,63 +18,53 @@ export function XPLevelCard({ workoutLogs }: XPLevelCardProps) {
   return (
     <Card className="overflow-hidden border-0 relative">
       {/* Gradient background */}
-      <div 
-        className="absolute inset-0 opacity-20"
+      <div
+        className="absolute inset-0 opacity-15"
         style={{
-          background: `linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.3))`,
+          background: `linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.2))`,
         }}
       />
 
-      <div className={`relative ${isMobile ? 'p-3' : 'p-4'}`}>
-        {/* Level header */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <motion.span 
-              className={isMobile ? 'text-2xl' : 'text-3xl'}
-              animate={{ rotate: [0, -10, 10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-            >
-              {xp.currentLevel.icon}
-            </motion.span>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'}`}>
-                  {xp.currentLevel.title}
-                </span>
-                <span className={`font-semibold text-primary ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                  LVL {xp.currentLevel.level}
-                </span>
-              </div>
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <Zap className="h-3 w-3 text-primary" />
-                <span className={isMobile ? 'text-[11px]' : 'text-xs'}>
-                  {xp.totalXP.toLocaleString()} XP
-                </span>
-              </div>
-            </div>
-          </div>
+      <div className={`relative ${isMobile ? 'p-3.5' : 'p-5'}`}>
+        {/* Top row: Icon + Title + XP badge */}
+        <div className="flex items-center gap-3 mb-3">
+          <motion.div
+            className="flex items-center justify-center shrink-0 rounded-2xl bg-primary/10"
+            style={{ width: isMobile ? 48 : 56, height: isMobile ? 48 : 56 }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+          >
+            <span className={isMobile ? 'text-2xl' : 'text-3xl'}>{xp.currentLevel.icon}</span>
+          </motion.div>
 
-          {/* Next level preview */}
-          {xp.nextLevel && (
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <div className="text-right">
-                <p className={`font-medium text-foreground ${isMobile ? 'text-[11px]' : 'text-xs'}`}>
-                  Next: {xp.nextLevel.title}
-                </p>
-                <p className={isMobile ? 'text-[10px]' : 'text-[11px]'}>
-                  {xp.xpToNext.toLocaleString()} XP left
-                </p>
-              </div>
-              <span className={isMobile ? 'text-lg' : 'text-xl'} style={{ filter: 'grayscale(0.5) opacity(0.6)' }}>
-                {xp.nextLevel.icon}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className={`font-bold text-foreground ${isMobile ? 'text-base' : 'text-lg'}`}>
+                {xp.currentLevel.title}
+              </span>
+              <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                LVL {xp.currentLevel.level}
               </span>
             </div>
-          )}
+            <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              {xp.totalXP.toLocaleString()} XP earned
+            </span>
+          </div>
         </div>
 
-        {/* XP Progress bar */}
-        <div className="relative mb-2">
-          <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+        {/* Progress bar section */}
+        <div className="mb-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className={`font-medium text-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+              {Math.round(xp.progressToNext)}%
+            </span>
+            {xp.nextLevel && (
+              <span className={`text-muted-foreground ${isMobile ? 'text-[11px]' : 'text-xs'}`}>
+                {xp.xpToNext.toLocaleString()} XP to {xp.nextLevel.title} {xp.nextLevel.icon}
+              </span>
+            )}
+          </div>
+          <div className="h-3 rounded-full bg-muted/60 overflow-hidden">
             <motion.div
               className="h-full rounded-full"
               style={{
@@ -82,30 +72,34 @@ export function XPLevelCard({ workoutLogs }: XPLevelCardProps) {
               }}
               initial={{ width: 0 }}
               animate={{ width: `${xp.progressToNext}%` }}
-              transition={{ duration: 1, ease: 'easeOut' }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
             />
           </div>
-          <div className="flex justify-between mt-1">
-            <span className={`text-muted-foreground ${isMobile ? 'text-[10px]' : 'text-[11px]'}`}>
-              {Math.round(xp.progressToNext)}%
-            </span>
-            {xp.nextLevel && (
-              <span className={`text-muted-foreground ${isMobile ? 'text-[10px]' : 'text-[11px]'}`}>
-                {xp.nextLevel.minXP.toLocaleString()} XP
-              </span>
-            )}
-          </div>
+        </div>
+
+        {/* Level milestones */}
+        <div className="flex gap-1 mb-3">
+          {XP_LEVELS.map((level) => (
+            <div
+              key={level.level}
+              className={`flex-1 h-1.5 rounded-full transition-colors ${
+                xp.totalXP >= level.minXP ? 'bg-primary' : 'bg-muted/50'
+              }`}
+              title={`${level.title} (${level.minXP.toLocaleString()} XP)`}
+            />
+          ))}
         </div>
 
         {/* XP Breakdown toggle */}
         <button
           onClick={() => setShowBreakdown(!showBreakdown)}
-          className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors w-full"
+          className="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-muted/40 active:bg-muted/60 transition-colors touch-target"
         >
-          <TrendingUp className="h-3 w-3" />
-          <span className={isMobile ? 'text-[11px]' : 'text-xs'}>XP Breakdown</span>
-          <motion.div animate={{ rotate: showBreakdown ? 90 : 0 }}>
-            <ChevronRight className="h-3 w-3" />
+          <span className={`font-medium text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
+            XP Breakdown
+          </span>
+          <motion.div animate={{ rotate: showBreakdown ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           </motion.div>
         </button>
 
@@ -113,10 +107,10 @@ export function XPLevelCard({ workoutLogs }: XPLevelCardProps) {
         <motion.div
           initial={false}
           animate={{ height: showBreakdown ? 'auto' : 0, opacity: showBreakdown ? 1 : 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.25, ease: 'easeInOut' }}
           className="overflow-hidden"
         >
-          <div className={`grid grid-cols-2 ${isMobile ? 'gap-1.5 mt-2' : 'gap-2 mt-3'}`}>
+          <div className={`grid grid-cols-2 ${isMobile ? 'gap-2 mt-3' : 'gap-2.5 mt-3'}`}>
             <BreakdownItem label="Sets completed" xp={xp.breakdown.sets} icon="🎯" compact={isMobile} />
             <BreakdownItem label="Workout days" xp={xp.breakdown.workoutDays} icon="📅" compact={isMobile} />
             <BreakdownItem label="Personal records" xp={xp.breakdown.personalRecords} icon="🏆" compact={isMobile} />
@@ -124,21 +118,6 @@ export function XPLevelCard({ workoutLogs }: XPLevelCardProps) {
             <BreakdownItem label="Heavy lifts (100kg+)" xp={xp.breakdown.heavyLifts} icon="🦾" compact={isMobile} />
           </div>
         </motion.div>
-
-        {/* Level milestones (compact) */}
-        <div className={`flex gap-1 ${isMobile ? 'mt-2' : 'mt-3'}`}>
-          {XP_LEVELS.map((level) => (
-            <div
-              key={level.level}
-              className={`flex-1 h-1 rounded-full transition-colors ${
-                xp.totalXP >= level.minXP 
-                  ? 'bg-primary' 
-                  : 'bg-muted'
-              }`}
-              title={`${level.title} (${level.minXP.toLocaleString()} XP)`}
-            />
-          ))}
-        </div>
       </div>
     </Card>
   );
@@ -146,11 +125,11 @@ export function XPLevelCard({ workoutLogs }: XPLevelCardProps) {
 
 function BreakdownItem({ label, xp, icon, compact }: { label: string; xp: number; icon: string; compact: boolean }) {
   return (
-    <div className={`flex items-center gap-1.5 rounded-lg bg-muted/50 ${compact ? 'p-1.5' : 'p-2'}`}>
-      <span className={compact ? 'text-sm' : 'text-base'}>{icon}</span>
-      <div className="min-w-0">
-        <p className={`text-muted-foreground truncate ${compact ? 'text-[9px]' : 'text-[10px]'}`}>{label}</p>
-        <p className={`font-semibold text-primary ${compact ? 'text-[11px]' : 'text-xs'}`}>+{xp.toLocaleString()} XP</p>
+    <div className={`flex items-center gap-2 rounded-xl bg-muted/40 ${compact ? 'p-2.5' : 'p-3'}`}>
+      <span className={compact ? 'text-base' : 'text-lg'}>{icon}</span>
+      <div className="min-w-0 flex-1">
+        <p className={`text-muted-foreground truncate ${compact ? 'text-[10px]' : 'text-xs'}`}>{label}</p>
+        <p className={`font-bold text-primary ${compact ? 'text-xs' : 'text-sm'}`}>+{xp.toLocaleString()}</p>
       </div>
     </div>
   );
