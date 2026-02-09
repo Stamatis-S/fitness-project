@@ -133,12 +133,6 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
 
   return (
     <div className="space-y-3">
-      {/* Workout Cycle Card - Full Width */}
-      <WorkoutCycleCard 
-        lastWorkoutDate={lastWorkoutDate} 
-        workoutDates={workoutDates}
-        compact={isMobile}
-      />
 
       {/* 4x2 Grid of insight cards */}
       <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
