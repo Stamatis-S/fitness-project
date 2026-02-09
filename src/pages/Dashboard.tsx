@@ -229,9 +229,6 @@ export default function Dashboard() {
                     {(allWorkoutLogs || workoutLogs) && (
                       <>
                         <DataErrorBoundary>
-                          <XPLevelCard workoutLogs={allWorkoutLogs || workoutLogs || []} />
-                        </DataErrorBoundary>
-                        <DataErrorBoundary>
                           <WorkoutHeatmap workoutLogs={allWorkoutLogs || workoutLogs || []} />
                         </DataErrorBoundary>
                         <DataErrorBoundary>
