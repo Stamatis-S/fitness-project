@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { WorkoutInsightsCarousel } from "@/components/dashboard/WorkoutInsightsCarousel";
+import { WorkoutCycleCard } from "@/components/dashboard/WorkoutCycleCard";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { ProgressTracking } from "@/components/dashboard/ProgressTracking";
 import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics";
@@ -228,6 +229,16 @@ export default function Dashboard() {
                   <TabsContent value="overview" className="m-0 space-y-4">
                     {(allWorkoutLogs || workoutLogs) && (
                       <>
+                        <DataErrorBoundary>
+                          <WorkoutCycleCard
+                            lastWorkoutDate={(() => {
+                              const dates = [...new Set((allWorkoutLogs || workoutLogs || []).map(l => l.workout_date))];
+                              return dates.length > 0 ? dates.sort().reverse()[0] : null;
+                            })()}
+                            workoutDates={[...new Set((allWorkoutLogs || workoutLogs || []).map(l => l.workout_date))]}
+                            compact={isMobile}
+                          />
+                        </DataErrorBoundary>
                         <DataErrorBoundary>
                           <WorkoutHeatmap workoutLogs={allWorkoutLogs || workoutLogs || []} />
                         </DataErrorBoundary>
