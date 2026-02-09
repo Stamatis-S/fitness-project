@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { WorkoutLog } from '@/components/saved-exercises/types';
 import { calculateWorkoutStreak } from '@/lib/streakCalculation';
-import { XPLevelCard } from './XPLevelCard';
 import { Flame, CalendarDays, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
 
 interface WorkoutHeatmapProps {
@@ -96,10 +95,6 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
 
   return (
     <Card className={isMobile ? 'p-4' : 'p-5'}>
-      {/* Inline XP bar */}
-      <div className="mb-4 pb-3.5 border-b border-border/40">
-        <XPLevelCard workoutLogs={workoutLogs} />
-      </div>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
