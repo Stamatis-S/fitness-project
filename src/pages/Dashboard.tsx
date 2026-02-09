@@ -9,7 +9,7 @@ import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { ProgressTracking } from "@/components/dashboard/ProgressTracking";
 import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics";
 import { AchievementBadges } from "@/components/dashboard/AchievementBadges";
-import { XPLevelCard } from "@/components/dashboard/XPLevelCard";
+
 import { WorkoutHeatmap } from "@/components/dashboard/WorkoutHeatmap";
 import { PageTransition } from "@/components/PageTransition";
 import { PullToRefresh } from "@/components/PullToRefresh";
