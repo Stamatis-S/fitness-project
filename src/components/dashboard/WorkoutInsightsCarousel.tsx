@@ -1,7 +1,6 @@
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
-import { Activity, Award, TrendingUp, Dumbbell, Calendar, Trophy, Target } from "lucide-react";
-import { WorkoutCycleCard } from "./WorkoutCycleCard";
+import { Activity, Award, TrendingUp, Dumbbell, Flame, Trophy, Target } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WorkoutInsightsCarouselProps {
@@ -80,17 +79,27 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
     return avg.toFixed(1);
   };
 
-  const getActiveDaysThisMonth = () => {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
-    const thisMonthDates = new Set(
-      logs
-        .filter(log => new Date(log.workout_date) >= startOfMonth)
-        .map(log => log.workout_date)
-    );
-    
-    return thisMonthDates.size;
+  const getBestStreak = () => {
+    const uniqueDates = [...new Set(logs.map(l => l.workout_date))].sort();
+    if (uniqueDates.length === 0) return 0;
+
+    let bestStreak = 1;
+    let currentStreak = 1;
+
+    for (let i = 1; i < uniqueDates.length; i++) {
+      const prev = new Date(uniqueDates[i - 1] + 'T00:00:00');
+      const curr = new Date(uniqueDates[i] + 'T00:00:00');
+      const gapDays = Math.floor((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (gapDays <= 4) {
+        currentStreak++;
+      } else {
+        currentStreak = 1;
+      }
+      if (currentStreak > bestStreak) bestStreak = currentStreak;
+    }
+
+    return bestStreak;
   };
 
   // Calculate most used exercise
@@ -188,9 +197,9 @@ export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) 
         />
 
         <InsightCard
-          icon={<Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
-          label="This Month"
-          value={`${getActiveDaysThisMonth()} days`}
+          icon={<Flame className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
+          label="Best Streak"
+          value={`${getBestStreak()} days`}
           gradient="from-pink-500 to-rose-600"
         />
       </div>
