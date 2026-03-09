@@ -248,9 +248,6 @@ export default function Dashboard() {
                         <DataErrorBoundary>
                           <DashboardOverview workoutLogs={allWorkoutLogs || workoutLogs || []} />
                         </DataErrorBoundary>
-                        <DataErrorBoundary>
-                          <AchievementBadges workoutLogs={allWorkoutLogs || workoutLogs || []} />
-                        </DataErrorBoundary>
                       </>
                     )}
                   </TabsContent>
