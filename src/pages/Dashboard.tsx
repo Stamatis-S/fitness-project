@@ -9,7 +9,7 @@ import { WorkoutCycleCard } from "@/components/dashboard/WorkoutCycleCard";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { ProgressTracking } from "@/components/dashboard/ProgressTracking";
 import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics";
-import { AchievementBadges } from "@/components/dashboard/AchievementBadges";
+
 
 import { WorkoutHeatmap } from "@/components/dashboard/WorkoutHeatmap";
 import { PageTransition } from "@/components/PageTransition";
@@ -247,9 +247,6 @@ export default function Dashboard() {
                         </DataErrorBoundary>
                         <DataErrorBoundary>
                           <DashboardOverview workoutLogs={allWorkoutLogs || workoutLogs || []} />
-                        </DataErrorBoundary>
-                        <DataErrorBoundary>
-                          <AchievementBadges workoutLogs={allWorkoutLogs || workoutLogs || []} />
                         </DataErrorBoundary>
                       </>
                     )}
