@@ -147,25 +147,27 @@ export function getPersonalRecords(workoutLogs: WorkoutLog[]) {
     category?: ExerciseCategory;
   }[] = [];
   
+  // Pre-group historical logs by exercise name in O(n) instead of O(n²) filtering
+  const historicalByExercise = new Map<string, WorkoutLog[]>();
+  historicalLogs.forEach(log => {
+    let logExName = log.custom_exercise || log.exercises?.name || '';
+    if (logExName === "ΤΡΟΧΑΛΙΑ" && log.category === "ΤΡΙΚΕΦΑΛΑ") {
+      logExName = "PUSH DOWN ΤΡΟΧΑΛΙΑ";
+    }
+    if (!logExName) return;
+    if (!historicalByExercise.has(logExName)) historicalByExercise.set(logExName, []);
+    historicalByExercise.get(logExName)!.push(log);
+  });
+
   recentLogs.forEach(recentLog => {
     let exerciseName = recentLog.custom_exercise || recentLog.exercises?.name || '';
     if (!exerciseName) return;
     
-    // Replace "ΤΡΟΧΑΛΙΑ" with "PUSH DOWN ΤΡΟΧΑΛΙΑ" in the "ΤΡΙΚΕΦΑΛΑ" category
     if (exerciseName === "ΤΡΟΧΑΛΙΑ" && recentLog.category === "ΤΡΙΚΕΦΑΛΑ") {
       exerciseName = "PUSH DOWN ΤΡΟΧΑΛΙΑ";
     }
     
-    const exerciseHistory = historicalLogs.filter(log => {
-      let logExName = log.custom_exercise || log.exercises?.name || '';
-      
-      // Apply the same name replacement for historical logs for proper comparison
-      if (logExName === "ΤΡΟΧΑΛΙΑ" && log.category === "ΤΡΙΚΕΦΑΛΑ") {
-        logExName = "PUSH DOWN ΤΡΟΧΑΛΙΑ";
-      }
-      
-      return logExName === exerciseName;
-    });
+    const exerciseHistory = historicalByExercise.get(exerciseName) || [];
 
     if (exerciseHistory.length === 0) return;
     

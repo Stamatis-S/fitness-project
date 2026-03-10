@@ -133,45 +133,39 @@ export default function Dashboard() {
 
                 <div className="mt-4">
                   <TabsContent value="overview" className="m-0 space-y-4">
-                    {(allWorkoutLogs || workoutLogs) && (
-                      <>
-                        <DataErrorBoundary>
-                          <WorkoutCycleCard
-                            lastWorkoutDate={(() => {
-                              const dates = [...new Set((allWorkoutLogs || workoutLogs || []).map(l => l.workout_date))];
-                              return dates.length > 0 ? dates.sort().reverse()[0] : null;
-                            })()}
-                            workoutDates={[...new Set((allWorkoutLogs || workoutLogs || []).map(l => l.workout_date))]}
-                            compact={isMobile}
-                          />
-                        </DataErrorBoundary>
-                        <DataErrorBoundary>
-                          <WorkoutHeatmap workoutLogs={allWorkoutLogs || workoutLogs || []} />
-                        </DataErrorBoundary>
-                        <DataErrorBoundary>
-                          <WorkoutInsightsCarousel logs={allWorkoutLogs || workoutLogs || []} />
-                        </DataErrorBoundary>
-                        <DataErrorBoundary>
-                          <DashboardOverview workoutLogs={allWorkoutLogs || workoutLogs || []} />
-                        </DataErrorBoundary>
-                      </>
-                    )}
+                    <>
+                      <DataErrorBoundary>
+                        <WorkoutCycleCard
+                          lastWorkoutDate={(() => {
+                            const dates = [...new Set(workoutLogs.map(l => l.workout_date))];
+                            return dates.length > 0 ? dates.sort().reverse()[0] : null;
+                          })()}
+                          workoutDates={[...new Set(workoutLogs.map(l => l.workout_date))]}
+                          compact={isMobile}
+                        />
+                      </DataErrorBoundary>
+                      <DataErrorBoundary>
+                        <WorkoutHeatmap workoutLogs={workoutLogs} />
+                      </DataErrorBoundary>
+                      <DataErrorBoundary>
+                        <WorkoutInsightsCarousel logs={workoutLogs} />
+                      </DataErrorBoundary>
+                      <DataErrorBoundary>
+                        <DashboardOverview workoutLogs={workoutLogs} />
+                      </DataErrorBoundary>
+                    </>
                   </TabsContent>
 
                   <TabsContent value="progress" className="m-0 w-full">
-                    {allWorkoutLogs && (
-                      <DataErrorBoundary>
-                        <ProgressTracking workoutLogs={allWorkoutLogs} />
-                      </DataErrorBoundary>
-                    )}
+                    <DataErrorBoundary>
+                      <ProgressTracking workoutLogs={workoutLogs} />
+                    </DataErrorBoundary>
                   </TabsContent>
 
                   <TabsContent value="statistics" className="m-0 w-full">
-                    {workoutLogs && (
-                      <DataErrorBoundary>
-                        <DashboardStatistics workoutLogs={workoutLogs} />
-                      </DataErrorBoundary>
-                    )}
+                    <DataErrorBoundary>
+                      <DashboardStatistics workoutLogs={workoutLogs} />
+                    </DataErrorBoundary>
                   </TabsContent>
                 </div>
               </Tabs>

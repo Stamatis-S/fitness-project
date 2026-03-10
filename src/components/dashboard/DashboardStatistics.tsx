@@ -30,8 +30,8 @@ export function DashboardStatistics({ workoutLogs }: DashboardStatisticsProps) {
 
   // Use passed workoutLogs (already ALL data from parent) and filter client-side
   const filteredLogs = useMemo(() => getFilteredLogsByTimeRange(workoutLogs, timeRange), [workoutLogs, timeRange]);
-  const categoryDistribution = calculateCategoryDistribution(filteredLogs);
-  const maxWeightData = calculateMaxWeightData(filteredLogs);
+  const categoryDistribution = useMemo(() => calculateCategoryDistribution(filteredLogs), [filteredLogs]);
+  const maxWeightData = useMemo(() => calculateMaxWeightData(filteredLogs), [filteredLogs]);
 
   return (
     <div className="grid grid-cols-1 gap-3">

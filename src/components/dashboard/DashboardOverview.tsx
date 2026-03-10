@@ -23,7 +23,7 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
     return null;
   }
 
-  const personalRecords = getPersonalRecords(workoutLogs);
+  const personalRecords = useMemo(() => getPersonalRecords(workoutLogs), [workoutLogs]);
 
   return (
     <div className={`grid grid-cols-1 ${isMobile ? 'gap-2' : 'gap-4'}`}>

@@ -1,7 +1,7 @@
+import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { Activity, Award, TrendingUp, Dumbbell, Flame, Trophy, Target } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WorkoutInsightsCarouselProps {
   logs: WorkoutLog[];
@@ -34,172 +34,149 @@ function InsightCard({ icon, label, value, gradient, subValue }: InsightCardProp
   );
 }
 
-export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) {
-  const isMobile = useIsMobile();
+function computeInsights(logs: WorkoutLog[]) {
+  // Single pass to compute most aggregations
+  const categoryCounts: Record<string, number> = {};
+  const exerciseCounts: Record<string, number> = {};
+  let totalVolume = 0;
+  let weeklyVolume = 0;
+  let maxWeight = { name: "—", weight: 0 };
+  const uniqueDatesSet = new Set<string>();
 
-  // Calculate insights
-  const getMostTrainedCategory = () => {
-    const categoryCounts = logs.reduce((acc, log) => {
-      acc[log.category] = (acc[log.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-    const entries = Object.entries(categoryCounts);
-    if (entries.length === 0) return "—";
-    return entries.reduce((a, b) => (a[1] > b[1] ? a : b))[0];
-  };
+  for (const log of logs) {
+    // Category counts
+    categoryCounts[log.category] = (categoryCounts[log.category] || 0) + 1;
 
-  const getTotalVolume = () => {
-    const volume = logs.reduce((acc, log) => {
-      return acc + ((log.weight_kg || 0) * (log.reps || 0));
-    }, 0);
-    
-    if (volume >= 1000000) return `${(volume / 1000000).toFixed(1)}M kg`;
-    if (volume >= 1000) return `${(volume / 1000).toFixed(0)}K kg`;
-    return `${volume} kg`;
-  };
-
-  const getWeeklyVolume = () => {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    
-    const weeklyVolume = logs
-      .filter(log => new Date(log.workout_date) >= oneWeekAgo)
-      .reduce((acc, log) => acc + ((log.weight_kg || 0) * (log.reps || 0)), 0);
-    
-    if (weeklyVolume >= 1000000) return `${(weeklyVolume / 1000000).toFixed(1)}M kg`;
-    if (weeklyVolume >= 1000) return `${(weeklyVolume / 1000).toFixed(1)}K kg`;
-    return `${weeklyVolume} kg`;
-  };
-
-  const getAvgSetsPerDay = () => {
-    const uniqueDates = new Set(logs.map(l => l.workout_date));
-    if (uniqueDates.size === 0) return "0";
-    const avg = logs.length / uniqueDates.size;
-    return avg.toFixed(1);
-  };
-
-  const getBestStreak = () => {
-    const uniqueDates = [...new Set(logs.map(l => l.workout_date))].sort();
-    if (uniqueDates.length === 0) return 0;
-
-    let bestStreak = 1;
-    let currentStreak = 1;
-
-    for (let i = 1; i < uniqueDates.length; i++) {
-      const prev = new Date(uniqueDates[i - 1] + 'T00:00:00');
-      const curr = new Date(uniqueDates[i] + 'T00:00:00');
-      const gapDays = Math.floor((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
-
-      if (gapDays <= 4) {
-        currentStreak++;
-      } else {
-        currentStreak = 1;
+    // Exercise counts
+    const name = log.custom_exercise || log.exercises?.name;
+    if (name) {
+      exerciseCounts[name] = (exerciseCounts[name] || 0) + 1;
+      if (log.weight_kg && log.weight_kg > maxWeight.weight) {
+        maxWeight = { name, weight: log.weight_kg };
       }
-      if (currentStreak > bestStreak) bestStreak = currentStreak;
     }
 
-    return bestStreak;
+    // Volume
+    const vol = (log.weight_kg || 0) * (log.reps || 0);
+    totalVolume += vol;
+    if (new Date(log.workout_date) >= oneWeekAgo) {
+      weeklyVolume += vol;
+    }
+
+    uniqueDatesSet.add(log.workout_date);
+  }
+
+  // Most trained category
+  const categoryEntries = Object.entries(categoryCounts);
+  const mostTrained = categoryEntries.length === 0
+    ? "—"
+    : categoryEntries.reduce((a, b) => (a[1] > b[1] ? a : b))[0];
+
+  // Most used exercise
+  const exerciseEntries = Object.entries(exerciseCounts);
+  const mostUsed = exerciseEntries.length === 0
+    ? { name: "—", sets: 0 }
+    : (() => {
+        const [n, s] = exerciseEntries.reduce((a, b) => (a[1] > b[1] ? a : b));
+        return { name: n, sets: s };
+      })();
+
+  // Format volumes
+  const formatVol = (v: number) => {
+    if (v >= 1000000) return `${(v / 1000000).toFixed(1)}M kg`;
+    if (v >= 1000) return `${(v / 1000).toFixed(0)}K kg`;
+    return `${v} kg`;
   };
 
-  // Calculate most used exercise
-  const getMostUsedExercise = () => {
-    const exerciseCounts: Record<string, number> = {};
-    
-    logs.forEach(log => {
-      const name = log.custom_exercise || log.exercises?.name;
-      if (name) {
-        exerciseCounts[name] = (exerciseCounts[name] || 0) + 1;
-      }
-    });
-    
-    const entries = Object.entries(exerciseCounts);
-    if (entries.length === 0) return { name: "—", sets: 0 };
-    
-    const [name, sets] = entries.reduce((a, b) => (a[1] > b[1] ? a : b));
-    return { name, sets };
-  };
+  // Avg sets per day
+  const uniqueDates = uniqueDatesSet.size;
+  const avgSetsPerDay = uniqueDates === 0 ? "0" : (logs.length / uniqueDates).toFixed(1);
 
-  // Calculate max weight exercise
-  const getMaxWeightExercise = () => {
-    let maxExercise = { name: "—", weight: 0 };
-    
-    logs.forEach(log => {
-      const name = log.custom_exercise || log.exercises?.name;
-      if (name && log.weight_kg && log.weight_kg > maxExercise.weight) {
-        maxExercise = { name, weight: log.weight_kg };
-      }
-    });
-    
-    return maxExercise;
-  };
+  // Best streak
+  const sortedDates = [...uniqueDatesSet].sort();
+  let bestStreak = sortedDates.length > 0 ? 1 : 0;
+  let currentStreak = 1;
+  for (let i = 1; i < sortedDates.length; i++) {
+    const prev = new Date(sortedDates[i - 1] + 'T00:00:00');
+    const curr = new Date(sortedDates[i] + 'T00:00:00');
+    const gapDays = Math.floor((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
+    if (gapDays <= 4) {
+      currentStreak++;
+    } else {
+      currentStreak = 1;
+    }
+    if (currentStreak > bestStreak) bestStreak = currentStreak;
+  }
 
-  const uniqueWorkouts = new Set(logs.map(log => log.workout_date)).size;
-  const workoutDates = [...new Set(logs.map(log => log.workout_date))];
-  const lastWorkoutDate = workoutDates.length > 0 ? workoutDates[0] : null;
-  const mostUsed = getMostUsedExercise();
-  const maxWeight = getMaxWeightExercise();
+  return {
+    uniqueWorkouts: uniqueDates,
+    mostTrained,
+    totalVolume: formatVol(totalVolume),
+    weeklyVolume: formatVol(weeklyVolume),
+    mostUsed,
+    maxWeight,
+    avgSetsPerDay,
+    bestStreak,
+  };
+}
+
+export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) {
+  const insights = useMemo(() => computeInsights(logs), [logs]);
 
   return (
     <div className="space-y-3">
-
-      {/* 4x2 Grid of insight cards */}
       <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
         <InsightCard
           icon={<Award className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Total Workouts"
-          value={uniqueWorkouts}
+          value={insights.uniqueWorkouts}
           gradient="from-yellow-500 to-amber-600"
         />
-        
         <InsightCard
           icon={<Activity className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Most Trained"
-          value={getMostTrainedCategory()}
+          value={insights.mostTrained}
           gradient="from-green-500 to-emerald-600"
         />
-
         <InsightCard
           icon={<TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Total Volume"
-          value={getTotalVolume()}
+          value={insights.totalVolume}
           gradient="from-purple-500 to-violet-600"
         />
-
         <InsightCard
           icon={<Trophy className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="This Week"
-          value={getWeeklyVolume()}
+          value={insights.weeklyVolume}
           gradient="from-orange-500 to-red-600"
         />
-
         <InsightCard
           icon={<Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Most Used"
-          value={mostUsed.name}
+          value={insights.mostUsed.name}
           gradient="from-cyan-500 to-teal-600"
-          subValue={`${mostUsed.sets} sets`}
+          subValue={`${insights.mostUsed.sets} sets`}
         />
-
         <InsightCard
           icon={<Dumbbell className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Max Weight"
-          value={maxWeight.weight > 0 ? `${maxWeight.weight} kg` : "—"}
+          value={insights.maxWeight.weight > 0 ? `${insights.maxWeight.weight} kg` : "—"}
           gradient="from-rose-500 to-pink-600"
-          subValue={maxWeight.name}
+          subValue={insights.maxWeight.name}
         />
-
         <InsightCard
           icon={<Dumbbell className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Avg Sets/Day"
-          value={getAvgSetsPerDay()}
+          value={insights.avgSetsPerDay}
           gradient="from-blue-500 to-cyan-600"
         />
-
         <InsightCard
           icon={<Flame className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
           label="Best Streak"
-          value={`${getBestStreak()} days`}
+          value={`${insights.bestStreak} days`}
           gradient="from-pink-500 to-rose-600"
         />
       </div>
