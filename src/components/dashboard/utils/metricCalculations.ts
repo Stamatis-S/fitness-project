@@ -48,36 +48,28 @@ export function calculateExerciseStats(workoutLogs: WorkoutLog[]) {
     return stats;
   }, new Map());
 
-  // Calculate weight progress for each exercise
-  workoutLogs.forEach(currentLog => {
-    if (!currentLog.weight_kg) return;
-    
-    const exerciseName = currentLog.custom_exercise || currentLog.exercises?.name || 'Unknown Exercise';
+  // Calculate weight progress per exercise in O(n) using pre-grouped data
+  // Group logs by exercise, sorted by date
+  const exerciseLogsByName = new Map<string, WorkoutLog[]>();
+  workoutLogs.forEach(log => {
+    if (!log.weight_kg) return;
+    const name = log.custom_exercise || log.exercises?.name || 'Unknown Exercise';
+    if (!exerciseLogsByName.has(name)) exerciseLogsByName.set(name, []);
+    exerciseLogsByName.get(name)!.push(log);
+  });
+
+  exerciseLogsByName.forEach((logs, exerciseName) => {
     if (!exerciseStats.has(exerciseName)) return;
-    
     const exerciseData = exerciseStats.get(exerciseName)!;
-    const currentDate = new Date(currentLog.workout_date);
-    
-    // Find previous logs for this exercise
-    const previousLogs = workoutLogs.filter(log => {
-      const logExName = log.custom_exercise || log.exercises?.name || '';
-      const logDate = new Date(log.workout_date);
-      return logExName === exerciseName && 
-             logDate < currentDate && 
-             log.weight_kg !== null;
-    });
-    
-    if (previousLogs.length > 0) {
-      // Get the most recent previous log
-      const sortedPrevLogs = previousLogs.sort((a, b) => 
-        new Date(b.workout_date).getTime() - new Date(a.workout_date).getTime()
-      );
-      
-      const prevLog = sortedPrevLogs[0];
-      if (prevLog.weight_kg && currentLog.weight_kg > prevLog.weight_kg) {
-        // Calculate progressive overload - weight increase is emphasized
-        const weightIncrease = currentLog.weight_kg - prevLog.weight_kg;
-        exerciseData.weightProgress += weightIncrease * 2; // Double the impact of weight increases
+    // Sort by date ascending
+    const sorted = logs.sort((a, b) =>
+      new Date(a.workout_date).getTime() - new Date(b.workout_date).getTime()
+    );
+    for (let i = 1; i < sorted.length; i++) {
+      const prev = sorted[i - 1];
+      const curr = sorted[i];
+      if (curr.weight_kg! > (prev.weight_kg || 0)) {
+        exerciseData.weightProgress += (curr.weight_kg! - (prev.weight_kg || 0)) * 2;
       }
     }
   });
