@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { motion } from "framer-motion";
@@ -17,13 +17,12 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   const { session } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const personalRecords = useMemo(() => getPersonalRecords(workoutLogs), [workoutLogs]);
 
   if (!session) {
     navigate('/auth');
     return null;
   }
-
-  const personalRecords = getPersonalRecords(workoutLogs);
 
   return (
     <div className={`grid grid-cols-1 ${isMobile ? 'gap-2' : 'gap-4'}`}>
