@@ -16,15 +16,11 @@ import { PageTransition } from "@/components/PageTransition";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/components/AuthProvider";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { Plus } from "lucide-react";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
-import type { Database } from "@/integrations/supabase/types";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
-import { subMonths } from "date-fns";
-
-type ExerciseCategory = Database['public']['Enums']['exercise_category'];
 
 // Time range options for data filtering
 // Single data source - always fetch ALL data
