@@ -41,90 +41,11 @@ export default function Dashboard() {
     }
   }, [session, isLoading, navigate]);
 
-  // Optimized query: fetch only recent data by default (last 3 months)
-  // Users can load more if needed via the time range selector
+  // Single query - fetch ALL data once, filter client-side where needed
   const { data: workoutLogs, isLoading: isLoadingLogs } = useQuery({
-    queryKey: ['workout_logs', session?.user.id, dataRange],
-    queryFn: async () => {
-      if (!session?.user.id) {
-        throw new Error('Not authenticated');
-      }
-
-      const dateFilter = getDateRangeFilter(dataRange);
-      
-      // For "ALL", use batched fetching for backward compatibility
-      if (dataRange === "ALL") {
-        let allData: WorkoutLog[] = [];
-        let from = 0;
-        const batchSize = 1000;
-        let hasMore = true;
-
-        while (hasMore) {
-          const { data, error } = await supabase
-            .from('workout_logs')
-            .select(`
-              *,
-              exercises (
-                id,
-                name
-              )
-            `)
-            .eq('user_id', session.user.id)
-            .order('workout_date', { ascending: false })
-            .range(from, from + batchSize - 1);
-
-          if (error) {
-            toast.error("Failed to load workout logs");
-            throw error;
-          }
-
-          if (data && data.length > 0) {
-            allData = [...allData, ...data];
-            from += batchSize;
-            hasMore = data.length === batchSize;
-          } else {
-            hasMore = false;
-          }
-        }
-        
-        console.log(`Loaded ALL: ${allData.length} total workout logs`);
-        return allData as WorkoutLog[];
-      }
-      
-      // For time-limited queries, single request is usually enough
-      const { data, error } = await supabase
-        .from('workout_logs')
-        .select(`
-          *,
-          exercises (
-            id,
-            name
-          )
-        `)
-        .eq('user_id', session.user.id)
-        .gte('workout_date', dateFilter.toISOString())
-        .order('workout_date', { ascending: false })
-        .limit(5000); // Safety limit
-
-      if (error) {
-        toast.error("Failed to load workout logs");
-        throw error;
-      }
-      
-      console.log(`Loaded ${dataRange}: ${data?.length || 0} workout logs`);
-      return (data || []) as WorkoutLog[];
-    },
-    enabled: !!session?.user.id,
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-  });
-
-  // Separate query for Progress tab - always fetch ALL data
-  const { data: allWorkoutLogs } = useQuery({
     queryKey: ['workout_logs_all', session?.user.id],
     queryFn: async () => {
-      if (!session?.user.id) {
-        throw new Error('Not authenticated');
-      }
+      if (!session?.user.id) throw new Error('Not authenticated');
 
       let allData: WorkoutLog[] = [];
       let from = 0;
@@ -158,12 +79,11 @@ export default function Dashboard() {
           hasMore = false;
         }
       }
-      
-      console.log(`Progress Tab - Loaded ALL: ${allData.length} total workout logs`);
+
       return allData as WorkoutLog[];
     },
     enabled: !!session?.user.id,
-    staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
   const handleRefresh = useCallback(async () => {
