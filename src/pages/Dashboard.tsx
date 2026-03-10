@@ -87,9 +87,9 @@ export default function Dashboard() {
   });
 
   const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['workout_logs', session?.user.id, dataRange] });
+    await queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] });
     toast.success("Ανανεώθηκε!");
-  }, [queryClient, session?.user.id, dataRange]);
+  }, [queryClient, session?.user.id]);
 
   if (isLoading) {
     return (
