@@ -17,13 +17,12 @@ export function DashboardOverview({ workoutLogs }: DashboardOverviewProps) {
   const { session } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const personalRecords = useMemo(() => getPersonalRecords(workoutLogs), [workoutLogs]);
 
   if (!session) {
     navigate('/auth');
     return null;
   }
-
-  const personalRecords = useMemo(() => getPersonalRecords(workoutLogs), [workoutLogs]);
 
   return (
     <div className={`grid grid-cols-1 ${isMobile ? 'gap-2' : 'gap-4'}`}>
