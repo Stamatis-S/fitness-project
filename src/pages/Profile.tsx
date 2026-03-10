@@ -26,9 +26,14 @@ export default function Profile() {
   const { session } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   const fetchProfile = async () => {
     try {
+      setIsLoading(true);
+      setLoadError(false);
+
       const { error: calcError } = await supabase.rpc(
         'calculate_fitness_score',
         { user_id_param: session?.user.id }
@@ -50,6 +55,9 @@ export default function Profile() {
     } catch (error) {
       toast.error("Error loading profile");
       console.error("Error:", error);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -59,10 +67,19 @@ export default function Profile() {
     }
   }, [session?.user.id]);
 
-  if (!profile || !session?.user) {
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (loadError || !profile || !session?.user) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center bg-background gap-4 px-4">
+        <p className="text-muted-foreground text-center">Failed to load profile. Please try again.</p>
+        <Button onClick={fetchProfile} variant="outline">Retry</Button>
       </div>
     );
   }
