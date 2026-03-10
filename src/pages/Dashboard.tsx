@@ -27,19 +27,7 @@ import { subMonths } from "date-fns";
 type ExerciseCategory = Database['public']['Enums']['exercise_category'];
 
 // Time range options for data filtering
-type DataTimeRange = "3M" | "6M" | "1Y" | "ALL";
-type ProgressDataTimeRange = "ALL";
-
-// Calculate date range for filtering
-const getDateRangeFilter = (range: DataTimeRange): Date => {
-  const now = new Date();
-  switch (range) {
-    case "3M": return subMonths(now, 3);
-    case "6M": return subMonths(now, 6);
-    case "1Y": return subMonths(now, 12);
-    case "ALL": return new Date(0);
-  }
-};
+// Single data source - always fetch ALL data
 
 export default function Dashboard() {
   const navigate = useNavigate();
