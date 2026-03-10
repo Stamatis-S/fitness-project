@@ -33,8 +33,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { session, isLoading } = useAuth();
-  const [dataRange, setDataRange] = useState<DataTimeRange>("3M");
-  const [progressDataRange] = useState<ProgressDataTimeRange>("ALL");
   const queryClient = useQueryClient();
 
   useEffect(() => {
