@@ -19,34 +19,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Use only onAuthStateChange for both initial state and subsequent changes
+    // This avoids race conditions between getSession() and onAuthStateChange
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setIsLoading(false);
 
-      // Handle initial navigation based on session
       const publicRoutes = ['/auth'];
       const isPublicRoute = publicRoutes.includes(location.pathname);
 
       if (!session && !isPublicRoute) {
+        if (event === 'SIGNED_OUT') {
+          toast.error("Session expired. Please log in again.");
+        }
         navigate('/auth');
       } else if (session && isPublicRoute) {
         navigate('/');
-      }
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setIsLoading(false);
-
-      // Only redirect to auth page if there was previously a session
-      // This prevents unexpected redirects when using "remember me" feature
-      if (!session && location.pathname !== '/auth') {
-        toast.error("Session expired. Please log in again.");
-        navigate('/auth');
       }
     });
 
