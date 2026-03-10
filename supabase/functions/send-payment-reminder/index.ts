@@ -36,12 +36,11 @@ const handler = async (req: Request): Promise<Response> => {
       global: { headers: { Authorization: authHeader } }
     });
 
-    // Verify JWT and get user claims
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    // Verify JWT and get user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     
-    if (claimsError || !claimsData?.claims) {
-      console.error('Failed to verify JWT:', claimsError);
+    if (userError || !user) {
+      console.error('Failed to verify JWT:', userError);
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { 
@@ -51,10 +50,10 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const userEmail = claimsData.claims.email as string;
+    const userEmail = user.email;
     
     if (!userEmail) {
-      console.error('User email not found in claims');
+      console.error('User email not found');
       return new Response(
         JSON.stringify({ error: 'User email not found' }),
         { 
@@ -65,7 +64,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Get user's profile for their display name
-    const userId = claimsData.claims.sub as string;
+    const userId = user.id;
     const { data: profile } = await supabase
       .from('profiles')
       .select('username')
