@@ -52,6 +52,14 @@ export function ExerciseEntryForm({
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [templateExerciseIndex, setTemplateExerciseIndex] = useState(0);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
   
   // Create today's date at start of day in local timezone (simpler, safer approach)
   const getToday = () => {
