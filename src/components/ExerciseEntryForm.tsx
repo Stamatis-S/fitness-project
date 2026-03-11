@@ -163,7 +163,7 @@ export function ExerciseEntryForm({
         methods.setValue("isSubmitting", false);
       } else {
         // Complete form reset with timeout to ensure proper state clearing
-        setTimeout(() => {
+        resetTimerRef.current = setTimeout(() => {
           methods.reset({
             date: getToday(),
             exercise: "",
