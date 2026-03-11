@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { MuscleProgressLevel, MuscleProgressStats, calculateWorkoutStats, getFitnessLevelName, getNextLevelRequirement } from "./utils/progressLevelUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
