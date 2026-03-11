@@ -5,6 +5,8 @@ import { useRestTimer } from '@/hooks/useRestTimer';
 import { useHaptic } from '@/hooks/useHaptic';
 
 const CIRCUMFERENCE = 2 * Math.PI * 50;
+
+interface RestTimerProps {
   defaultDuration?: number;
   onTimerComplete?: () => void;
 }
