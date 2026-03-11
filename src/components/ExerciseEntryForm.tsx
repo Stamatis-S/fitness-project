@@ -1,5 +1,5 @@
 
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import { useState } from "react";
 import { FormErrorBoundary } from "@/components/ErrorBoundary";
 import { useForm, FormProvider } from "react-hook-form";
@@ -52,6 +52,14 @@ export function ExerciseEntryForm({
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [templateExerciseIndex, setTemplateExerciseIndex] = useState(0);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
   
   // Create today's date at start of day in local timezone (simpler, safer approach)
   const getToday = () => {
@@ -155,7 +163,7 @@ export function ExerciseEntryForm({
         methods.setValue("isSubmitting", false);
       } else {
         // Complete form reset with timeout to ensure proper state clearing
-        setTimeout(() => {
+        resetTimerRef.current = setTimeout(() => {
           methods.reset({
             date: getToday(),
             exercise: "",
