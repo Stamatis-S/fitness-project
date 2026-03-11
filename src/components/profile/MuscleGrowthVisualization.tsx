@@ -134,36 +134,37 @@ export function MuscleGrowthVisualization({ userId, fitnessScore, fitnessLevel }
     fetchWorkoutData();
   }, [userId, fitnessScore]);
 
-  // Create particles for higher levels
-  const renderParticles = () => {
+  // Memoize particle data to avoid re-generating random values on every render
+  const particleData = useMemo(() => {
     if (!stats || stats.level < 3) return null;
     
     const particleCount = stats.level * 3;
-    const particles = [];
-    
-    for (let i = 0; i < particleCount; i++) {
-      const size = Math.random() * 4 + 2;
-      const left = Math.random() * 100;
-      const top = Math.random() * 100;
-      const delay = Math.random() * 2;
-      
-      particles.push(
-        <div 
-          key={i}
-          className="particle"
-          style={{
-            width: `${size}px`,
-            height: `${size}px`,
-            left: `${left}%`,
-            top: `${top}%`,
-            animationDelay: `${delay}s`,
-            opacity: Math.random() * 0.5 + 0.3
-          }}
-        />
-      );
-    }
-    
-    return particles;
+    return Array.from({ length: particleCount }, (_, i) => ({
+      id: i,
+      size: Math.random() * 4 + 2,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 2,
+      opacity: Math.random() * 0.5 + 0.3
+    }));
+  }, [stats?.level]);
+
+  const renderParticles = () => {
+    if (!particleData) return null;
+    return particleData.map(p => (
+      <div 
+        key={p.id}
+        className="particle"
+        style={{
+          width: `${p.size}px`,
+          height: `${p.size}px`,
+          left: `${p.left}%`,
+          top: `${p.top}%`,
+          animationDelay: `${p.delay}s`,
+          opacity: p.opacity
+        }}
+      />
+    ));
   };
 
   // Get display name for the current level using standardized function

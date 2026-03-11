@@ -119,7 +119,10 @@ export default function SavedExercises() {
   const totalPages = Math.ceil(filteredUniqueDates.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentDates = filteredUniqueDates.slice(startIndex, endIndex);
+  const currentDates = useMemo(
+    () => filteredUniqueDates.slice(startIndex, endIndex),
+    [filteredUniqueDates, startIndex, endIndex]
+  );
 
   const { data: workoutCycles } = useQuery({
     queryKey: ['workout_cycles', session?.user.id],
