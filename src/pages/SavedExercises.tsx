@@ -8,7 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { subDays } from "date-fns";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
@@ -119,7 +119,10 @@ export default function SavedExercises() {
   const totalPages = Math.ceil(filteredUniqueDates.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentDates = filteredUniqueDates.slice(startIndex, endIndex);
+  const currentDates = useMemo(
+    () => filteredUniqueDates.slice(startIndex, endIndex),
+    [filteredUniqueDates, startIndex, endIndex]
+  );
 
   const { data: workoutCycles } = useQuery({
     queryKey: ['workout_cycles', session?.user.id],

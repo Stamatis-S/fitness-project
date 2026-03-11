@@ -1,9 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { Resend } from "https://esm.sh/resend@2.0.0"
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"))
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -145,17 +147,17 @@ serve(async (req) => {
       </div>
     `
 
-    // Send email using Supabase
-    const { error } = await supabase.auth.admin.sendRawEmail({
+    // Send email using Resend
+    const { error: emailError } = await resend.emails.send({
+      from: 'Fitness Tracker <onboarding@resend.dev>',
       to: userEmail,
-      from: 'noreply@yourdomain.com',
       subject: '🏋️‍♂️ Your Weekly Workout Report',
       html: emailHtml,
     })
 
-    if (error) {
-      console.error('Error sending email:', error)
-      throw error
+    if (emailError) {
+      console.error('Error sending email:', emailError)
+      throw emailError
     }
 
     console.log("Email sent successfully to authenticated user")

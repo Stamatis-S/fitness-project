@@ -128,6 +128,8 @@ export function SetInput({ index, onRemove, exerciseLabel, fieldArrayPath = "set
       };
     },
     enabled: !!session?.user.id && (!!selectedExercise || !!effectiveCustomExercise),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const handleWeightChange = (amount: number) => {
