@@ -96,63 +96,58 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
     return "#8b5cf6";
   };
 
-  const progressData = useMemo(() => {
-    if (!Array.isArray(workoutLogs)) return [];
+  // Step 1: Group all logs by date+exercise (independent of selectedExercises)
+  const groupedByDateExercise = useMemo(() => {
+    if (!Array.isArray(workoutLogs)) return new Map<string, Map<string, { totalWeight: number; totalReps: number }>>();
     try {
       const dataMap = new Map<string, Map<string, { totalWeight: number; totalReps: number }>>();
       
-      const sortedLogs = [...workoutLogs]
-        .filter(log => log && log.workout_date && log.weight_kg && log.reps)
-        .sort((a, b) => {
-          const dateA = new Date(a.workout_date).getTime();
-          const dateB = new Date(b.workout_date).getTime();
-          return dateA - dateB;
-        });
-
-      sortedLogs.forEach(log => {
-        if (!log.workout_date || !log.weight_kg || !log.reps) return;
-        
+      workoutLogs.forEach(log => {
+        if (!log?.workout_date || !log?.weight_kg || !log?.reps) return;
         const date = log.workout_date;
         const exercise = log.custom_exercise || (log.exercises && log.exercises.name);
-        
         if (!exercise) return;
         
         if (!dataMap.has(date)) {
           dataMap.set(date, new Map());
         }
-        
         const exerciseMap = dataMap.get(date)!;
         if (!exerciseMap.has(exercise)) {
           exerciseMap.set(exercise, { totalWeight: 0, totalReps: 0 });
         }
-        
         const current = exerciseMap.get(exercise)!;
         current.totalWeight += log.weight_kg * log.reps;
         current.totalReps += log.reps;
       });
 
-      return Array.from(dataMap.entries())
+      return dataMap;
+    } catch (error) {
+      console.error('Error grouping workout data:', error);
+      return new Map<string, Map<string, { totalWeight: number; totalReps: number }>>();
+    }
+  }, [workoutLogs]);
+
+  // Step 2: Filter and format based on selectedExercises (lightweight)
+  const progressData = useMemo(() => {
+    if (selectedExercises.length === 0) return [];
+    try {
+      return Array.from(groupedByDateExercise.entries())
         .map(([date, exerciseMap]) => {
-          try {
-            const dataPoint: Record<string, any> = {
-              date: format(parseISO(date), isMobile ? 'dd/MM' : 'MMM d'),
-              rawDate: date,
-            };
-            
-            selectedExercises.forEach(exercise => {
-              const exData = exerciseMap.get(exercise);
-              if (exData && exData.totalReps > 0) {
-                dataPoint[exercise] = Number((exData.totalWeight / exData.totalReps).toFixed(1));
-              } else {
-                dataPoint[exercise] = null;
-              }
-            });
-            
-            return dataPoint;
-          } catch (error) {
-            console.error('Error processing data point:', error);
-            return null;
-          }
+          const dataPoint: Record<string, any> = {
+            date: format(parseISO(date), isMobile ? 'dd/MM' : 'MMM d'),
+            rawDate: date,
+          };
+          let hasData = false;
+          selectedExercises.forEach(exercise => {
+            const exData = exerciseMap.get(exercise);
+            if (exData && exData.totalReps > 0) {
+              dataPoint[exercise] = Number((exData.totalWeight / exData.totalReps).toFixed(1));
+              hasData = true;
+            } else {
+              dataPoint[exercise] = null;
+            }
+          });
+          return hasData ? dataPoint : null;
         })
         .filter(Boolean)
         .sort((a, b) => new Date(a!.rawDate).getTime() - new Date(b!.rawDate).getTime());
@@ -160,7 +155,7 @@ export function ProgressTracking({ workoutLogs }: ProgressTrackingProps) {
       console.error('Error processing progress data:', error);
       return [];
     }
-  }, [workoutLogs, selectedExercises, isMobile]);
+  }, [groupedByDateExercise, selectedExercises, isMobile]);
 
   const toggleExercise = (name: string) => {
     setSelectedExercises(prev =>

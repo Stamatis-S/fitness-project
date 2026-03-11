@@ -4,7 +4,7 @@ import { Timer, Play, Pause, RotateCcw, Plus, Minus } from 'lucide-react';
 import { useRestTimer } from '@/hooks/useRestTimer';
 import { useHaptic } from '@/hooks/useHaptic';
 
-interface RestTimerProps {
+const CIRCUMFERENCE = 2 * Math.PI * 50;
   defaultDuration?: number;
   onTimerComplete?: () => void;
 }
