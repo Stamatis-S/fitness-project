@@ -8,7 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { subDays } from "date-fns";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
