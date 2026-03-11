@@ -147,17 +147,17 @@ serve(async (req) => {
       </div>
     `
 
-    // Send email using Supabase
-    const { error } = await supabase.auth.admin.sendRawEmail({
+    // Send email using Resend
+    const { error: emailError } = await resend.emails.send({
+      from: 'Fitness Tracker <onboarding@resend.dev>',
       to: userEmail,
-      from: 'noreply@yourdomain.com',
       subject: '🏋️‍♂️ Your Weekly Workout Report',
       html: emailHtml,
     })
 
-    if (error) {
-      console.error('Error sending email:', error)
-      throw error
+    if (emailError) {
+      console.error('Error sending email:', emailError)
+      throw emailError
     }
 
     console.log("Email sent successfully to authenticated user")
