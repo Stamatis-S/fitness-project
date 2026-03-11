@@ -29,6 +29,55 @@ interface ComparisonStatsProps {
   timeRange: string;
 }
 
+interface StatCardProps {
+  title: string;
+  value: number;
+  comparedValue?: number;
+  icon: React.ComponentType<{ className?: string }>;
+  unit?: string;
+  formatter?: (val: number) => string;
+}
+
+function StatCard({ 
+  title, 
+  value, 
+  comparedValue, 
+  icon: Icon,
+  unit = "",
+  formatter = (val: number) => val.toLocaleString()
+}: StatCardProps) {
+  const diff = comparedValue ? value - comparedValue : 0;
+  const percentage = comparedValue ? ((value - comparedValue) / comparedValue) * 100 : 0;
+
+  return (
+    <Card className="p-4 relative overflow-hidden">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <Icon className="h-4 w-4" />
+          {title}
+        </div>
+        {comparedValue && (
+          <div className={cn(
+            "text-xs font-medium rounded-full px-2 py-0.5",
+            diff > 0 ? "text-green-500 bg-green-500/10" : "text-red-500 bg-red-500/10"
+          )}>
+            {diff > 0 ? <ChevronUp className="h-3 w-3 inline" /> : <ChevronDown className="h-3 w-3 inline" />}
+            {Math.abs(percentage).toFixed(1)}%
+          </div>
+        )}
+      </div>
+      <div className="flex items-end gap-2">
+        <span className="text-2xl font-bold">{formatter(value)}{unit}</span>
+        {comparedValue && (
+          <span className="text-sm text-muted-foreground mb-1">
+            vs {formatter(comparedValue)}{unit}
+          </span>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 export function ComparisonStats({ userId, comparedUserId, timeRange }: ComparisonStatsProps) {
   const { data: stats } = useQuery({
     queryKey: ['comparison-stats', timeRange],
