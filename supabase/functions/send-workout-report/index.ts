@@ -5,6 +5,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0"
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"))
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
