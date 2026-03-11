@@ -58,8 +58,8 @@ export function RestTimer({ defaultDuration = 90, onTimerComplete }: RestTimerPr
               stroke="hsl(var(--primary))"
               strokeWidth="6"
               strokeLinecap="round"
-              strokeDasharray={`${2 * Math.PI * 50}`}
-              strokeDashoffset={`${2 * Math.PI * 50 * (1 - progress / 100)}`}
+              strokeDasharray={`${CIRCUMFERENCE}`}
+              strokeDashoffset={`${CIRCUMFERENCE * (1 - progress / 100)}`}
               className="transition-all duration-1000"
             />
           </svg>
