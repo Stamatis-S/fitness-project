@@ -21,6 +21,7 @@ import { Plus } from "lucide-react";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Time range options for data filtering
 // Single data source - always fetch ALL data
@@ -118,16 +119,29 @@ export default function Dashboard() {
             }
           />
 
-          {workoutLogs && (
-            <div className="px-4 pt-4 space-y-4">
-              <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="progress">Progress</TabsTrigger>
-                  <TabsTrigger value="statistics">Statistics</TabsTrigger>
-                </TabsList>
+          <div className="px-4 pt-4 space-y-4">
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="progress">Progress</TabsTrigger>
+                <TabsTrigger value="statistics">Statistics</TabsTrigger>
+              </TabsList>
 
-                <div className="mt-4">
+              <div className="mt-4">
+                {isLoadingLogs ? (
+                  <div className="space-y-4">
+                    <Skeleton className="h-32 w-full rounded-xl" />
+                    <Skeleton className="h-48 w-full rounded-xl" />
+                    <div className="grid grid-cols-2 gap-3">
+                      <Skeleton className="h-24 rounded-xl" />
+                      <Skeleton className="h-24 rounded-xl" />
+                      <Skeleton className="h-24 rounded-xl" />
+                      <Skeleton className="h-24 rounded-xl" />
+                    </div>
+                    <Skeleton className="h-64 w-full rounded-xl" />
+                  </div>
+                ) : workoutLogs ? (
+                  <>
                   <TabsContent value="overview" className="m-0 space-y-4">
                     <>
                       <DataErrorBoundary>
@@ -163,10 +177,11 @@ export default function Dashboard() {
                       <DashboardStatistics workoutLogs={workoutLogs} />
                     </DataErrorBoundary>
                   </TabsContent>
+                  </>
+                ) : null}
                 </div>
               </Tabs>
             </div>
-          )}
         </div>
       </PullToRefresh>
     </PageTransition>
