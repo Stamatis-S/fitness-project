@@ -113,11 +113,20 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
           <h2 className="font-semibold text-foreground text-base">Activity</h2>
         </div>
         <div className="flex items-center gap-1.5">
-          {stats.streak > 0 && (
-            <div className="flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-1">
-              <Flame className="h-3.5 w-3.5 text-destructive" />
-              <span className="font-bold text-foreground text-xs">{stats.streak}</span>
-              <span className="text-muted-foreground text-[10px]">streak</span>
+        {stats.streak > 0 && (
+            <div className="flex items-center gap-2">
+              {stats.daysUntilStreakLost > 0 && stats.daysUntilStreakLost <= 2 && (
+                <div className="flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-1">
+                  <span className="text-amber-500 text-[10px] font-medium">
+                    {stats.daysUntilStreakLost === 1 ? '1 μέρα απομένει!' : `${stats.daysUntilStreakLost} μέρες απομένουν`}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-1">
+                <Flame className="h-3.5 w-3.5 text-destructive" />
+                <span className="font-bold text-foreground text-xs">{stats.streak}</span>
+                <span className="text-muted-foreground text-[10px]">streak</span>
+              </div>
             </div>
           )}
         </div>
