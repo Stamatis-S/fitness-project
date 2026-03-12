@@ -79,6 +79,17 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
     const allDates = [...dateMap.keys()];
     const streak = calculateWorkoutStreak(allDates);
 
+    // Calculate days until streak resets (4-day tolerance)
+    let daysUntilStreakLost = 0;
+    if (streak > 0 && allDates.length > 0) {
+      const sortedDates = [...allDates].sort().reverse();
+      const mostRecent = new Date(sortedDates[0] + 'T00:00:00');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const daysSinceLast = Math.floor((today.getTime() - mostRecent.getTime()) / (1000 * 60 * 60 * 24));
+      daysUntilStreakLost = Math.max(0, 4 - daysSinceLast);
+    }
+
     // This week's active days
     const thisWeekActive = currentWeek.filter(d => d.sets > 0).length;
     const thisWeekSets = currentWeek.filter(d => d.sets > 0).reduce((sum, d) => sum + d.sets, 0);
@@ -86,7 +97,7 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
     return {
       currentWeek,
       pastWeeks,
-      stats: { streak, thisWeekActive, thisWeekSets },
+      stats: { streak, thisWeekActive, thisWeekSets, daysUntilStreakLost },
     };
   }, [workoutLogs]);
 
