@@ -177,10 +177,11 @@ export default function Dashboard() {
                       <DashboardStatistics workoutLogs={workoutLogs} />
                     </DataErrorBoundary>
                   </TabsContent>
+                  </>
+                ) : null}
                 </div>
               </Tabs>
             </div>
-          )}
         </div>
       </PullToRefresh>
     </PageTransition>
