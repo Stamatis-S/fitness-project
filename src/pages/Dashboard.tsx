@@ -21,6 +21,7 @@ import { Plus } from "lucide-react";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Time range options for data filtering
 // Single data source - always fetch ALL data
