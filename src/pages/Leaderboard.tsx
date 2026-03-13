@@ -93,6 +93,10 @@ export default function Leaderboard() {
     }
   };
 
+  if (!session) {
+    return null;
+  }
+
   return (
     <PageTransition>
       <div className="flex flex-col h-screen bg-background overflow-y-auto">
