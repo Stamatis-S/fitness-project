@@ -136,7 +136,7 @@ function getFavoriteExercises(
   
   Object.entries(categoryCounts).forEach(([category, exercises]) => {
     const exercisesList = Object.values(exercises);
-    console.log(`Category ${category} has ${exercisesList.length} exercises after exclusion`);
+    
     
     result[category] = exercisesList.sort((a, b) => {
       const twoDaysAgo = new Date();
