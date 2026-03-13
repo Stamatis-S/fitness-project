@@ -186,8 +186,6 @@ export function generateWorkoutPlan(
   
   // Get recently trained categories to avoid
   const recentlyTrainedCategories = getRecentlyTrainedCategories(logs);
-  console.log("Recently trained categories to avoid:", recentlyTrainedCategories);
-  console.log("Excluded exercise IDs:", excludeExerciseIds);
   
   // Count how many times each category has been used
   const categoryCounts: Record<string, number> = {};
