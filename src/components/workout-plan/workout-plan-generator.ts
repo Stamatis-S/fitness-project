@@ -294,7 +294,6 @@ export function generateWorkoutPlan(
       }
     } else {
       primaryCategory = sortedByLastUsed[0][0] as ExerciseCategory;
-      console.log("Using least recent category:", primaryCategory);
       
       // For multi-category, use the second least recent category
       if (forceMultiCategory && sortedByLastUsed.length > 1) {
