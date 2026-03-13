@@ -93,7 +93,7 @@ function getFavoriteExercises(
 ): Record<string, Array<{ name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> {
   const categoryCounts: Record<string, Record<string, { name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> = {};
   
-  console.log("Filtering exercises with exclusions:", excludeExerciseIds.length);
+  
   
   logs.forEach(log => {
     if (!categoryCounts[log.category]) {
