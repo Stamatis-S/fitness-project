@@ -9,34 +9,23 @@ import { WorkoutCycleCard } from "@/components/dashboard/WorkoutCycleCard";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { ProgressTracking } from "@/components/dashboard/ProgressTracking";
 import { DashboardStatistics } from "@/components/dashboard/DashboardStatistics";
-
-
 import { WorkoutHeatmap } from "@/components/dashboard/WorkoutHeatmap";
 import { PageTransition } from "@/components/PageTransition";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/components/AuthProvider";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Time range options for data filtering
-// Single data source - always fetch ALL data
-
 export default function Dashboard() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { session, isLoading } = useAuth();
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (!isLoading && !session) {
-      navigate('/auth');
-    }
-  }, [session, isLoading, navigate]);
 
   // Single query - fetch ALL data once, filter client-side where needed
   const { data: workoutLogs, isLoading: isLoadingLogs } = useQuery({
@@ -82,6 +71,17 @@ export default function Dashboard() {
     enabled: !!session?.user.id,
     staleTime: 1000 * 60 * 5,
   });
+
+  // Memoize derived data (#8)
+  const workoutDates = useMemo(() => {
+    if (!workoutLogs) return [];
+    return [...new Set(workoutLogs.map(l => l.workout_date))];
+  }, [workoutLogs]);
+
+  const lastWorkoutDate = useMemo(() => {
+    if (workoutDates.length === 0) return null;
+    return workoutDates.sort().reverse()[0];
+  }, [workoutDates]);
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] });
@@ -146,11 +146,8 @@ export default function Dashboard() {
                     <>
                       <DataErrorBoundary>
                         <WorkoutCycleCard
-                          lastWorkoutDate={(() => {
-                            const dates = [...new Set(workoutLogs.map(l => l.workout_date))];
-                            return dates.length > 0 ? dates.sort().reverse()[0] : null;
-                          })()}
-                          workoutDates={[...new Set(workoutLogs.map(l => l.workout_date))]}
+                          lastWorkoutDate={lastWorkoutDate}
+                          workoutDates={workoutDates}
                           compact={isMobile}
                         />
                       </DataErrorBoundary>

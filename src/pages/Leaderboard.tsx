@@ -136,7 +136,7 @@ export default function Leaderboard() {
                           key={profile.id}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
+                          transition={{ delay: Math.min(index * 0.05, 0.5) }}
                         >
                           <Card 
                             className={`p-4 transition-all active:scale-[0.98] ${

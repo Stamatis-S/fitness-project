@@ -70,7 +70,16 @@ export default function Auth() {
         navigate("/");
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      const rawMessage = error instanceof Error ? error.message : '';
+      // Map Supabase error messages to user-friendly ones
+      const friendlyMessages: Record<string, string> = {
+        'Invalid login credentials': 'Λάθος email ή κωδικός. Δοκίμασε ξανά.',
+        'Email not confirmed': 'Επιβεβαίωσε πρώτα το email σου.',
+        'User already registered': 'Αυτό το email χρησιμοποιείται ήδη.',
+        'Password should be at least 6 characters': 'Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.',
+        'Signup requires a valid password': 'Εισάγετε έναν έγκυρο κωδικό.',
+      };
+      const errorMessage = friendlyMessages[rawMessage] || 'Κάτι πήγε στραβά. Δοκίμασε ξανά.';
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);

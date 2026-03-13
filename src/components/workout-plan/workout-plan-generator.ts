@@ -424,7 +424,7 @@ export function generateWorkoutPlan(
   
   // If we couldn't find any exercises not in the exclude list, use a fallback
   if (workoutExercises.length === 0) {
-    console.log("No exercises found with the given exclusions, using fallback approach");
+    
     
     // Get the full list of exercises without exclusions as a fallback
     const allExercises = getFavoriteExercises(logs, []);
