@@ -29,11 +29,13 @@ export default function Leaderboard() {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, username, fitness_score, fitness_level, profile_photo_url')
-        .order('fitness_score', { ascending: false });
+        .order('fitness_score', { ascending: false })
+        .limit(50);
       
       if (error) throw error;
       return data as Profile[];
     },
+    enabled: !!session,
   });
 
   const getRankIcon = (rank: number) => {
