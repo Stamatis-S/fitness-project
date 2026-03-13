@@ -93,7 +93,7 @@ function getFavoriteExercises(
 ): Record<string, Array<{ name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> {
   const categoryCounts: Record<string, Record<string, { name: string, exerciseId: number | null, customExercise: string | null, count: number, lastUsed: string }>> = {};
   
-  console.log("Filtering exercises with exclusions:", excludeExerciseIds.length);
+  
   
   logs.forEach(log => {
     if (!categoryCounts[log.category]) {
@@ -136,7 +136,7 @@ function getFavoriteExercises(
   
   Object.entries(categoryCounts).forEach(([category, exercises]) => {
     const exercisesList = Object.values(exercises);
-    console.log(`Category ${category} has ${exercisesList.length} exercises after exclusion`);
+    
     
     result[category] = exercisesList.sort((a, b) => {
       const twoDaysAgo = new Date();
@@ -186,8 +186,6 @@ export function generateWorkoutPlan(
   
   // Get recently trained categories to avoid
   const recentlyTrainedCategories = getRecentlyTrainedCategories(logs);
-  console.log("Recently trained categories to avoid:", recentlyTrainedCategories);
-  console.log("Excluded exercise IDs:", excludeExerciseIds);
   
   // Count how many times each category has been used
   const categoryCounts: Record<string, number> = {};
@@ -197,7 +195,7 @@ export function generateWorkoutPlan(
   
   // Filter out excluded categories along with recently trained ones
   const categoriesToExclude = [...recentlyTrainedCategories, ...excludeCategories];
-  console.log("Categories to exclude:", categoriesToExclude);
+  
   
   // Sort categories by most used, excluding ones that should be avoided
   const sortedCategories = Object.entries(categoryCounts)
@@ -283,7 +281,6 @@ export function generateWorkoutPlan(
       const leastRecentCategory = Object.entries(categoryLastUsed)
         .sort((a, b) => a[1].localeCompare(b[1]))[0];
       primaryCategory = leastRecentCategory[0] as ExerciseCategory;
-      console.log("Using least recent category:", primaryCategory);
       
       // For multi-category, find a second category
       if (forceMultiCategory) {
@@ -297,7 +294,6 @@ export function generateWorkoutPlan(
       }
     } else {
       primaryCategory = sortedByLastUsed[0][0] as ExerciseCategory;
-      console.log("Using least recent category:", primaryCategory);
       
       // For multi-category, use the second least recent category
       if (forceMultiCategory && sortedByLastUsed.length > 1) {
@@ -318,7 +314,7 @@ export function generateWorkoutPlan(
   
   // Add primary category exercises - INCREASED FROM 2-3 TO 3-4
   const primaryExercises = favoriteExercises[primaryCategory] || [];
-  console.log(`Found ${primaryExercises.length} primary exercises for category ${primaryCategory} after filtering`);
+  
   
   // For multi-category workouts, use fewer primary exercises to make room for secondary
   const primaryExerciseCount = secondaryCategory ? 3 : 4; // Increased from 2/3 to 3/4
@@ -350,7 +346,7 @@ export function generateWorkoutPlan(
   // Add secondary category exercises if available - INCREASED FROM 2-3 TO 3-4
   if (secondaryCategory && favoriteExercises[secondaryCategory]) {
     const secondaryExercises = favoriteExercises[secondaryCategory] || [];
-    console.log(`Found ${secondaryExercises.length} secondary exercises for category ${secondaryCategory} after filtering`);
+    
     
     const secondaryExerciseCount = primaryExercises.length < primaryExerciseCount ? 4 : 3; // Increased from 3/2 to 4/3
     
@@ -428,7 +424,7 @@ export function generateWorkoutPlan(
   
   // If we couldn't find any exercises not in the exclude list, use a fallback
   if (workoutExercises.length === 0) {
-    console.log("No exercises found with the given exclusions, using fallback approach");
+    
     
     // Get the full list of exercises without exclusions as a fallback
     const allExercises = getFavoriteExercises(logs, []);

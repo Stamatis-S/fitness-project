@@ -5,10 +5,9 @@ import { WorkoutFilters } from "@/components/saved-exercises/WorkoutFilters";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
-import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { subDays } from "date-fns";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
@@ -20,52 +19,63 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+// #15: Moved outside component - no dependency on state/props
+function getDateRange(filter: string): [Date, Date] | null {
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  
+  const daysMap: Record<string, number> = {
+    "7days": 7,
+    "15days": 15,
+    "30days": 30,
+    "45days": 45,
+    "90days": 90,
+  };
+  
+  const days = daysMap[filter];
+  if (!days) return null;
+  
+  const start = subDays(today, days);
+  start.setHours(0, 0, 0, 0);
+  return [start, today];
+}
 
 export default function SavedExercises() {
   const { session, isLoading } = useAuth();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const itemsPerPage = 20;
 
-  useEffect(() => {
-    if (!isLoading && !session) {
-      navigate('/auth');
-    }
-  }, [session, isLoading, navigate]);
+  // #25: Reset pagination on filter changes
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  }, []);
 
-  function getDateRange(filter: string): [Date, Date] | null {
-    const today = new Date();
-    today.setHours(23, 59, 59, 999);
-    
-    switch (filter) {
-      case "7days":
-        const start7 = subDays(today, 7);
-        start7.setHours(0, 0, 0, 0);
-        return [start7, today];
-      case "15days":
-        const start15 = subDays(today, 15);
-        start15.setHours(0, 0, 0, 0);
-        return [start15, today];
-      case "30days":
-        const start30 = subDays(today, 30);
-        start30.setHours(0, 0, 0, 0);
-        return [start30, today];
-      case "45days":
-        const start45 = subDays(today, 45);
-        start45.setHours(0, 0, 0, 0);
-        return [start45, today];
-      case "90days":
-        const start90 = subDays(today, 90);
-        start90.setHours(0, 0, 0, 0);
-        return [start90, today];
-      default:
-        return null;
-    }
-  }
+  const handleCategoryChange = useCallback((value: string) => {
+    setCategoryFilter(value);
+    setCurrentPage(1);
+  }, []);
+
+  const handleDateChange = useCallback((value: string) => {
+    setDateFilter(value);
+    setCurrentPage(1);
+  }, []);
 
   const { data: allDateInfo } = useQuery({
     queryKey: ['all_workout_dates', session?.user.id],
@@ -104,17 +114,21 @@ export default function SavedExercises() {
   });
 
   const allUniqueDates = allDateInfo?.uniqueDates || [];
-  const filteredUniqueDates = allUniqueDates.filter(date => {
-    if (dateFilter !== 'all') {
-      const dateRange = getDateRange(dateFilter);
-      if (dateRange) {
-        const logDate = new Date(date + 'T12:00:00');
-        const [startDate, endDate] = dateRange;
-        if (logDate < startDate || logDate > endDate) return false;
+
+  // #16: Properly memoize filteredUniqueDates so downstream useMemo works
+  const filteredUniqueDates = useMemo(() => {
+    return allUniqueDates.filter(date => {
+      if (dateFilter !== 'all') {
+        const dateRange = getDateRange(dateFilter);
+        if (dateRange) {
+          const logDate = new Date(date + 'T12:00:00');
+          const [startDate, endDate] = dateRange;
+          if (logDate < startDate || logDate > endDate) return false;
+        }
       }
-    }
-    return true;
-  });
+      return true;
+    });
+  }, [allUniqueDates, dateFilter]);
 
   const totalPages = Math.ceil(filteredUniqueDates.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -138,7 +152,7 @@ export default function SavedExercises() {
     enabled: !!session?.user.id,
   });
 
-  const { data: workoutLogs, refetch } = useQuery({
+  const { data: workoutLogs } = useQuery({
     queryKey: ['workout_logs_paginated', session?.user.id, currentDates, categoryFilter, searchTerm],
     queryFn: async () => {
       if (!session?.user.id || currentDates.length === 0) return [];
@@ -177,23 +191,29 @@ export default function SavedExercises() {
     enabled: !!session?.user.id && currentDates.length > 0,
   });
 
-  const handleDelete = async (id: number) => {
-    if (!session?.user.id) return;
+  // #26: Delete with confirmation dialog
+  const handleDeleteConfirm = async () => {
+    if (!session?.user.id || deleteTarget === null) return;
 
     try {
       const { error } = await supabase
         .from('workout_logs')
         .delete()
-        .eq('id', id)
+        .eq('id', deleteTarget)
         .eq('user_id', session.user.id);
 
       if (error) throw error;
 
       toast.success("Exercise deleted successfully");
-      refetch();
+      // #19: Use invalidateQueries instead of refetch for consistency
+      queryClient.invalidateQueries({ queryKey: ['workout_logs_paginated', session?.user.id] });
+      queryClient.invalidateQueries({ queryKey: ['all_workout_dates', session?.user.id] });
+      queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] });
     } catch (error) {
       toast.error("Failed to delete exercise");
       console.error("Delete error:", error);
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -227,18 +247,18 @@ export default function SavedExercises() {
           <Card className="p-4">
             <WorkoutFilters
               searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
+              onSearchChange={handleSearchChange}
               categoryFilter={categoryFilter}
-              onCategoryChange={setCategoryFilter}
+              onCategoryChange={handleCategoryChange}
               dateFilter={dateFilter}
-              onDateChange={setDateFilter}
+              onDateChange={handleDateChange}
             />
           </Card>
 
           <Card className="overflow-hidden">
             <WorkoutTable 
               logs={workoutLogs || []} 
-              onDelete={handleDelete} 
+              onDelete={(id) => setDeleteTarget(id)}
               cycleStartDates={workoutCycles || []}
             />
           </Card>
@@ -298,6 +318,24 @@ export default function SavedExercises() {
           </div>
         </div>
       </PullToRefresh>
+
+      {/* #26: Delete confirmation dialog */}
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Διαγραφή άσκησης</AlertDialogTitle>
+            <AlertDialogDescription>
+              Είσαι σίγουρος; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageTransition>
   );
 }

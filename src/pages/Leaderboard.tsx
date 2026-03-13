@@ -29,11 +29,13 @@ export default function Leaderboard() {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, username, fitness_score, fitness_level, profile_photo_url')
-        .order('fitness_score', { ascending: false });
+        .order('fitness_score', { ascending: false })
+        .limit(50);
       
       if (error) throw error;
       return data as Profile[];
     },
+    enabled: !!session,
   });
 
   const getRankIcon = (rank: number) => {
@@ -91,6 +93,10 @@ export default function Leaderboard() {
     }
   };
 
+  if (!session) {
+    return null;
+  }
+
   return (
     <PageTransition>
       <div className="flex flex-col h-screen bg-background overflow-y-auto">
@@ -130,7 +136,7 @@ export default function Leaderboard() {
                           key={profile.id}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.05 }}
+                          transition={{ delay: Math.min(index * 0.05, 0.5) }}
                         >
                           <Card 
                             className={`p-4 transition-all active:scale-[0.98] ${
