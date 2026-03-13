@@ -195,7 +195,7 @@ export function generateWorkoutPlan(
   
   // Filter out excluded categories along with recently trained ones
   const categoriesToExclude = [...recentlyTrainedCategories, ...excludeCategories];
-  console.log("Categories to exclude:", categoriesToExclude);
+  
   
   // Sort categories by most used, excluding ones that should be avoided
   const sortedCategories = Object.entries(categoryCounts)
