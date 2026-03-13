@@ -346,7 +346,7 @@ export function generateWorkoutPlan(
   // Add secondary category exercises if available - INCREASED FROM 2-3 TO 3-4
   if (secondaryCategory && favoriteExercises[secondaryCategory]) {
     const secondaryExercises = favoriteExercises[secondaryCategory] || [];
-    console.log(`Found ${secondaryExercises.length} secondary exercises for category ${secondaryCategory} after filtering`);
+    
     
     const secondaryExerciseCount = primaryExercises.length < primaryExerciseCount ? 4 : 3; // Increased from 3/2 to 4/3
     
