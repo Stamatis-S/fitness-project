@@ -281,7 +281,6 @@ export function generateWorkoutPlan(
       const leastRecentCategory = Object.entries(categoryLastUsed)
         .sort((a, b) => a[1].localeCompare(b[1]))[0];
       primaryCategory = leastRecentCategory[0] as ExerciseCategory;
-      console.log("Using least recent category:", primaryCategory);
       
       // For multi-category, find a second category
       if (forceMultiCategory) {
