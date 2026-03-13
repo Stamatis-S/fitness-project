@@ -314,7 +314,7 @@ export function generateWorkoutPlan(
   
   // Add primary category exercises - INCREASED FROM 2-3 TO 3-4
   const primaryExercises = favoriteExercises[primaryCategory] || [];
-  console.log(`Found ${primaryExercises.length} primary exercises for category ${primaryCategory} after filtering`);
+  
   
   // For multi-category workouts, use fewer primary exercises to make room for secondary
   const primaryExerciseCount = secondaryCategory ? 3 : 4; // Increased from 2/3 to 3/4
