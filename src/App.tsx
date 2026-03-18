@@ -66,6 +66,7 @@ function App() {
               <AuthProvider>
                 <ErrorBoundary>
                   <Suspense fallback={<PageLoader />}>
+                    <main>
                     <Routes>
                       <Route path="/" element={
                         <ErrorBoundary>
@@ -114,6 +115,7 @@ function App() {
                       } />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
+                    </main>
                   </Suspense>
                 </ErrorBoundary>
                 <BottomNav />
