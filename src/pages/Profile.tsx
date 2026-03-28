@@ -81,8 +81,8 @@ export default function Profile() {
   if (loadError || !profile || !session?.user) {
     return (
       <div className="flex h-screen flex-col items-center justify-center bg-background gap-4 px-4">
-        <p className="text-muted-foreground text-center">Failed to load profile. Please try again.</p>
-        <Button onClick={fetchProfile} variant="outline">Retry</Button>
+        <p className="text-muted-foreground text-center">{t("profile.failedToLoad")}</p>
+        <Button onClick={fetchProfile} variant="outline">{t("common.retry")}</Button>
       </div>
     );
   }
