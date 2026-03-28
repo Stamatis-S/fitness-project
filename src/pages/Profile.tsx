@@ -181,8 +181,13 @@ export default function Profile() {
             transition={{ delay: 0.4 }}
           >
             <Card className="p-5">
-              <h3 className="text-lg font-semibold mb-4">Settings</h3>
-              <SoundSettings />
+              <h3 className="text-lg font-semibold mb-4">{t("profile.settings")}</h3>
+              <div className="space-y-5">
+                <LanguageSettings />
+                <div className="border-t border-border pt-4">
+                  <SoundSettings />
+                </div>
+              </div>
             </Card>
           </motion.div>
         </div>
