@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { format, addDays, isAfter, isBefore, differenceInDays } from "date-fns";
+import { format, isAfter } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface WorkoutCycleCardProps {
   lastWorkoutDate: string | null;
@@ -41,13 +42,12 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
   const { session } = useAuth();
   const navigate = useNavigate();
   const [isComplete, setIsComplete] = useState(false);
+  const { t } = useTranslation();
 
-  if (!session) {
-    navigate('/auth');
-    return null;
-  }
+  useEffect(() => {
+    if (!session) navigate('/auth');
+  }, [session, navigate]);
 
-  // Query current cycle
   const { data: currentCycle, refetch: refetchCycle } = useQuery({
     queryKey: ['workout_cycle'],
     queryFn: async () => {
@@ -64,7 +64,6 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
     enabled: !!session?.user?.id,
   });
 
-  // Save cycle to database
   const saveCycleMutation = useMutation({
     mutationFn: async (startDate: Date) => {
       const { error } = await supabase
@@ -80,7 +79,6 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
     },
   });
 
-  // Update cycle progress
   const updateCycleMutation = useMutation({
     mutationFn: async ({ id, completedDays, isActive }: { id: number; completedDays: number; isActive: boolean }) => {
       const { error } = await supabase
@@ -96,7 +94,6 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
     },
   });
 
-  // Send payment reminder
   const sendReminderMutation = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('send-payment-reminder', {
@@ -111,7 +108,6 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
     },
   });
 
-  // Calculate workout days since cycle start
   const workoutDaysSinceCycleStart = currentCycle?.start_date 
     ? workoutDates.filter(date => {
         const cycleStartDate = new Date(currentCycle.start_date);
@@ -124,7 +120,6 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
 
   useEffect(() => {
     if (currentCycle?.start_date && session?.user?.id && currentCycle.is_active) {
-      // Only update if the count has changed
       if (workoutDaysSinceCycleStart !== currentCycle.completed_days) {
         if (workoutDaysSinceCycleStart >= CYCLE_DAYS) {
           setIsComplete(true);
@@ -134,12 +129,11 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
             isActive: false
           });
           
-          // Send payment reminder
           if (currentCycle.notifications_enabled) {
             sendReminderMutation.mutate();
           }
           
-          toast.success("Congratulations! You've completed your 12-day workout cycle! 🎉");
+          toast.success(t("dashboard.cycleComplete"));
         } else {
           updateCycleMutation.mutate({
             id: currentCycle.id,
@@ -157,12 +151,12 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
     const today = new Date();
     
     if (isAfter(date, today)) {
-      toast.error("Cannot select a future date");
+      toast.error(t("dashboard.cannotSelectFuture"));
       return;
     }
     
     if (currentCycle?.is_active && !isComplete) {
-      toast.error("Cannot start new cycle before completion");
+      toast.error(t("dashboard.cannotStartNewCycle"));
       return;
     }
 
@@ -170,10 +164,10 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
       await saveCycleMutation.mutateAsync(date);
       localStorage.setItem(STORAGE_KEY, date.toISOString());
       refetchCycle();
-      toast.success("Workout cycle started!");
+      toast.success(t("dashboard.cycleStarted"));
     } catch (error) {
       console.error("Error saving cycle:", error);
-      toast.error("Failed to start workout cycle");
+      toast.error(t("dashboard.cycleFailed"));
     }
   };
 
@@ -189,21 +183,21 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
     <Card className={`flex flex-col ${compact ? 'gap-2 p-2.5' : 'gap-3 p-4'}`}>
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h3 className={`font-semibold ${compact ? 'text-sm' : ''}`}>Workout Cycle</h3>
+          <h3 className={`font-semibold ${compact ? 'text-sm' : ''}`}>{t("dashboard.workoutCycle")}</h3>
           {currentCycle?.start_date ? (
             <>
               <p className={`text-muted-foreground ${compact ? 'text-[10px]' : 'text-sm'}`}>
-                Started: {format(new Date(currentCycle.start_date), compact ? 'MMM d' : 'MMM d, yyyy')}
+                {t("dashboard.started", { date: format(new Date(currentCycle.start_date), compact ? 'MMM d' : 'MMM d, yyyy') })}
               </p>
               {currentCycle.is_active && (
                 <p className={compact ? 'text-xs' : 'text-sm'}>
-                  {daysLeft} days left
+                  {t("dashboard.daysLeft", { count: daysLeft })}
                 </p>
               )}
             </>
           ) : (
             <p className={`text-muted-foreground ${compact ? 'text-[10px]' : 'text-sm'}`}>
-              Set your first workout day
+              {t("dashboard.setFirstDay")}
             </p>
           )}
         </div>
@@ -213,7 +207,7 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
             <PopoverTrigger asChild>
               <Button variant="outline" size={compact ? "sm" : "default"} className={compact ? 'text-xs' : ''}>
                 <CalendarIcon className={compact ? 'h-3 w-3 mr-1' : 'h-4 w-4 mr-2'} />
-                {compact ? 'Set' : 'Set First Day'}
+                {compact ? t("dashboard.set") : t("dashboard.setFirstDay")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">

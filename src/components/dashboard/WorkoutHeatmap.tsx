@@ -5,12 +5,14 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import type { WorkoutLog } from '@/components/saved-exercises/types';
 import { calculateWorkoutStreak } from '@/lib/streakCalculation';
 import { Flame, CalendarDays, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface WorkoutHeatmapProps {
   workoutLogs: WorkoutLog[];
 }
 
-const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAY_LABELS_EN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAY_LABELS_EL = ['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'];
 
 function getDayIntensity(sets: number): { bg: string; ring: string; label: string } {
   if (sets === 0) return { bg: 'bg-muted/30', ring: 'ring-muted/20', label: 'Rest day' };
@@ -23,9 +25,11 @@ function getDayIntensity(sets: number): { bg: string; ring: string; label: strin
 export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
   const isMobile = useIsMobile();
   const [showWeeks, setShowWeeks] = useState(false);
+  const { t, i18n } = useTranslation();
+
+  const dayLabels = i18n.language === 'el' ? DAY_LABELS_EL : DAY_LABELS_EN;
 
   const { currentWeek, pastWeeks, stats } = useMemo(() => {
-    // Build date → sets map
     const dateMap = new Map<string, number>();
     for (const log of workoutLogs) {
       dateMap.set(log.workout_date, (dateMap.get(log.workout_date) || 0) + 1);
@@ -35,7 +39,6 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
     const todayDay = today.getDay();
     const mondayOffset = todayDay === 0 ? 6 : todayDay - 1;
 
-    // Current week (Mon-Sun)
     const currentWeek: { date: string; sets: number; dayIndex: number; isToday: boolean; isFuture: boolean }[] = [];
     const monday = new Date(today);
     monday.setDate(today.getDate() - mondayOffset);
@@ -55,7 +58,6 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
       });
     }
 
-    // Past 8 weeks summary
     const pastWeeks: { weekLabel: string; totalSets: number; activeDays: number; startDate: string }[] = [];
     for (let w = 1; w <= 8; w++) {
       const weekStart = new Date(monday);
@@ -75,22 +77,19 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
       pastWeeks.push({ weekLabel: label, totalSets, activeDays, startDate: weekStart.toISOString().split('T')[0] });
     }
 
-    // Stats
     const allDates = [...dateMap.keys()];
     const streak = calculateWorkoutStreak(allDates);
 
-    // Calculate days until streak resets (4-day tolerance)
     let daysUntilStreakLost = 0;
     if (streak > 0 && allDates.length > 0) {
       const sortedDates = [...allDates].sort().reverse();
       const mostRecent = new Date(sortedDates[0] + 'T00:00:00');
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const daysSinceLast = Math.floor((today.getTime() - mostRecent.getTime()) / (1000 * 60 * 60 * 24));
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const daysSinceLast = Math.floor((todayMidnight.getTime() - mostRecent.getTime()) / (1000 * 60 * 60 * 24));
       daysUntilStreakLost = Math.max(0, 4 - daysSinceLast);
     }
 
-    // This week's active days
     const thisWeekActive = currentWeek.filter(d => d.sets > 0).length;
     const thisWeekSets = currentWeek.filter(d => d.sets > 0).reduce((sum, d) => sum + d.sets, 0);
 
@@ -101,7 +100,6 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
     };
   }, [workoutLogs]);
 
-  // Max sets in past weeks for bar scaling
   const maxWeekSets = Math.max(...pastWeeks.map(w => w.totalSets), 1);
 
   return (
@@ -110,7 +108,7 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <CalendarDays className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold text-foreground text-base">Activity</h2>
+          <h2 className="font-semibold text-foreground text-base">{t("dashboard.activity")}</h2>
         </div>
         <div className="flex items-center gap-1.5">
         {stats.streak > 0 && (
@@ -118,14 +116,17 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
               {stats.daysUntilStreakLost > 0 && stats.daysUntilStreakLost <= 2 && (
                 <div className="flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-1">
                   <span className="text-amber-500 text-[10px] font-medium">
-                    {stats.daysUntilStreakLost === 1 ? '1 μέρα απομένει!' : `${stats.daysUntilStreakLost} μέρες απομένουν`}
+                    {stats.daysUntilStreakLost === 1 
+                      ? t("dashboard.oneDayRemaining")
+                      : t("dashboard.daysRemaining", { count: stats.daysUntilStreakLost })
+                    }
                   </span>
                 </div>
               )}
               <div className="flex items-center gap-1 rounded-full bg-destructive/10 px-2.5 py-1">
                 <Flame className="h-3.5 w-3.5 text-destructive" />
                 <span className="font-bold text-foreground text-xs">{stats.streak}</span>
-                <span className="text-muted-foreground text-[10px]">streak</span>
+                <span className="text-muted-foreground text-[10px]">{t("dashboard.streak")}</span>
               </div>
             </div>
           )}
@@ -135,13 +136,13 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
       {/* This Week Summary */}
       <div className="mb-1">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-muted-foreground">This Week</span>
+          <span className="text-sm font-medium text-muted-foreground">{t("dashboard.thisWeek")}</span>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">{stats.thisWeekActive}</span> days
+              <span className="font-semibold text-foreground">{stats.thisWeekActive}</span> {t("common.days")}
             </span>
             <span className="text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">{stats.thisWeekSets}</span> sets
+              <span className="font-semibold text-foreground">{stats.thisWeekSets}</span> {t("exercise.sets").toLowerCase()}
             </span>
           </div>
         </div>
@@ -161,7 +162,7 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
                 className="flex flex-col items-center gap-1.5"
               >
                 <span className={`text-[10px] font-medium ${day.isToday ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {isMobile ? DAY_LABELS[i].charAt(0) : DAY_LABELS[i]}
+                  {isMobile ? dayLabels[i].charAt(0) : dayLabels[i]}
                 </span>
                 <div
                   className={`
@@ -196,23 +197,23 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
         </div>
       </div>
 
-      {/* Legend for circles */}
+      {/* Legend */}
       <div className="flex items-center justify-center gap-3 mt-3 mb-1">
         {[
-          { label: 'Rest', sets: 0 },
-          { label: 'Light', sets: 2 },
-          { label: 'Medium', sets: 6 },
-          { label: 'Hard', sets: 12 },
-          { label: 'Beast', sets: 20 },
+          { labelKey: 'rest', sets: 0 },
+          { labelKey: 'light', sets: 2 },
+          { labelKey: 'medium', sets: 6 },
+          { labelKey: 'hard', sets: 12 },
+          { labelKey: 'beast', sets: 20 },
         ].map((item) => {
           const intensity = getDayIntensity(item.sets);
           return (
-            <div key={item.label} className="flex items-center gap-1">
+            <div key={item.labelKey} className="flex items-center gap-1">
               <div
                 className={`rounded-full ${item.sets === 0 ? 'bg-muted/20' : intensity.bg} ${item.sets > 0 ? `ring-1 ${intensity.ring}` : ''}`}
                 style={{ width: 8, height: 8 }}
               />
-              <span className="text-[9px] text-muted-foreground">{item.label}</span>
+              <span className="text-[9px] text-muted-foreground">{t(`dashboard.${item.labelKey}`)}</span>
             </div>
           );
         })}
@@ -225,7 +226,7 @@ export function WorkoutHeatmap({ workoutLogs }: WorkoutHeatmapProps) {
       >
         <span className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
           <TrendingUp className="h-3.5 w-3.5" />
-          Past Weeks
+          {t("dashboard.pastWeeks")}
         </span>
         {showWeeks ? (
           <ChevronUp className="h-4 w-4 text-muted-foreground" />

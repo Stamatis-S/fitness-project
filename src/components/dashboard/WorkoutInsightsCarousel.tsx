@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { Activity, Award, TrendingUp, Dumbbell, Flame, Trophy, Target } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface WorkoutInsightsCarouselProps {
   logs: WorkoutLog[];
@@ -23,10 +24,10 @@ function InsightCard({ icon, label, value, gradient, subValue }: InsightCardProp
           {icon}
         </div>
         <div className="min-w-0 flex-1 overflow-hidden">
-          <p className="text-[8px] sm:text-[9px] text-white/70 font-medium truncate">{label}</p>
-          <p className="text-[10px] sm:text-sm font-bold text-white leading-tight line-clamp-2">{value}</p>
+          <p className="text-[9px] sm:text-[10px] text-white/70 font-medium truncate">{label}</p>
+          <p className="text-xs sm:text-sm font-bold text-white leading-tight line-clamp-2">{value}</p>
           {subValue && (
-            <p className="text-[7px] sm:text-[8px] text-white/60 leading-tight truncate">{subValue}</p>
+            <p className="text-[8px] sm:text-[9px] text-white/60 leading-tight truncate">{subValue}</p>
           )}
         </div>
       </div>
@@ -35,7 +36,6 @@ function InsightCard({ icon, label, value, gradient, subValue }: InsightCardProp
 }
 
 function computeInsights(logs: WorkoutLog[]) {
-  // Single pass to compute most aggregations
   const categoryCounts: Record<string, number> = {};
   const exerciseCounts: Record<string, number> = {};
   let totalVolume = 0;
@@ -47,10 +47,8 @@ function computeInsights(logs: WorkoutLog[]) {
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
   for (const log of logs) {
-    // Category counts
     categoryCounts[log.category] = (categoryCounts[log.category] || 0) + 1;
 
-    // Exercise counts
     const name = log.custom_exercise || log.exercises?.name;
     if (name) {
       exerciseCounts[name] = (exerciseCounts[name] || 0) + 1;
@@ -59,7 +57,6 @@ function computeInsights(logs: WorkoutLog[]) {
       }
     }
 
-    // Volume
     const vol = (log.weight_kg || 0) * (log.reps || 0);
     totalVolume += vol;
     if (new Date(log.workout_date) >= oneWeekAgo) {
@@ -69,13 +66,11 @@ function computeInsights(logs: WorkoutLog[]) {
     uniqueDatesSet.add(log.workout_date);
   }
 
-  // Most trained category
   const categoryEntries = Object.entries(categoryCounts);
-  const mostTrained = categoryEntries.length === 0
+  const mostTrainedCategory = categoryEntries.length === 0
     ? "—"
     : categoryEntries.reduce((a, b) => (a[1] > b[1] ? a : b))[0];
 
-  // Most used exercise
   const exerciseEntries = Object.entries(exerciseCounts);
   const mostUsed = exerciseEntries.length === 0
     ? { name: "—", sets: 0 }
@@ -84,18 +79,15 @@ function computeInsights(logs: WorkoutLog[]) {
         return { name: n, sets: s };
       })();
 
-  // Format volumes
   const formatVol = (v: number) => {
     if (v >= 1000000) return `${(v / 1000000).toFixed(1)}M kg`;
     if (v >= 1000) return `${(v / 1000).toFixed(0)}K kg`;
     return `${v} kg`;
   };
 
-  // Avg sets per day
   const uniqueDates = uniqueDatesSet.size;
   const avgSetsPerDay = uniqueDates === 0 ? "0" : (logs.length / uniqueDates).toFixed(1);
 
-  // Best streak
   const sortedDates = [...uniqueDatesSet].sort();
   let bestStreak = sortedDates.length > 0 ? 1 : 0;
   let currentStreak = 1;
@@ -113,7 +105,7 @@ function computeInsights(logs: WorkoutLog[]) {
 
   return {
     uniqueWorkouts: uniqueDates,
-    mostTrained,
+    mostTrainedCategory,
     totalVolume: formatVol(totalVolume),
     weeklyVolume: formatVol(weeklyVolume),
     mostUsed,
@@ -125,58 +117,64 @@ function computeInsights(logs: WorkoutLog[]) {
 
 export function WorkoutInsightsCarousel({ logs }: WorkoutInsightsCarouselProps) {
   const insights = useMemo(() => computeInsights(logs), [logs]);
+  const { t } = useTranslation();
+
+  // Translate the most trained category name
+  const mostTrainedDisplay = insights.mostTrainedCategory === "—" 
+    ? "—" 
+    : t(`categories.${insights.mostTrainedCategory}`, insights.mostTrainedCategory);
 
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
         <InsightCard
           icon={<Award className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
-          label="Total Workouts"
+          label={t("dashboard.totalWorkouts")}
           value={insights.uniqueWorkouts}
           gradient="from-yellow-500 to-amber-600"
         />
         <InsightCard
           icon={<Activity className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
-          label="Most Trained"
-          value={insights.mostTrained}
+          label={t("dashboard.mostTrained")}
+          value={mostTrainedDisplay}
           gradient="from-green-500 to-emerald-600"
         />
         <InsightCard
           icon={<TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
-          label="Total Volume"
+          label={t("dashboard.totalVolume")}
           value={insights.totalVolume}
           gradient="from-purple-500 to-violet-600"
         />
         <InsightCard
           icon={<Trophy className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
-          label="This Week"
+          label={t("dashboard.weeklyVolume")}
           value={insights.weeklyVolume}
           gradient="from-orange-500 to-red-600"
         />
         <InsightCard
           icon={<Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
-          label="Most Used"
+          label={t("dashboard.mostUsed")}
           value={insights.mostUsed.name}
           gradient="from-cyan-500 to-teal-600"
-          subValue={`${insights.mostUsed.sets} sets`}
+          subValue={`${insights.mostUsed.sets} ${t("exercise.sets").toLowerCase()}`}
         />
         <InsightCard
           icon={<Dumbbell className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
-          label="Max Weight"
+          label={t("dashboard.maxWeight")}
           value={insights.maxWeight.weight > 0 ? `${insights.maxWeight.weight} kg` : "—"}
           gradient="from-rose-500 to-pink-600"
           subValue={insights.maxWeight.name}
         />
         <InsightCard
           icon={<Dumbbell className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
-          label="Avg Sets/Day"
+          label={t("dashboard.avgSetsPerDay")}
           value={insights.avgSetsPerDay}
           gradient="from-blue-500 to-cyan-600"
         />
         <InsightCard
           icon={<Flame className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
-          label="Best Streak"
-          value={`${insights.bestStreak} days`}
+          label={t("dashboard.bestStreak")}
+          value={`${insights.bestStreak} ${t("common.days")}`}
           gradient="from-pink-500 to-rose-600"
         />
       </div>

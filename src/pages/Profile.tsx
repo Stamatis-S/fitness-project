@@ -9,10 +9,12 @@ import { ProfilePhoto } from "@/components/profile/ProfilePhoto";
 import { AccountInformation } from "@/components/profile/AccountInformation";
 import { MuscleGrowthVisualization } from "@/components/profile/MuscleGrowthVisualization";
 import { SoundSettings } from "@/components/profile/SoundSettings";
+import { LanguageSettings } from "@/components/profile/LanguageSettings";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import { PageTransition } from "@/components/PageTransition";
 import { motion } from "framer-motion";
 import { Bookmark, Dumbbell } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ProfileData {
   username: string | null;
@@ -25,6 +27,7 @@ interface ProfileData {
 export default function Profile() {
   const { session } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -78,8 +81,8 @@ export default function Profile() {
   if (loadError || !profile || !session?.user) {
     return (
       <div className="flex h-screen flex-col items-center justify-center bg-background gap-4 px-4">
-        <p className="text-muted-foreground text-center">Failed to load profile. Please try again.</p>
-        <Button onClick={fetchProfile} variant="outline">Retry</Button>
+        <p className="text-muted-foreground text-center">{t("profile.failedToLoad")}</p>
+        <Button onClick={fetchProfile} variant="outline">{t("common.retry")}</Button>
       </div>
     );
   }
@@ -87,7 +90,7 @@ export default function Profile() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-background pb-24">
-        <IOSPageHeader title="Profile" />
+        <IOSPageHeader title={t("profile.title")} />
         
         <div className="px-4 pt-4 space-y-4">
           {/* Profile Photo Card */}
@@ -149,7 +152,7 @@ export default function Profile() {
             transition={{ delay: 0.3 }}
           >
             <Card className="p-5">
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+              <h3 className="text-lg font-semibold mb-4">{t("profile.quickLinks")}</h3>
               <div className="flex flex-col gap-2">
                 <Button
                   variant="outline"
@@ -157,7 +160,7 @@ export default function Profile() {
                   onClick={() => navigate("/saved-exercises")}
                 >
                   <Bookmark className="h-4 w-4" />
-                  Saved Exercises
+                  {t("profile.savedExercises")}
                 </Button>
                 <Button
                   variant="outline"
@@ -165,7 +168,7 @@ export default function Profile() {
                   onClick={() => navigate("/workout-plan")}
                 >
                   <Dumbbell className="h-4 w-4" />
-                  Workout Plan Generator
+                  {t("profile.workoutPlanGenerator")}
                 </Button>
               </div>
             </Card>
@@ -178,8 +181,13 @@ export default function Profile() {
             transition={{ delay: 0.4 }}
           >
             <Card className="p-5">
-              <h3 className="text-lg font-semibold mb-4">Settings</h3>
-              <SoundSettings />
+              <h3 className="text-lg font-semibold mb-4">{t("profile.settings")}</h3>
+              <div className="space-y-5">
+                <LanguageSettings />
+                <div className="border-t border-border pt-4">
+                  <SoundSettings />
+                </div>
+              </div>
             </Card>
           </motion.div>
         </div>

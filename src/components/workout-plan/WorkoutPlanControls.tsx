@@ -1,6 +1,7 @@
 
 import { Check, X, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 interface WorkoutPlanControlsProps {
   onDecline: () => void;
@@ -17,22 +18,24 @@ export function WorkoutPlanControls({
   planCount, 
   currentIndex 
 }: WorkoutPlanControlsProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col gap-2 pt-2">
       <div className="flex space-x-2">
         <Button
-          className="flex-1 bg-[#333333] hover:bg-[#444444] text-white"
+          className="flex-1 bg-secondary hover:bg-secondary/80 text-secondary-foreground"
           onClick={onDecline}
         >
           <X className="h-4 w-4 mr-2" />
-          Find Another
+          {t("workoutPlan.findAnother")}
         </Button>
         <Button
-          className="flex-1 bg-[#E22222] hover:bg-[#C11818] text-white"
+          className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
           onClick={onSave}
         >
           <Check className="h-4 w-4 mr-2" />
-          Use This Plan
+          {t("workoutPlan.useThisPlan")}
         </Button>
       </div>
       {onSaveAsTemplate && (
@@ -42,7 +45,7 @@ export function WorkoutPlanControls({
           onClick={onSaveAsTemplate}
         >
           <Save className="h-4 w-4 mr-2" />
-          Αποθήκευση ως Template
+          {t("workoutPlan.saveAsTemplate")}
         </Button>
       )}
     </div>

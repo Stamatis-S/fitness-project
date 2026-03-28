@@ -11,6 +11,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { PageTransition } from "@/components/PageTransition";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -21,6 +22,7 @@ export default function Auth() {
   const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
   const { session } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("savedEmail");
@@ -64,22 +66,21 @@ export default function Auth() {
       }
 
       if (isSignUp) {
-        toast.success("Check your email to confirm your account!");
+        toast.success(t("auth.checkEmail"));
       } else {
-        toast.success("Successfully logged in!");
+        toast.success(t("auth.loggedIn"));
         navigate("/");
       }
     } catch (error) {
       const rawMessage = error instanceof Error ? error.message : '';
-      // Map Supabase error messages to user-friendly ones
       const friendlyMessages: Record<string, string> = {
-        'Invalid login credentials': 'Λάθος email ή κωδικός. Δοκίμασε ξανά.',
-        'Email not confirmed': 'Επιβεβαίωσε πρώτα το email σου.',
-        'User already registered': 'Αυτό το email χρησιμοποιείται ήδη.',
-        'Password should be at least 6 characters': 'Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.',
-        'Signup requires a valid password': 'Εισάγετε έναν έγκυρο κωδικό.',
+        'Invalid login credentials': t("auth.errors.invalidCredentials"),
+        'Email not confirmed': t("auth.errors.emailNotConfirmed"),
+        'User already registered': t("auth.errors.userAlreadyRegistered"),
+        'Password should be at least 6 characters': t("auth.errors.passwordTooShort"),
+        'Signup requires a valid password': t("auth.errors.invalidPassword"),
       };
-      const errorMessage = friendlyMessages[rawMessage] || 'Κάτι πήγε στραβά. Δοκίμασε ξανά.';
+      const errorMessage = friendlyMessages[rawMessage] || t("auth.errors.generic");
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -118,10 +119,10 @@ export default function Auth() {
             className="text-center"
           >
             <h1 className="text-2xl font-bold text-foreground tracking-tight">
-              {isSignUp ? "Create Account" : "Welcome Back"}
+              {isSignUp ? t("auth.createAccount") : t("auth.welcomeBack")}
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              {isSignUp ? "Sign up to start tracking" : "Sign in to continue"}
+              {isSignUp ? t("auth.signUpToStart") : t("auth.signInToContinue")}
             </p>
           </motion.div>
 
@@ -132,11 +133,11 @@ export default function Auth() {
               transition={{ duration: 0.4, delay: 0.2 }}
               className="space-y-2"
             >
-              <Label htmlFor="email" className="text-sm font-medium text-foreground">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium text-foreground">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
+                placeholder={t("auth.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -151,7 +152,7 @@ export default function Auth() {
               transition={{ duration: 0.4, delay: 0.3 }}
               className="space-y-2"
             >
-              <Label htmlFor="password" className="text-sm font-medium text-foreground">Password</Label>
+              <Label htmlFor="password" className="text-sm font-medium text-foreground">{t("auth.password")}</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -166,6 +167,7 @@ export default function Auth() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors touch-target"
                 >
                   {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -187,7 +189,7 @@ export default function Auth() {
                   className="h-5 w-5 rounded-md"
                 />
                 <Label htmlFor="rememberMe" className="text-sm text-muted-foreground cursor-pointer">
-                  Remember me
+                  {t("auth.rememberMe")}
                 </Label>
               </motion.div>
             )}
@@ -204,10 +206,10 @@ export default function Auth() {
                 disabled={isLoading}
               >
                 {isLoading
-                  ? "Loading..."
+                  ? t("common.loading")
                   : isSignUp
-                  ? "Create Account"
-                  : "Sign In"}
+                  ? t("auth.signUp")
+                  : t("auth.signIn")}
               </Button>
             </motion.div>
           </form>
@@ -225,8 +227,8 @@ export default function Auth() {
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               {isSignUp
-                ? "Already have an account? Sign in"
-                : "Don't have an account? Sign up"}
+                ? t("auth.alreadyHaveAccount")
+                : t("auth.dontHaveAccount")}
             </Button>
           </motion.div>
         </Card>

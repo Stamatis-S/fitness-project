@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useHaptic } from "@/hooks/useHaptic";
+import { useTranslation } from "react-i18next";
 
 const HIDDEN_PATHS = ['/auth', '/install'];
 
@@ -11,8 +12,8 @@ export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { vibrate } = useHaptic();
+  const { t } = useTranslation();
 
-  // Hide BottomNav on auth, install, and 404 pages
   const shouldHide = HIDDEN_PATHS.includes(location.pathname) || 
     !['/', '/dashboard', '/saved-exercises', '/leaderboard', '/profile', '/workout-plan', '/templates'].includes(location.pathname);
   
@@ -21,11 +22,11 @@ export function BottomNav() {
   }
 
   const navItems = [
-    { icon: Home, label: "Home", path: "/" },
-    { icon: BarChart2, label: "Stats", path: "/dashboard" },
-    { icon: Bookmark, label: "Saved", path: "/saved-exercises" },
-    { icon: Trophy, label: "Ranks", path: "/leaderboard" },
-    { icon: User, label: "Profile", path: "/profile" },
+    { icon: Home, label: t("nav.home"), path: "/" },
+    { icon: BarChart2, label: t("nav.stats"), path: "/dashboard" },
+    { icon: Bookmark, label: t("nav.saved"), path: "/saved-exercises" },
+    { icon: Trophy, label: t("nav.ranks"), path: "/leaderboard" },
+    { icon: User, label: t("nav.profile"), path: "/profile" },
   ];
 
   return (
@@ -36,7 +37,6 @@ export function BottomNav() {
       className="fixed bottom-4 left-4 right-4 z-50"
     >
       <nav className="relative mx-auto max-w-md overflow-hidden rounded-2xl border border-white/10 bg-card/80 backdrop-blur-2xl shadow-2xl">
-        {/* Gradient glow effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-50" />
         
         <div className="relative flex h-16 items-center justify-around px-2">
@@ -107,7 +107,6 @@ export function BottomNav() {
           })}
         </div>
         
-        {/* Bottom glow line */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
       </nav>
     </motion.div>

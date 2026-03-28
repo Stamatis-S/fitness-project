@@ -3,6 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import './i18n/config'
 
 // Add global error handler for uncaught errors
 window.onerror = function(message, source, lineno, colno, error) {
