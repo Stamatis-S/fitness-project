@@ -90,7 +90,7 @@ export default function Profile() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-background pb-24">
-        <IOSPageHeader title="Profile" />
+        <IOSPageHeader title={t("profile.title")} />
         
         <div className="px-4 pt-4 space-y-4">
           {/* Profile Photo Card */}
