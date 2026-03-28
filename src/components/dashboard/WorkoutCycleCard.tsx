@@ -44,10 +44,9 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
   const [isComplete, setIsComplete] = useState(false);
   const { t } = useTranslation();
 
-  if (!session) {
-    navigate('/auth');
-    return null;
-  }
+  useEffect(() => {
+    if (!session) navigate('/auth');
+  }, [session, navigate]);
 
   const { data: currentCycle, refetch: refetchCycle } = useQuery({
     queryKey: ['workout_cycle'],
