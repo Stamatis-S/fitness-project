@@ -152,7 +152,7 @@ export default function Profile() {
             transition={{ delay: 0.3 }}
           >
             <Card className="p-5">
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
+              <h3 className="text-lg font-semibold mb-4">{t("profile.quickLinks")}</h3>
               <div className="flex flex-col gap-2">
                 <Button
                   variant="outline"
@@ -160,7 +160,7 @@ export default function Profile() {
                   onClick={() => navigate("/saved-exercises")}
                 >
                   <Bookmark className="h-4 w-4" />
-                  Saved Exercises
+                  {t("profile.savedExercises")}
                 </Button>
                 <Button
                   variant="outline"
@@ -168,7 +168,7 @@ export default function Profile() {
                   onClick={() => navigate("/workout-plan")}
                 >
                   <Dumbbell className="h-4 w-4" />
-                  Workout Plan Generator
+                  {t("profile.workoutPlanGenerator")}
                 </Button>
               </div>
             </Card>
