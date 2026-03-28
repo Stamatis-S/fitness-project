@@ -29,8 +29,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslation } from "react-i18next";
 
-// #15: Moved outside component - no dependency on state/props
 function getDateRange(filter: string): [Date, Date] | null {
   const today = new Date();
   today.setHours(23, 59, 59, 999);
@@ -54,6 +54,7 @@ function getDateRange(filter: string): [Date, Date] | null {
 export default function SavedExercises() {
   const { session, isLoading } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
@@ -61,7 +62,6 @@ export default function SavedExercises() {
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const itemsPerPage = 20;
 
-  // #25: Reset pagination on filter changes
   const handleSearchChange = useCallback((value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
@@ -115,7 +115,6 @@ export default function SavedExercises() {
 
   const allUniqueDates = allDateInfo?.uniqueDates || [];
 
-  // #16: Properly memoize filteredUniqueDates so downstream useMemo works
   const filteredUniqueDates = useMemo(() => {
     return allUniqueDates.filter(date => {
       if (dateFilter !== 'all') {
@@ -191,7 +190,6 @@ export default function SavedExercises() {
     enabled: !!session?.user.id && currentDates.length > 0,
   });
 
-  // #26: Delete with confirmation dialog
   const handleDeleteConfirm = async () => {
     if (!session?.user.id || deleteTarget === null) return;
 
@@ -204,13 +202,12 @@ export default function SavedExercises() {
 
       if (error) throw error;
 
-      toast.success("Exercise deleted successfully");
-      // #19: Use invalidateQueries instead of refetch for consistency
+      toast.success(t("saved.exerciseDeleted"));
       queryClient.invalidateQueries({ queryKey: ['workout_logs_paginated', session?.user.id] });
       queryClient.invalidateQueries({ queryKey: ['all_workout_dates', session?.user.id] });
       queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] });
     } catch (error) {
-      toast.error("Failed to delete exercise");
+      toast.error(t("saved.deleteFailed"));
       console.error("Delete error:", error);
     } finally {
       setDeleteTarget(null);
@@ -222,8 +219,8 @@ export default function SavedExercises() {
       queryClient.invalidateQueries({ queryKey: ['all_workout_dates', session?.user.id] }),
       queryClient.invalidateQueries({ queryKey: ['workout_logs_paginated', session?.user.id] }),
     ]);
-    toast.success("Ανανεώθηκε!");
-  }, [queryClient, session?.user.id]);
+    toast.success(t("common.refreshed"));
+  }, [queryClient, session?.user.id, t]);
 
   if (isLoading) {
     return (
@@ -241,7 +238,7 @@ export default function SavedExercises() {
     <PageTransition>
       <PullToRefresh onRefresh={handleRefresh} className="h-screen">
         <div className="min-h-screen bg-background pb-24">
-          <IOSPageHeader title="Saved Exercises" />
+          <IOSPageHeader title={t("saved.title")} />
         
         <div className="px-4 pt-4 space-y-4">
           <Card className="p-4">
@@ -313,25 +310,24 @@ export default function SavedExercises() {
           )}
 
           <p className="text-center text-sm text-muted-foreground">
-            Page {currentPage} of {totalPages} • {currentDates.length} days
+            {t("common.page")} {currentPage} {t("common.of")} {totalPages} • {currentDates.length} {t("common.days")}
           </p>
           </div>
         </div>
       </PullToRefresh>
 
-      {/* #26: Delete confirmation dialog */}
       <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Διαγραφή άσκησης</AlertDialogTitle>
+            <AlertDialogTitle>{t("saved.deleteConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Είσαι σίγουρος; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
+              {t("saved.deleteConfirmDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Διαγραφή
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
