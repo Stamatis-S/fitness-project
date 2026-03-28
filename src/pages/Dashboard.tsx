@@ -14,20 +14,21 @@ import { PageTransition } from "@/components/PageTransition";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/components/AuthProvider";
-import { useEffect, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { session, isLoading } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
-  // Single query - fetch ALL data once, filter client-side where needed
   const { data: workoutLogs, isLoading: isLoadingLogs } = useQuery({
     queryKey: ['workout_logs_all', session?.user.id],
     queryFn: async () => {
@@ -72,7 +73,6 @@ export default function Dashboard() {
     staleTime: 1000 * 60 * 5,
   });
 
-  // Memoize derived data (#8)
   const workoutDates = useMemo(() => {
     if (!workoutLogs) return [];
     return [...new Set(workoutLogs.map(l => l.workout_date))];
@@ -85,8 +85,8 @@ export default function Dashboard() {
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] });
-    toast.success("Ανανεώθηκε!");
-  }, [queryClient, session?.user.id]);
+    toast.success(t("common.refreshed"));
+  }, [queryClient, session?.user.id, t]);
 
   if (isLoading) {
     return (
@@ -105,7 +105,7 @@ export default function Dashboard() {
       <PullToRefresh onRefresh={handleRefresh} className="h-screen">
         <div className="min-h-screen bg-background pb-24">
           <IOSPageHeader 
-            title="Dashboard" 
+            title={t("dashboard.title")} 
             rightElement={
               <Button
                 variant="ios"
@@ -114,7 +114,7 @@ export default function Dashboard() {
                 className="h-9 px-3 gap-1.5"
               >
                 <Plus className="h-4 w-4" />
-                New
+                {t("common.new")}
               </Button>
             }
           />
@@ -122,9 +122,9 @@ export default function Dashboard() {
           <div className="px-4 pt-4 space-y-4">
             <Tabs defaultValue="overview" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="progress">Progress</TabsTrigger>
-                <TabsTrigger value="statistics">Statistics</TabsTrigger>
+                <TabsTrigger value="overview">{t("dashboard.overview")}</TabsTrigger>
+                <TabsTrigger value="progress">{t("dashboard.progress")}</TabsTrigger>
+                <TabsTrigger value="statistics">{t("dashboard.statistics")}</TabsTrigger>
               </TabsList>
 
               <div className="mt-4">
