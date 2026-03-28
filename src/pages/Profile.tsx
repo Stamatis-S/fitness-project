@@ -9,10 +9,12 @@ import { ProfilePhoto } from "@/components/profile/ProfilePhoto";
 import { AccountInformation } from "@/components/profile/AccountInformation";
 import { MuscleGrowthVisualization } from "@/components/profile/MuscleGrowthVisualization";
 import { SoundSettings } from "@/components/profile/SoundSettings";
+import { LanguageSettings } from "@/components/profile/LanguageSettings";
 import { IOSPageHeader } from "@/components/ui/ios-page-header";
 import { PageTransition } from "@/components/PageTransition";
 import { motion } from "framer-motion";
 import { Bookmark, Dumbbell } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ProfileData {
   username: string | null;
