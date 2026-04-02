@@ -59,7 +59,7 @@ export default function SavedExercises() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<number[] | null>(null);
   const itemsPerPage = 20;
 
   const handleSearchChange = useCallback((value: string) => {
@@ -197,7 +197,7 @@ export default function SavedExercises() {
       const { error } = await supabase
         .from('workout_logs')
         .delete()
-        .eq('id', deleteTarget)
+        .in('id', deleteTarget)
         .eq('user_id', session.user.id);
 
       if (error) throw error;
