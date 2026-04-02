@@ -59,7 +59,7 @@ export default function SavedExercises() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<number[] | null>(null);
   const itemsPerPage = 20;
 
   const handleSearchChange = useCallback((value: string) => {
