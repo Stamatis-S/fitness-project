@@ -197,7 +197,7 @@ export default function SavedExercises() {
       const { error } = await supabase
         .from('workout_logs')
         .delete()
-        .eq('id', deleteTarget)
+        .in('id', deleteTarget)
         .eq('user_id', session.user.id);
 
       if (error) throw error;
