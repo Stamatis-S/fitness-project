@@ -66,7 +66,6 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
       return;
     }
 
-    // Form validation
     if (passwordForm.newPassword !== passwordForm.confirmNewPassword) {
       toast.error("New passwords don't match");
       return;
@@ -78,7 +77,6 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
     }
 
     try {
-      // First authenticate with current password to verify
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email,
         password: passwordForm.currentPassword,
@@ -89,14 +87,12 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
         return;
       }
 
-      // Now update the password
       const { error } = await supabase.auth.updateUser({
         password: passwordForm.newPassword
       });
 
       if (error) throw error;
 
-      // Reset form and close password change section
       setPasswordForm({
         currentPassword: "",
         newPassword: "",
@@ -113,7 +109,7 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
 
   return (
     <div className="space-y-2">
-      <h2 className="text-base font-semibold text-white">Account Information</h2>
+      <h2 className="text-base font-semibold text-foreground">Account Information</h2>
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           {isEditingUsername ? (
@@ -121,7 +117,7 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
               <Input
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
-                className="h-8 text-sm bg-[#333333] border-[#444444]"
+                className="h-8 text-sm bg-secondary border-border"
                 placeholder="Enter new username"
               />
               <Button
@@ -131,14 +127,14 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
                   handleUpdateUsername();
                 }}
                 disabled={!newUsername.trim()}
-                className="h-8 bg-[#333333] hover:bg-[#444444] border-0"
+                className="h-8 bg-secondary hover:bg-muted border-0"
               >
                 <Check className="h-3 w-3" />
               </Button>
             </div>
           ) : (
             <div className="flex items-center justify-between w-full">
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-muted-foreground">
                 Username: {username || 'Not set'}
               </p>
               <Button
@@ -150,7 +146,7 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
                 }}
                 className="h-6 p-1"
               >
-                <Edit2 className="h-3 w-3 text-gray-400" />
+                <Edit2 className="h-3 w-3 text-muted-foreground" />
               </Button>
             </div>
           )}
@@ -164,34 +160,34 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
               vibrate('light');
               setIsChangingPassword(!isChangingPassword);
             }}
-            className="w-full flex justify-between items-center text-sm h-9 bg-[#333333] hover:bg-[#444444] text-white border-0"
+            className="w-full flex justify-between items-center text-sm h-9 bg-secondary hover:bg-muted text-foreground border-0"
           >
             <span>Change Password</span>
             <Lock className="h-3 w-3" />
           </Button>
           
           {isChangingPassword && (
-            <div className="mt-3 space-y-2 p-3 bg-[#333333] rounded-md">
+            <div className="mt-3 space-y-2 p-3 bg-secondary rounded-md">
               <Input
                 type="password"
                 placeholder="Current Password"
                 value={passwordForm.currentPassword}
                 onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
-                className="bg-[#444444] border-[#555555] h-8 text-sm"
+                className="bg-muted border-border h-8 text-sm"
               />
               <Input
                 type="password"
                 placeholder="New Password"
                 value={passwordForm.newPassword}
                 onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
-                className="bg-[#444444] border-[#555555] h-8 text-sm"
+                className="bg-muted border-border h-8 text-sm"
               />
               <Input
                 type="password"
                 placeholder="Confirm New Password"
                 value={passwordForm.confirmNewPassword}
                 onChange={(e) => setPasswordForm({...passwordForm, confirmNewPassword: e.target.value})}
-                className="bg-[#444444] border-[#555555] h-8 text-sm"
+                className="bg-muted border-border h-8 text-sm"
               />
               <div className="flex gap-2 pt-1">
                 <Button
@@ -206,7 +202,7 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
                       confirmNewPassword: ""
                     });
                   }}
-                  className="flex-1 h-8 bg-transparent hover:bg-[#444444] text-gray-300 border-[#555555]"
+                  className="flex-1 h-8 bg-transparent hover:bg-muted text-muted-foreground border-border"
                 >
                   Cancel
                 </Button>
@@ -220,7 +216,7 @@ export function AccountInformation({ userId, username, email, onUsernameUpdate }
                            !passwordForm.newPassword || 
                            !passwordForm.confirmNewPassword ||
                            passwordForm.newPassword !== passwordForm.confirmNewPassword}
-                  className="flex-1 h-8 bg-[#4488EF] hover:bg-[#3377DD] border-0"
+                  className="flex-1 h-8 bg-primary hover:bg-primary/90 text-primary-foreground border-0"
                 >
                   Update
                 </Button>

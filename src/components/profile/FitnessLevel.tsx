@@ -17,6 +17,16 @@ interface FitnessLevelProps {
   onScoreUpdate: (newScore: number, newLevel: string) => void;
 }
 
+// Level color tokens using HSL semantic approach
+const LEVEL_COLORS = {
+  Legend: 'hsl(300, 100%, 50%)',
+  Elite: 'hsl(270, 91%, 65%)',
+  Advanced: 'hsl(216, 84%, 60%)',
+  Intermediate: 'hsl(142, 71%, 45%)',
+  Novice: 'hsl(48, 96%, 53%)',
+  Beginner: 'hsl(48, 96%, 53%)',
+} as const;
+
 export function FitnessLevel({ userId, fitnessScore, fitnessLevel, lastScoreUpdate, onScoreUpdate }: FitnessLevelProps) {
   const [isRecalculating, setIsRecalculating] = useState(false);
   const queryClient = useQueryClient();
@@ -57,58 +67,46 @@ export function FitnessLevel({ userId, fitnessScore, fitnessLevel, lastScoreUpda
 
   const getProgressValue = (score: number) => {
     if (score >= 4940) return 100;
-    if (score >= 3705) 
-      return 80 + ((score - 3705) / 1235) * 20;
-    if (score >= 2470) 
-      return 60 + ((score - 2470) / 1235) * 20;
-    if (score >= 1300) 
-      return 40 + ((score - 1300) / 1170) * 20;
-    if (score >= 400) 
-      return 20 + ((score - 400) / 900) * 20;
+    if (score >= 3705) return 80 + ((score - 3705) / 1235) * 20;
+    if (score >= 2470) return 60 + ((score - 2470) / 1235) * 20;
+    if (score >= 1300) return 40 + ((score - 1300) / 1170) * 20;
+    if (score >= 400) return 20 + ((score - 400) / 900) * 20;
     return Math.max((score / 400) * 20, 5);
   };
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'Legend':
-        return 'text-[#FF00FF]';
-      case 'Elite':
-        return 'text-[#A855F7]';
-      case 'Advanced':
-        return 'text-[#4488EF]';
-      case 'Intermediate':
-        return 'text-[#22C55E]';
-      case 'Novice':
-        return 'text-[#EAB308]';
-      case 'Beginner':
-      default:
-        return 'text-[#EAB308]';
-    }
-  };
+  const getLevelColor = (level: string) => LEVEL_COLORS[level as keyof typeof LEVEL_COLORS] || LEVEL_COLORS.Beginner;
 
   const formatLastUpdated = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      if (!isValid(date)) {
-        return 'Never updated';
-      }
+      if (!isValid(date)) return 'Never updated';
       return format(date, 'PPpp');
-    } catch (error) {
-      console.error('Error formatting date:', error);
+    } catch {
       return 'Never updated';
     }
   };
 
+  const levelColor = getLevelColor(fitnessLevel);
+
+  const levels = [
+    { icon: ArrowDown, name: 'Beginner', range: '0 - 399' },
+    { icon: ArrowUp, name: 'Novice', range: '400 - 1,299' },
+    { icon: Medal, name: 'Intermediate', range: '1,300 - 2,469' },
+    { icon: Star, name: 'Advanced', range: '2,470 - 3,704' },
+    { icon: Trophy, name: 'Elite', range: '3,705 - 4,939' },
+    { icon: Zap, name: 'Legend', range: '4,940+' },
+  ];
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <h2 className="text-base font-semibold text-white">Fitness Level</h2>
+        <h2 className="text-base font-semibold text-foreground">Fitness Level</h2>
         <Button
           size="sm"
           variant="outline"
           onClick={handleRecalculateScore}
           disabled={isRecalculating}
-          className="flex items-center gap-1 text-xs h-7 bg-[#333333] hover:bg-[#444444] text-white border-0"
+          className="flex items-center gap-1 text-xs h-7 bg-secondary hover:bg-muted text-foreground border-0"
         >
           <RefreshCw className={`h-3 w-3 ${isRecalculating ? 'animate-spin' : ''}`} />
           Recalculate
@@ -116,67 +114,37 @@ export function FitnessLevel({ userId, fitnessScore, fitnessLevel, lastScoreUpda
       </div>
       <div className="space-y-1">
         <div className="flex justify-between items-center">
-          <span className={`text-lg font-bold ${getLevelColor(fitnessLevel)}`}>
+          <span className="text-lg font-bold" style={{ color: levelColor }}>
             {fitnessLevel}
           </span>
-          <span className="text-sm font-medium text-white">
+          <span className="text-sm font-medium text-foreground">
             Score: {Math.round(fitnessScore)}
           </span>
         </div>
         <Progress 
           value={getProgressValue(fitnessScore)} 
-          className="h-2 bg-[#333333]"
+          className="h-2 bg-secondary"
         />
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-muted-foreground">
           Last updated: {formatLastUpdated(lastScoreUpdate)}
         </p>
       </div>
 
       <div className="space-y-1">
-        <h3 className="text-sm font-medium text-white">Level Requirements</h3>
+        <h3 className="text-sm font-medium text-foreground">Level Requirements</h3>
         <div className="grid grid-cols-3 gap-1">
-          <div className="p-1 bg-[#333333] rounded">
-            <div className="flex items-center gap-1">
-              <ArrowDown className="h-3 w-3 shrink-0 text-[#EAB308]" />
-              <p className="text-xs font-medium text-[#EAB308]">Beginner</p>
-            </div>
-            <p className="text-xs text-gray-400">0 - 399</p>
-          </div>
-          <div className="p-1 bg-[#333333] rounded">
-            <div className="flex items-center gap-1">
-              <ArrowUp className="h-3 w-3 shrink-0 text-[#EAB308]" />
-              <p className="text-xs font-medium text-[#EAB308]">Novice</p>
-            </div>
-            <p className="text-xs text-gray-400">400 - 1,299</p>
-          </div>
-          <div className="p-1 bg-[#333333] rounded">
-            <div className="flex items-center gap-1">
-              <Medal className="h-3 w-3 shrink-0 text-[#22C55E]" />
-              <p className="text-xs font-medium text-[#22C55E]">Intermediate</p>
-            </div>
-            <p className="text-xs text-gray-400">1,300 - 2,469</p>
-          </div>
-          <div className="p-1 bg-[#333333] rounded">
-            <div className="flex items-center gap-1">
-              <Star className="h-3 w-3 shrink-0 text-[#4488EF]" />
-              <p className="text-xs font-medium text-[#4488EF]">Advanced</p>
-            </div>
-            <p className="text-xs text-gray-400">2,470 - 3,704</p>
-          </div>
-          <div className="p-1 bg-[#333333] rounded">
-            <div className="flex items-center gap-1">
-              <Trophy className="h-3 w-3 shrink-0 text-[#A855F7]" />
-              <p className="text-xs font-medium text-[#A855F7]">Elite</p>
-            </div>
-            <p className="text-xs text-gray-400">3,705 - 4,939</p>
-          </div>
-          <div className="p-1 bg-[#333333] rounded">
-            <div className="flex items-center gap-1">
-              <Zap className="h-3 w-3 shrink-0 text-[#FF00FF]" />
-              <p className="text-xs font-medium text-[#FF00FF]">Legend</p>
-            </div>
-            <p className="text-xs text-gray-400">4,940+</p>
-          </div>
+          {levels.map(({ icon: Icon, name, range }) => {
+            const color = getLevelColor(name);
+            return (
+              <div key={name} className="p-1 bg-secondary rounded">
+                <div className="flex items-center gap-1">
+                  <Icon className="h-3 w-3 shrink-0" style={{ color }} />
+                  <p className="text-xs font-medium" style={{ color }}>{name}</p>
+                </div>
+                <p className="text-xs text-muted-foreground">{range}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
