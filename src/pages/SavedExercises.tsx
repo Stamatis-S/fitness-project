@@ -77,29 +77,48 @@ export default function SavedExercises() {
     setCurrentPage(1);
   }, []);
 
-  const { data: allDateInfo } = useQuery({
-    queryKey: ['all_workout_dates', session?.user.id],
+  // Fetch ALL logs with filters applied at DB level (category) and client level (search)
+  // Then extract unique dates for pagination
+  const { data: filteredDateInfo } = useQuery({
+    queryKey: ['filtered_workout_dates', session?.user.id, categoryFilter, dateFilter, searchTerm],
     queryFn: async () => {
       if (!session?.user.id) throw new Error('Not authenticated');
 
-      let allDates: string[] = [];
+      let allLogs: { workout_date: string; exercise_name: string | null; custom_exercise: string | null }[] = [];
       let from = 0;
       const batchSize = 1000;
       let hasMore = true;
 
       while (hasMore) {
-        const { data, error } = await supabase
+        let query = supabase
           .from('workout_logs')
-          .select('workout_date')
+          .select('workout_date, exercises(name), custom_exercise')
           .eq('user_id', session.user.id)
           .order('workout_date', { ascending: false })
           .range(from, from + batchSize - 1);
 
+        if (categoryFilter !== 'all') {
+          query = query.eq('category', categoryFilter as any);
+        }
+
+        // Apply date range filter at DB level
+        const dateRange = getDateRange(dateFilter);
+        if (dateRange) {
+          const startStr = dateRange[0].toISOString().split('T')[0];
+          const endStr = dateRange[1].toISOString().split('T')[0];
+          query = query.gte('workout_date', startStr).lte('workout_date', endStr);
+        }
+
+        const { data, error } = await query;
         if (error) throw error;
 
         if (data && data.length > 0) {
-          const dates = data.map(d => d.workout_date);
-          allDates = [...allDates, ...dates];
+          const mapped = data.map((d: any) => ({
+            workout_date: d.workout_date,
+            exercise_name: d.exercises?.name || null,
+            custom_exercise: d.custom_exercise,
+          }));
+          allLogs = [...allLogs, ...mapped];
           from += batchSize;
           hasMore = data.length === batchSize;
         } else {
@@ -107,27 +126,24 @@ export default function SavedExercises() {
         }
       }
 
-      const uniqueDates = [...new Set(allDates)].sort((a, b) => b.localeCompare(a));
-      return { uniqueDates, totalCount: allDates.length };
+      // Apply search filter client-side (needs exercise names from join)
+      let filteredLogs = allLogs;
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        filteredLogs = allLogs.filter(log => {
+          const name = log.exercise_name || log.custom_exercise || '';
+          return name.toLowerCase().includes(term);
+        });
+      }
+
+      // Extract unique dates from filtered results
+      const uniqueDates = [...new Set(filteredLogs.map(l => l.workout_date))].sort((a, b) => b.localeCompare(a));
+      return { uniqueDates };
     },
     enabled: !!session?.user.id,
   });
 
-  const allUniqueDates = allDateInfo?.uniqueDates || [];
-
-  const filteredUniqueDates = useMemo(() => {
-    return allUniqueDates.filter(date => {
-      if (dateFilter !== 'all') {
-        const dateRange = getDateRange(dateFilter);
-        if (dateRange) {
-          const logDate = new Date(date + 'T12:00:00');
-          const [startDate, endDate] = dateRange;
-          if (logDate < startDate || logDate > endDate) return false;
-        }
-      }
-      return true;
-    });
-  }, [allUniqueDates, dateFilter]);
+  const filteredUniqueDates = filteredDateInfo?.uniqueDates || [];
 
   const totalPages = Math.ceil(filteredUniqueDates.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -151,6 +167,8 @@ export default function SavedExercises() {
     enabled: !!session?.user.id,
   });
 
+  // Fetch full logs for current page dates, with category filter
+  // Search filter is re-applied here since we need to show only matching exercises
   const { data: workoutLogs } = useQuery({
     queryKey: ['workout_logs_paginated', session?.user.id, currentDates, categoryFilter, searchTerm],
     queryFn: async () => {
@@ -204,7 +222,7 @@ export default function SavedExercises() {
 
       toast.success(t("saved.exerciseDeleted"));
       queryClient.invalidateQueries({ queryKey: ['workout_logs_paginated', session?.user.id] });
-      queryClient.invalidateQueries({ queryKey: ['all_workout_dates', session?.user.id] });
+      queryClient.invalidateQueries({ queryKey: ['filtered_workout_dates', session?.user.id] });
       queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] });
     } catch (error) {
       toast.error(t("saved.deleteFailed"));
@@ -216,7 +234,7 @@ export default function SavedExercises() {
 
   const handleRefresh = useCallback(async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['all_workout_dates', session?.user.id] }),
+      queryClient.invalidateQueries({ queryKey: ['filtered_workout_dates', session?.user.id] }),
       queryClient.invalidateQueries({ queryKey: ['workout_logs_paginated', session?.user.id] }),
     ]);
     toast.success(t("common.refreshed"));
