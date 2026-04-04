@@ -93,12 +93,14 @@ export function ExerciseSelector({
 
   // Fetch custom exercises
   const { data: customExercises = [], isLoading: isLoadingCustom } = useQuery({
-    queryKey: ['custom_exercises', category],
+    queryKey: ['custom_exercises', category, session?.user?.id],
     queryFn: async () => {
+      if (!session?.user?.id) return [];
       const { data, error } = await supabase
         .from('custom_exercises')
         .select('id, name, category')
-        .eq('category', category);
+        .eq('category', category)
+        .eq('user_id', session.user.id);
       
       if (error) throw error;
       return (data || []).map(exercise => ({
@@ -107,7 +109,8 @@ export function ExerciseSelector({
         category: exercise.category,
         isCustom: true
       })) as Exercise[];
-    }
+    },
+    enabled: !!session?.user?.id
   });
 
   // Mutation for adding custom exercises
