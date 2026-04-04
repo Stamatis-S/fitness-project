@@ -249,6 +249,7 @@ export default function SavedExercises() {
   }
 
   if (!session) {
+    navigate('/auth');
     return null;
   }
 

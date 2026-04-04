@@ -67,8 +67,10 @@ export default function Profile() {
   useEffect(() => {
     if (session?.user.id) {
       fetchProfile();
+    } else if (!authLoading) {
+      navigate('/auth');
     }
-  }, [session?.user.id]);
+  }, [session?.user.id, authLoading]);
 
   if (isLoading) {
     return (

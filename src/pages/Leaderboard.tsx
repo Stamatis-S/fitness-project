@@ -94,6 +94,7 @@ export default function Leaderboard() {
   };
 
   if (!session) {
+    navigate('/auth');
     return null;
   }
 
