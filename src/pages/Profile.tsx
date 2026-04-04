@@ -25,7 +25,7 @@ interface ProfileData {
 }
 
 export default function Profile() {
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -67,8 +67,10 @@ export default function Profile() {
   useEffect(() => {
     if (session?.user.id) {
       fetchProfile();
+    } else if (!authLoading) {
+      navigate('/auth');
     }
-  }, [session?.user.id]);
+  }, [session?.user.id, authLoading]);
 
   if (isLoading) {
     return (

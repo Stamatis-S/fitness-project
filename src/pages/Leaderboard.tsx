@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageTransition } from "@/components/PageTransition";
 import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,6 +23,7 @@ interface Profile {
 
 export default function Leaderboard() {
   const { session } = useAuth();
+  const navigate = useNavigate();
   
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['leaderboard'],
@@ -94,6 +96,7 @@ export default function Leaderboard() {
   };
 
   if (!session) {
+    navigate('/auth');
     return null;
   }
 

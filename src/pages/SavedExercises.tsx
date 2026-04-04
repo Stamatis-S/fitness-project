@@ -5,6 +5,7 @@ import { WorkoutFilters } from "@/components/saved-exercises/WorkoutFilters";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useState, useCallback, useMemo } from "react";
@@ -53,6 +54,7 @@ function getDateRange(filter: string): [Date, Date] | null {
 
 export default function SavedExercises() {
   const { session, isLoading } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
@@ -249,6 +251,7 @@ export default function SavedExercises() {
   }
 
   if (!session) {
+    navigate('/auth');
     return null;
   }
 

@@ -97,6 +97,7 @@ export default function Dashboard() {
   }
 
   if (!session) {
+    navigate('/auth');
     return null;
   }
 
