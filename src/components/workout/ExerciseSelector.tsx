@@ -153,10 +153,12 @@ export function ExerciseSelector({
   // Mutation for deleting custom exercises
   const deleteCustomExercise = useMutation({
     mutationFn: async (id: number) => {
+      if (!session?.user?.id) throw new Error("Not authenticated");
       const { error } = await supabase
         .from('custom_exercises')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', session.user.id);
 
       if (error) throw error;
     },
