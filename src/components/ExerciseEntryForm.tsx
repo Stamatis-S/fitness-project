@@ -89,9 +89,19 @@ export function ExerciseEntryForm({
       // Set the category
       setSelectedCategory(exercise.category);
       
-      // Set form values
-      methods.setValue("exercise", exercise.customExercise || exercise.name);
-      methods.setValue("customExercise", exercise.customExercise || undefined);
+      // Determine if this is a custom exercise:
+      // It's custom if customExercise is set OR there's no numeric exercise_id
+      const isCustom = !!exercise.customExercise || !exercise.exercise_id;
+      
+      // Set form values matching what saveExercise expects
+      methods.setValue("exercise", isCustom 
+        ? (exercise.customExercise || exercise.name) 
+        : String(exercise.exercise_id));
+      methods.setValue("exerciseName", exercise.customExercise || exercise.name);
+      methods.setValue("isCustomExercise", isCustom);
+      if (isCustom) {
+        methods.setValue("customExercise", exercise.customExercise || exercise.name);
+      }
       methods.setValue("sets", exercise.sets.length > 0 ? exercise.sets : [{ weight: 0, reps: 0 }]);
       
       // Go to sets step
