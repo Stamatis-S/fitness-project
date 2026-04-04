@@ -25,7 +25,7 @@ interface ProfileData {
 }
 
 export default function Profile() {
-  const { session } = useAuth();
+  const { session, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [profile, setProfile] = useState<ProfileData | null>(null);

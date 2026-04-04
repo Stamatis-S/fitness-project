@@ -23,6 +23,7 @@ interface Profile {
 
 export default function Leaderboard() {
   const { session } = useAuth();
+  const navigate = useNavigate();
   
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['leaderboard'],

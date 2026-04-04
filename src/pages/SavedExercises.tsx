@@ -53,6 +53,7 @@ function getDateRange(filter: string): [Date, Date] | null {
 
 export default function SavedExercises() {
   const { session, isLoading } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
