@@ -5,9 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import type { ExerciseCategory } from "@/lib/constants";
-import { Search, Plus, Trash2 } from "lucide-react";
+import { Search, Plus, Trash2, Clock, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { useHaptic } from "@/hooks/useHaptic";
@@ -58,7 +57,7 @@ interface ExerciseSelectorProps {
   onCustomExerciseChange: (value: string) => void;
 }
 
-export function ExerciseSelector({ 
+export function ExerciseSelector({
   category,
   value,
   onValueChange,
@@ -68,10 +67,44 @@ export function ExerciseSelector({
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newCustomExercise, setNewCustomExercise] = useState("");
-  const isMobile = useIsMobile();
   const queryClient = useQueryClient();
   const { session } = useAuth();
   const { vibrate } = useHaptic();
+
+  // Fetch recent exercises for this category
+  const { data: recentExercises = [] } = useQuery({
+    queryKey: ['recent_exercises', category, session?.user?.id],
+    queryFn: async () => {
+      if (!session?.user?.id) return [];
+      const { data, error } = await supabase
+        .from('workout_logs')
+        .select('exercise_id, custom_exercise, exercises(name)')
+        .eq('user_id', session.user.id)
+        .eq('category', category)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) return [];
+
+      // Deduplicate by exercise name, keep order
+      const seen = new Set<string>();
+      const recents: { id: string; name: string; isCustom: boolean }[] = [];
+      for (const log of data || []) {
+        const name = log.custom_exercise || (log.exercises as any)?.name;
+        if (!name || seen.has(name)) continue;
+        seen.add(name);
+        const isCustom = !!log.custom_exercise;
+        recents.push({
+          id: isCustom ? name : String(log.exercise_id),
+          name,
+          isCustom,
+        });
+        if (recents.length >= 5) break;
+      }
+      return recents;
+    },
+    enabled: !!session?.user?.id,
+  });
 
   // Fetch standard exercises
   const { data: standardExercises = [], isLoading: isLoadingStandard } = useQuery({
@@ -81,13 +114,8 @@ export function ExerciseSelector({
         .from('exercises')
         .select('id, name, category')
         .eq('category', category);
-      
       if (error) throw error;
-      
-      return (data || []).map(exercise => ({
-        ...exercise,
-        isCustom: false
-      })) as Exercise[];
+      return (data || []).map(e => ({ ...e, isCustom: false })) as Exercise[];
     }
   });
 
@@ -101,56 +129,41 @@ export function ExerciseSelector({
         .select('id, name, category')
         .eq('category', category)
         .eq('user_id', session.user.id);
-      
       if (error) throw error;
-      return (data || []).map(exercise => ({
-        id: exercise.id,
-        name: exercise.name,
-        category: exercise.category,
+      return (data || []).map(e => ({
+        id: e.id,
+        name: e.name,
+        category: e.category,
         isCustom: true
       })) as Exercise[];
     },
     enabled: !!session?.user?.id
   });
 
-  // Mutation for adding custom exercises
   const addCustomExercise = useMutation({
     mutationFn: async (name: string) => {
-      if (!session?.user?.id) {
-        throw new Error("Πρέπει να είσαι συνδεδεμένος για να προσθέσεις άσκηση");
-      }
-
+      if (!session?.user?.id) throw new Error("Not authenticated");
       const { data, error } = await supabase
         .from('custom_exercises')
-        .insert({
-          name: name.toUpperCase().trim(),
-          category,
-          user_id: session.user.id
-        })
+        .insert({ name: name.toUpperCase().trim(), category, user_id: session.user.id })
         .select('id, name, category')
         .single();
-
       if (error) throw error;
       return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['custom_exercises'] });
-      toast.success("Η άσκηση προστέθηκε επιτυχώς!");
+      toast.success("Η άσκηση προστέθηκε!");
       setNewCustomExercise("");
       setDialogOpen(false);
       setSearchQuery("");
-      // Auto-select the new exercise
       if (data?.id && data?.name) {
         onValueChange(data.id.toString(), data.name, true);
       }
     },
-    onError: (error) => {
-      console.error('Error adding custom exercise:', error);
-      toast.error("Αποτυχία προσθήκης άσκησης");
-    }
+    onError: () => toast.error("Αποτυχία προσθήκης άσκησης"),
   });
 
-  // Mutation for deleting custom exercises
   const deleteCustomExercise = useMutation({
     mutationFn: async (id: number) => {
       if (!session?.user?.id) throw new Error("Not authenticated");
@@ -159,23 +172,20 @@ export function ExerciseSelector({
         .delete()
         .eq('id', id)
         .eq('user_id', session.user.id);
-
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom_exercises'] });
-      toast.success("Η άσκηση διαγράφηκε επιτυχώς!");
+      toast.success("Η άσκηση διαγράφηκε!");
       onValueChange("", "", false);
     },
-    onError: (error) => {
-      console.error('Error deleting custom exercise:', error);
-      toast.error("Αποτυχία διαγραφής άσκησης");
-    }
+    onError: () => toast.error("Αποτυχία διαγραφής"),
   });
 
-  // Combine and filter exercises
-  const allExercises = [...standardExercises, ...customExercises].filter(exercise =>
-    exercise.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filter with accent-insensitive search
+  const normalizedQuery = removeAccents(searchQuery.toLowerCase());
+  const allExercises = [...standardExercises, ...customExercises].filter(e =>
+    removeAccents(e.name.toLowerCase()).includes(normalizedQuery)
   );
 
   const handleOpenDialog = (prefillName?: string) => {
@@ -189,83 +199,107 @@ export function ExerciseSelector({
       toast.error("Παρακαλώ εισήγαγε όνομα άσκησης");
       return;
     }
-    
     vibrate('light');
     addCustomExercise.mutate(newCustomExercise);
   };
 
   const isLoading = isLoadingStandard || isLoadingCustom;
   const noResults = !isLoading && allExercises.length === 0 && searchQuery.trim() !== "";
+  const showRecents = recentExercises.length > 0 && searchQuery === "";
 
   return (
     <div className="space-y-3">
       {/* Search Input */}
       <div className="relative">
-        <Search className={cn(
-          "absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground",
-          isMobile ? "h-3 w-3" : "h-4 w-4"
-        )} />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Αναζήτηση άσκησης..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className={cn(
-            "pl-9 pr-4",
-            isMobile ? "h-8 text-xs" : "h-9 text-sm"
-          )}
+          className="pl-10 h-11 text-sm bg-secondary border-0 rounded-xl"
+          autoComplete="off"
         />
       </div>
 
-      {/* Exercises Grid */}
-      <div className={cn(
-        "grid gap-1",
-        isMobile ? "grid-cols-3" : "grid-cols-3 sm:grid-cols-4 gap-1.5"
-      )}>
-        {isLoading ? (
-          <div className="col-span-full text-center py-2 text-sm text-muted-foreground">
-            Φόρτωση ασκήσεων...
+      {/* Recent exercises */}
+      {showRecents && (
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 px-1">
+            <Clock className="h-3 w-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground font-medium">Πρόσφατα</span>
           </div>
+          <div className="space-y-0.5">
+            {recentExercises.map((ex) => (
+              <motion.button
+                key={ex.id}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  vibrate('light');
+                  onValueChange(ex.id, ex.name, ex.isCustom);
+                }}
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2.5 rounded-lg",
+                  "text-left text-sm font-medium transition-colors",
+                  "bg-secondary/50 hover:bg-secondary active:bg-secondary",
+                  value === ex.id && "ring-1 ring-primary bg-primary/10"
+                )}
+              >
+                <span className="text-foreground">{ex.name}</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* All exercises - list view for readability */}
+      <div className="space-y-1">
+        {showRecents && (
+          <span className="text-xs text-muted-foreground font-medium px-1">Όλες</span>
+        )}
+
+        {isLoading ? (
+          <div className="text-center py-6 text-sm text-muted-foreground">Φόρτωση...</div>
         ) : (
-          <>
+          <div className="space-y-0.5">
             {allExercises.map((exercise) => (
-              <div key={`${exercise.isCustom ? 'custom' : 'standard'}-${exercise.id}`} className="relative group">
+              <div key={`${exercise.isCustom ? 'c' : 's'}-${exercise.id}`} className="relative group">
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     vibrate('light');
                     onValueChange(exercise.id.toString(), exercise.name, exercise.isCustom || false);
                   }}
                   className={cn(
-                    "w-full px-2 py-2 rounded-lg font-medium uppercase",
-                    "transition-all duration-200",
-                    "text-center bg-[#333333] dark:bg-slate-800",
-                    "min-h-[52px] text-[10px] leading-tight flex items-center justify-center",
+                    "w-full flex items-center justify-between px-3 py-3 rounded-xl",
+                    "text-left font-medium transition-all",
+                    "bg-secondary/40 hover:bg-secondary active:bg-secondary/80",
                     value === exercise.id.toString()
-                      ? "ring-2 ring-primary"
-                      : "hover:bg-[#444444] dark:hover:bg-slate-700",
-                    "text-white dark:text-white"
+                      ? "ring-1 ring-primary bg-primary/10"
+                      : "",
+                    exercise.isCustom && "border-l-2 border-primary/40"
                   )}
                 >
-                  <span>{removeAccents(exercise.name)}</span>
+                  <span className="text-sm text-foreground">{exercise.name}</span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 </motion.button>
-                
+
                 {exercise.isCustom && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute -right-1 -top-1 h-5 w-5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        className="absolute right-8 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 bg-destructive/10 text-destructive hover:bg-destructive/20"
                       >
-                        <Trash2 className="h-2.5 w-2.5" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Διαγραφή Άσκησης</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Είσαι σίγουρος ότι θέλεις να διαγράψεις την άσκηση "{exercise.name}"; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
+                          Είσαι σίγουρος ότι θέλεις να διαγράψεις την άσκηση "{exercise.name}";
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -283,52 +317,48 @@ export function ExerciseSelector({
               </div>
             ))}
 
-            {/* Smart Empty State with CTA */}
+            {/* No results CTA */}
             {noResults && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="col-span-full flex flex-col items-center gap-3 py-6"
+                className="flex flex-col items-center gap-3 py-8"
               >
-                <p className={cn(
-                  "text-muted-foreground text-center",
-                  isMobile ? "text-xs" : "text-sm"
-                )}>
-                  Δεν βρέθηκε η άσκηση "<span className="font-semibold text-foreground">{searchQuery}</span>"
+                <p className="text-sm text-muted-foreground">
+                  Δεν βρέθηκε "<span className="font-semibold text-foreground">{searchQuery}</span>"
                 </p>
-                <Button
-                  onClick={() => handleOpenDialog(searchQuery)}
-                  variant="outline"
-                  size={isMobile ? "sm" : "default"}
-                  className="gap-2"
-                >
+                <Button onClick={() => handleOpenDialog(searchQuery)} variant="outline" size="sm" className="gap-2">
                   <Plus className="h-4 w-4" />
                   Προσθήκη ως νέα άσκηση
                 </Button>
               </motion.div>
             )}
 
-            {/* Empty state when no search and no exercises */}
             {!isLoading && allExercises.length === 0 && searchQuery.trim() === "" && (
-              <div className={cn(
-                "col-span-full text-center py-4 text-muted-foreground",
-                isMobile && "text-xs"
-              )}>
-                <p className="mb-2">Δεν υπάρχουν ασκήσεις σε αυτή την κατηγορία</p>
-                <Button
-                  onClick={() => handleOpenDialog()}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                >
+              <div className="text-center py-6 text-muted-foreground text-sm">
+                <p className="mb-2">Δεν υπάρχουν ασκήσεις</p>
+                <Button onClick={() => handleOpenDialog()} variant="outline" size="sm" className="gap-2">
                   <Plus className="h-4 w-4" />
                   Προσθήκη άσκησης
                 </Button>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
+
+      {/* Add Custom Exercise Button (always visible) */}
+      {!noResults && !isLoading && allExercises.length > 0 && (
+        <Button
+          type="button"
+          variant="ghost"
+          className="w-full h-10 text-sm text-muted-foreground hover:text-foreground gap-2"
+          onClick={() => handleOpenDialog()}
+        >
+          <Plus className="h-4 w-4" />
+          Προσθήκη δικής σου άσκησης
+        </Button>
+      )}
 
       {/* Add Custom Exercise Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -355,10 +385,7 @@ export function ExerciseSelector({
             />
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={() => setDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Ακύρωση
             </Button>
             <Button
@@ -366,9 +393,7 @@ export function ExerciseSelector({
               disabled={addCustomExercise.isPending || !newCustomExercise.trim()}
               className="gap-2"
             >
-              {addCustomExercise.isPending ? (
-                "Προσθήκη..."
-              ) : (
+              {addCustomExercise.isPending ? "Προσθήκη..." : (
                 <>
                   <Plus className="h-4 w-4" />
                   Προσθήκη
