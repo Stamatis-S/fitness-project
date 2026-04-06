@@ -15,18 +15,6 @@ const categoryValues: ExerciseCategory[] = [
   "ΣΤΗΘΟΣ", "ΠΛΑΤΗ", "ΔΙΚΕΦΑΛΑ", "ΤΡΙΚΕΦΑΛΑ", "ΩΜΟΙ", "ΠΟΔΙΑ", "ΚΟΡΜΟΣ", "CARDIO", "POWER SETS"
 ];
 
-const categoryEmojis: Record<string, string> = {
-  "ΣΤΗΘΟΣ": "💪",
-  "ΠΛΑΤΗ": "🔙",
-  "ΔΙΚΕΦΑΛΑ": "💪",
-  "ΤΡΙΚΕΦΑΛΑ": "💪",
-  "ΩΜΟΙ": "🏋️",
-  "ΠΟΔΙΑ": "🦵",
-  "ΚΟΡΜΟΣ": "🎯",
-  "CARDIO": "🏃",
-  "POWER SETS": "⚡",
-};
-
 export function CategorySelector({
   onCategoryChange,
   selectedCategory,
@@ -36,7 +24,7 @@ export function CategorySelector({
   const { t } = useTranslation();
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-3">
       {/* Workout Plan Button */}
       <motion.button
         initial={{ opacity: 0, y: 8 }}
@@ -52,7 +40,7 @@ export function CategorySelector({
         {t("exercise.todaysWorkoutPlan")}
       </motion.button>
 
-      {/* Category Grid - 3 columns, larger touch targets */}
+      {/* Category Grid - 3 columns, large touch targets, clean design */}
       <div className="grid grid-cols-3 gap-2">
         {categoryValues.map((value, index) => {
           const isSelected = selectedCategory === value;
@@ -60,10 +48,10 @@ export function CategorySelector({
           return (
             <motion.button
               key={value}
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.03 }}
-              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.25, delay: index * 0.025 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => {
                 vibrate('light');
                 onCategoryChange(value);
@@ -71,16 +59,15 @@ export function CategorySelector({
               aria-label={t(`categories.${value}`)}
               aria-pressed={isSelected}
               className={cn(
-                "relative flex flex-col items-center justify-center gap-1 py-4 rounded-xl transition-all",
-                "bg-secondary/60 border",
+                "relative flex items-center justify-center min-h-[56px] rounded-xl transition-all border",
+                "bg-secondary/50",
                 isSelected
-                  ? "border-primary bg-primary/15 shadow-sm"
-                  : "border-transparent hover:bg-secondary"
+                  ? "border-primary bg-primary/10 ring-1 ring-primary/30"
+                  : "border-border/40 hover:bg-secondary active:bg-secondary/80"
               )}
             >
-              <span className="text-lg leading-none">{categoryEmojis[value]}</span>
               <span className={cn(
-                "text-xs font-semibold leading-tight text-center px-1",
+                "text-sm font-semibold leading-tight text-center px-2",
                 isSelected ? "text-primary" : "text-foreground/80"
               )}>
                 {t(`categories.${value}`)}
