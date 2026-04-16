@@ -84,8 +84,6 @@ const en = {
       removeSet: "Remove Set",
       saveExercise: "Save Exercise",
       saving: "Saving...",
-      exercise: "exercise",
-      exercises: "exercises",
       searchExercises: "Search exercises...",
       addCustom: "Add Custom Exercise",
       customExerciseName: "Exercise name",

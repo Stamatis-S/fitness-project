@@ -19,6 +19,7 @@ export function UserRecordPopup() {
     async function fetchLatestRecords() {
       setIsLoading(true);
       try {
+        // Fetch workout logs with user info and exercise details
         const { data: workoutLogs, error } = await supabase
           .from('workout_logs')
           .select(`
@@ -33,11 +34,13 @@ export function UserRecordPopup() {
             profiles(username)
           `)
           .order('weight_kg', { ascending: false })
-          .limit(50);
+          .limit(50); // Increased limit to get more potential records
 
         if (error) throw error;
 
+        // Format the records
         if (workoutLogs && workoutLogs.length > 0) {
+          // First, group by user and exercise to find PRs
           const exerciseMap = new Map<string, Map<string, UserRecord>>();
           
           workoutLogs.forEach(log => {
@@ -52,6 +55,7 @@ export function UserRecordPopup() {
               date: new Date(log.workout_date).toLocaleDateString()
             };
 
+            // For each user-exercise combination, keep the highest weight
             if (!exerciseMap.has(userExerciseKey) || 
                 parseFloat(record.achievement) > parseFloat(exerciseMap.get(userExerciseKey)!.get(log.user_id)!.achievement)) {
               if (!exerciseMap.has(userExerciseKey)) {
@@ -61,6 +65,7 @@ export function UserRecordPopup() {
             }
           });
 
+          // Flatten the maps to get all PRs
           const allRecords: UserRecord[] = [];
           exerciseMap.forEach(userMap => {
             userMap.forEach(record => {
@@ -68,6 +73,7 @@ export function UserRecordPopup() {
             });
           });
 
+          // Sort by achievement (weight) descending and take top 10
           const sortedRecords = allRecords
             .sort((a, b) => parseFloat(b.achievement) - parseFloat(a.achievement))
             .slice(0, 10);
@@ -83,11 +89,12 @@ export function UserRecordPopup() {
 
     fetchLatestRecords();
 
+    // Set automatic cycling
     const interval = setInterval(() => {
       setCurrentIndex(prevIndex => 
         records.length > 0 ? (prevIndex + 1) % records.length : 0
       );
-    }, 5000);
+    }, 5000); // Change every 5 seconds
 
     return () => clearInterval(interval);
   }, [records.length]);
@@ -96,7 +103,7 @@ export function UserRecordPopup() {
 
   if (isLoading) {
     return (
-      <div className="w-64 bg-card border border-border text-foreground p-1.5 mx-auto rounded-md">
+      <div className="w-64 bg-[#1A1F2C] border border-gray-700 text-white p-1.5 mx-auto rounded-md">
         <p className="text-xs text-center">Loading records...</p>
       </div>
     );
@@ -104,7 +111,7 @@ export function UserRecordPopup() {
 
   if (!currentRecord) {
     return (
-      <div className="w-64 bg-card border border-border text-foreground p-1.5 mx-auto rounded-md">
+      <div className="w-64 bg-[#1A1F2C] border border-gray-700 text-white p-1.5 mx-auto rounded-md">
         <p className="text-xs text-center">No user records found</p>
       </div>
     );
@@ -112,7 +119,7 @@ export function UserRecordPopup() {
 
   return (
     <div className="flex justify-center">
-      <div className="w-64 bg-card border border-border text-foreground p-1.5 mx-auto rounded-md">
+      <div className="w-64 bg-[#1A1F2C] border border-gray-700 text-white p-1.5 mx-auto rounded-md">
         <div
           key={currentRecord.user_id}
           className="space-y-0.5"
@@ -124,16 +131,16 @@ export function UserRecordPopup() {
                 {currentRecord.username}
               </span>
             </div>
-            <span className="text-xs text-muted-foreground">{currentRecord.date}</span>
+            <span className="text-xs text-gray-400">{currentRecord.date}</span>
           </div>
           <div className="ml-4.5 text-xs">
-            <span className="text-primary">{currentRecord.exercise}</span>
-            <span className="text-xs text-muted-foreground ml-1.5">
+            <span className="text-emerald-400">{currentRecord.exercise}</span>
+            <span className="text-xs text-gray-300 ml-1.5">
               {currentRecord.achievement}
             </span>
           </div>
-          <div className="flex justify-between items-center mt-0.5 pt-0.5 border-t border-border">
-            <span className="text-xs text-muted-foreground">
+          <div className="flex justify-between items-center mt-0.5 pt-0.5 border-t border-gray-700">
+            <span className="text-xs text-gray-400">
               {currentIndex + 1} of {records.length}
             </span>
             <div className="flex gap-0.5">
@@ -141,7 +148,7 @@ export function UserRecordPopup() {
                 <button
                   key={idx}
                   className={`h-1 w-1 rounded-full ${
-                    idx === currentIndex ? "bg-primary" : "bg-muted"
+                    idx === currentIndex ? "bg-purple-500" : "bg-gray-600"
                   }`}
                   onClick={() => setCurrentIndex(idx)}
                 />

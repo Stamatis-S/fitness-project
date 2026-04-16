@@ -13,9 +13,12 @@ import { WorkoutLog } from "./types";
 import { Badge } from "@/components/ui/badge";
 import { CATEGORY_COLORS } from "@/lib/constants";
 
+// Single color for date headings
+const DATE_COLOR = "#60a5fa"; // Blue
+
 interface WorkoutTableProps {
   logs: WorkoutLog[];
-  onDelete?: (ids: number[]) => void;
+  onDelete?: (id: number) => void;
   cycleStartDates?: string[];
 }
 
@@ -83,7 +86,10 @@ export function WorkoutTable({ logs, onDelete, cycleStartDates = [] }: WorkoutTa
         return (
           <div key={dateGroup.date} className="space-y-1">
             <div className="flex items-center gap-1.5 px-1">
-              <h3 className="font-semibold text-sm text-primary">
+              <h3 
+                className="font-semibold text-sm"
+                style={{ color: DATE_COLOR }}
+              >
                 {formatDate(dateGroup.date)}
               </h3>
               {isCycleStart && (
@@ -98,12 +104,12 @@ export function WorkoutTable({ logs, onDelete, cycleStartDates = [] }: WorkoutTa
             {dateGroup.exercises.map((exercise) => (
               <div 
                 key={`${dateGroup.date}-${exercise.name}`}
-                className="bg-secondary/50 rounded-md px-2 py-1.5 mx-0.5"
+                className="bg-neutral-900/50 rounded-md px-2 py-1.5 mx-0.5"
               >
                 <div className="flex flex-col gap-1">
                   {/* Exercise name row */}
                   <div className="flex items-center justify-between gap-2">
-                    <h4 className="text-xs font-medium text-foreground flex-1">
+                    <h4 className="text-xs font-medium text-neutral-200 flex-1">
                       {exercise.name}
                     </h4>
                     <div className="flex items-center gap-1">
@@ -120,8 +126,8 @@ export function WorkoutTable({ logs, onDelete, cycleStartDates = [] }: WorkoutTa
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => onDelete(exercise.sets.map(s => s.id))}
-                          className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 h-5 w-5"
+                          onClick={() => onDelete(exercise.sets[0].id)}
+                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-5 w-5"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -133,7 +139,7 @@ export function WorkoutTable({ logs, onDelete, cycleStartDates = [] }: WorkoutTa
                     {exercise.sets.map((set) => (
                       <span 
                         key={set.id}
-                        className="bg-muted px-1.5 py-0.5 rounded text-[10px] text-muted-foreground whitespace-nowrap"
+                        className="bg-neutral-800 px-1.5 py-0.5 rounded text-[10px] text-neutral-300 whitespace-nowrap"
                       >
                         {exercise.category === 'CARDIO' 
                           ? `${set.weight_kg}m×${set.reps}`

@@ -84,8 +84,6 @@ const el = {
       removeSet: "Αφαίρεση Σετ",
       saveExercise: "Αποθήκευση Άσκησης",
       saving: "Αποθήκευση...",
-      exercise: "άσκηση",
-      exercises: "ασκήσεις",
       searchExercises: "Αναζήτηση ασκήσεων...",
       addCustom: "Προσθήκη Προσαρμοσμένης Άσκησης",
       customExerciseName: "Όνομα άσκησης",
