@@ -72,7 +72,7 @@ export const FormStepSets = memo(function FormStepSets({
           </AnimatePresence>
 
           {/* Sets */}
-          <ScrollArea className="flex-1 max-h-[calc(100vh-22rem)] px-0.5 pb-1 overflow-hidden">
+          <ScrollArea className="flex-1 max-h-[calc(100vh-20rem)] px-0.5 pb-1">
             <div className="space-y-2">
               <AnimatePresence>
                 {fields.map((field, index) => (
