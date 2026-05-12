@@ -104,7 +104,10 @@ export default function Dashboard() {
   }, [workoutDates]);
 
   const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['workout_logs_recent', session?.user.id] }),
+      queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] }),
+    ]);
     toast.success(t("common.refreshed"));
   }, [queryClient, session?.user.id, t]);
 
