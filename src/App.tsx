@@ -21,14 +21,34 @@ const Install = lazy(() => import("@/pages/Install"));
 const Templates = lazy(() => import("@/pages/Templates"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
-// Loading fallback component
+// Loading fallback — skeleton mimicking the typical app layout (header + content cards).
 const PageLoader = () => (
-  <div className="min-h-screen bg-background flex items-center justify-center">
-    <div className="animate-pulse text-muted-foreground">Φόρτωση...</div>
+  <div className="min-h-screen bg-background">
+    <div className="px-4 pt-12 pb-4 space-y-3">
+      <div className="h-8 w-40 bg-muted/60 rounded-md animate-pulse" />
+    </div>
+    <div className="px-4 space-y-3">
+      <div className="h-10 w-full bg-muted/40 rounded-xl animate-pulse" />
+      <div className="h-32 w-full bg-muted/40 rounded-xl animate-pulse" />
+      <div className="h-48 w-full bg-muted/40 rounded-xl animate-pulse" />
+      <div className="grid grid-cols-2 gap-3">
+        <div className="h-24 bg-muted/40 rounded-xl animate-pulse" />
+        <div className="h-24 bg-muted/40 rounded-xl animate-pulse" />
+      </div>
+    </div>
   </div>
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 2,
+      gcTime: 1000 * 60 * 30,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   return (

@@ -29,6 +29,9 @@ export default function Auth() {
     if (savedEmail) {
       setEmail(savedEmail);
     }
+    // Prefetch likely-next routes so post-login navigation is instant on mobile.
+    void import("@/pages/Index");
+    void import("@/pages/Dashboard");
   }, []);
   
   useEffect(() => {

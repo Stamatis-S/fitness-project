@@ -91,11 +91,23 @@ export default defineConfig(({ mode }) => ({
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365
               },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
+              cacheableResponse: { statuses: [0, 200] }
+            }
+          },
+          {
+            // Stale-while-revalidate for Supabase REST reads → instant repeat visits on mobile.
+            urlPattern: ({ url, request }) =>
+              url.hostname.endsWith('.supabase.co') &&
+              url.pathname.startsWith('/rest/v1/') &&
+              request.method === 'GET',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-api-cache',
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 },
+              cacheableResponse: { statuses: [0, 200] },
             }
           }
         ]

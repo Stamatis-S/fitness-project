@@ -29,7 +29,31 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
-  const { data: workoutLogs, isLoading: isLoadingLogs } = useQuery({
+  // Fast initial load: most recent 300 logs (covers ~last 2-3 months for most users)
+  // Renders the dashboard quickly on mobile while the full dataset loads in the background.
+  const { data: recentLogs, isLoading: isLoadingRecent } = useQuery({
+    queryKey: ['workout_logs_recent', session?.user.id],
+    queryFn: async () => {
+      if (!session?.user.id) throw new Error('Not authenticated');
+      const { data, error } = await supabase
+        .from('workout_logs')
+        .select(`*, exercises ( id, name )`)
+        .eq('user_id', session.user.id)
+        .order('workout_date', { ascending: false })
+        .range(0, 299);
+      if (error) {
+        toast.error("Failed to load workout logs");
+        throw error;
+      }
+      return (data || []) as WorkoutLog[];
+    },
+    enabled: !!session?.user.id,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+  });
+
+  // Full dataset: loaded in background, paginated through all rows.
+  const { data: fullLogs } = useQuery({
     queryKey: ['workout_logs_all', session?.user.id],
     queryFn: async () => {
       if (!session?.user.id) throw new Error('Not authenticated');
@@ -42,21 +66,12 @@ export default function Dashboard() {
       while (hasMore) {
         const { data, error } = await supabase
           .from('workout_logs')
-          .select(`
-            *,
-            exercises (
-              id,
-              name
-            )
-          `)
+          .select(`*, exercises ( id, name )`)
           .eq('user_id', session.user.id)
           .order('workout_date', { ascending: false })
           .range(from, from + batchSize - 1);
 
-        if (error) {
-          toast.error("Failed to load workout logs");
-          throw error;
-        }
+        if (error) throw error;
 
         if (data && data.length > 0) {
           allData = [...allData, ...data];
@@ -66,12 +81,17 @@ export default function Dashboard() {
           hasMore = false;
         }
       }
-
       return allData as WorkoutLog[];
     },
-    enabled: !!session?.user.id,
+    // Only start the heavy query after the recent logs have rendered.
+    enabled: !!session?.user.id && !!recentLogs,
     staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
+
+  // Use full data when available, otherwise the fast recent data.
+  const workoutLogs = fullLogs ?? recentLogs;
+  const isLoadingLogs = isLoadingRecent;
 
   const workoutDates = useMemo(() => {
     if (!workoutLogs) return [];
@@ -84,7 +104,10 @@ export default function Dashboard() {
   }, [workoutDates]);
 
   const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] });
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['workout_logs_recent', session?.user.id] }),
+      queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] }),
+    ]);
     toast.success(t("common.refreshed"));
   }, [queryClient, session?.user.id, t]);
 
