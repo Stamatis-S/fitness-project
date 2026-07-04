@@ -19,6 +19,7 @@ const Leaderboard = lazy(() => import("@/pages/Leaderboard"));
 const WorkoutPlan = lazy(() => import("@/pages/WorkoutPlan"));
 const Install = lazy(() => import("@/pages/Install"));
 const Templates = lazy(() => import("@/pages/Templates"));
+const OAuthConsent = lazy(() => import("@/pages/OAuthConsent"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Loading fallback — skeleton mimicking the typical app layout (header + content cards).
@@ -131,6 +132,11 @@ function App() {
                       <Route path="/install" element={
                         <ErrorBoundary>
                           <Install />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/.lovable/oauth/consent" element={
+                        <ErrorBoundary>
+                          <OAuthConsent />
                         </ErrorBoundary>
                       } />
                       <Route path="*" element={<NotFound />} />

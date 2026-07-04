@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -21,6 +21,10 @@ export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawNext = searchParams.get("next");
+  // Only accept same-origin relative paths starting with '/'.
+  const nextPath = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
   const { session } = useAuth();
   const { t } = useTranslation();
 
@@ -36,9 +40,9 @@ export default function Auth() {
   
   useEffect(() => {
     if (session) {
-      navigate("/");
+      navigate(nextPath);
     }
-  }, [session, navigate]);
+  }, [session, navigate, nextPath]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +56,7 @@ export default function Auth() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`
+            emailRedirectTo: `${window.location.origin}${nextPath}`
           }
         });
       } else {
@@ -72,7 +76,7 @@ export default function Auth() {
         toast.success(t("auth.checkEmail"));
       } else {
         toast.success(t("auth.loggedIn"));
-        navigate("/");
+        navigate(nextPath);
       }
     } catch (error) {
       const rawMessage = error instanceof Error ? error.message : '';
