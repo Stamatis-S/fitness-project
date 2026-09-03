@@ -16,6 +16,7 @@ import { FormStepSets } from "@/components/workout/entry-form/FormStepSets";
 import { saveExercise } from "@/components/workout/entry-form/utils";
 import type { WorkoutTemplate } from "@/hooks/useWorkoutTemplates";
 import { toast } from "sonner";
+import { invalidateWorkoutData } from "@/lib/queryKeys";
 
 interface SetData {
   weight: number;
@@ -88,16 +89,29 @@ export function ExerciseEntryForm({
       
       // Set the category
       setSelectedCategory(exercise.category);
-      
+
+      // Determine whether this is a standard (exercise_id) or custom exercise so the
+      // log is never saved without a name (previously showed up as "Unknown Exercise").
+      const hasExerciseId = exercise.exercise_id !== null && exercise.exercise_id !== undefined;
+      const displayName = (exercise.customExercise || exercise.name || "").trim();
+
+      if (!hasExerciseId && !displayName) {
+        toast.error("Η άσκηση του template δεν έχει όνομα και παραλείφθηκε");
+        setTemplateExerciseIndex(prev => prev + 1);
+        return;
+      }
+
       // Set form values
-      methods.setValue("exercise", exercise.customExercise || exercise.name);
-      methods.setValue("customExercise", exercise.customExercise || undefined);
+      methods.setValue("exercise", hasExerciseId ? String(exercise.exercise_id) : displayName);
+      methods.setValue("exerciseName", displayName);
+      methods.setValue("isCustomExercise", !hasExerciseId);
+      methods.setValue("customExercise", hasExerciseId ? undefined : displayName);
       methods.setValue("sets", exercise.sets.length > 0 ? exercise.sets : [{ weight: 0, reps: 0 }]);
       
       // Go to sets step
       setStep('sets');
       
-      toast.info(`Άσκηση ${templateExerciseIndex + 1}/${loadedTemplate.exercises.length}: ${exercise.name}`);
+      toast.info(`Άσκηση ${templateExerciseIndex + 1}/${loadedTemplate.exercises.length}: ${displayName}`);
     } else if (loadedTemplate && templateExerciseIndex >= loadedTemplate.exercises.length) {
       // All exercises from template have been processed
       toast.success("Όλες οι ασκήσεις του template καταχωρήθηκαν!");
@@ -148,9 +162,7 @@ export function ExerciseEntryForm({
       setIsSubmitting,
       () => {
         // Invalidate all workout-related queries including cycle
-        queryClient.invalidateQueries({ queryKey: ['workout_logs'] });
-        queryClient.invalidateQueries({ queryKey: ['workout_logs_all'] });
-        queryClient.invalidateQueries({ queryKey: ['workout_cycle'] });
+        invalidateWorkoutData(queryClient, session?.user?.id);
       }
     );
     

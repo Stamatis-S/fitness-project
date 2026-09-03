@@ -21,6 +21,7 @@ import type { WorkoutLog } from "@/components/saved-exercises/types";
 import { DataErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
+import { workoutKeys, invalidateWorkoutData } from "@/lib/queryKeys";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export default function Dashboard() {
   // Fast initial load: most recent 300 logs (covers ~last 2-3 months for most users)
   // Renders the dashboard quickly on mobile while the full dataset loads in the background.
   const { data: recentLogs, isLoading: isLoadingRecent } = useQuery({
-    queryKey: ['workout_logs_recent', session?.user.id],
+    queryKey: workoutKeys.logsRecent(session?.user.id),
     queryFn: async () => {
       if (!session?.user.id) throw new Error('Not authenticated');
       const { data, error } = await supabase
@@ -54,7 +55,7 @@ export default function Dashboard() {
 
   // Full dataset: loaded in background, paginated through all rows.
   const { data: fullLogs } = useQuery({
-    queryKey: ['workout_logs_all', session?.user.id],
+    queryKey: workoutKeys.logsAll(session?.user.id),
     queryFn: async () => {
       if (!session?.user.id) throw new Error('Not authenticated');
 
@@ -105,8 +106,7 @@ export default function Dashboard() {
 
   const handleRefresh = useCallback(async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['workout_logs_recent', session?.user.id] }),
-      queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] }),
+      invalidateWorkoutData(queryClient, session?.user.id),
     ]);
     toast.success(t("common.refreshed"));
   }, [queryClient, session?.user.id, t]);

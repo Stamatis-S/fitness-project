@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { format, parseISO, startOfDay, isSameDay } from "date-fns";
 import { el } from "date-fns/locale";
 import type { ExerciseCategory } from "@/lib/constants";
+import { workoutKeys } from "@/lib/queryKeys";
 
 interface SetData {
   weight: number;
@@ -45,7 +46,7 @@ export function QuickAddButton({ onSelectExercise }: QuickAddButtonProps) {
 
   // Fetch recent unique exercises
   const { data: recentExercises = [] } = useQuery({
-    queryKey: ['recent-exercises', session?.user.id],
+    queryKey: workoutKeys.recentExercises(session?.user.id),
     queryFn: async () => {
       if (!session?.user.id) return [];
 
@@ -96,7 +97,7 @@ export function QuickAddButton({ onSelectExercise }: QuickAddButtonProps) {
 
   // Fetch last 3 workout days with exercises (excluding today)
   const { data: workoutDays = [] } = useQuery({
-    queryKey: ['workout-days', session?.user.id],
+    queryKey: workoutKeys.workoutDays(session?.user.id),
     queryFn: async () => {
       if (!session?.user.id) return [];
 

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { workoutKeys } from "@/lib/queryKeys";
 
 interface WorkoutCycleCardProps {
   lastWorkoutDate: string | null;
@@ -49,7 +50,7 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
   }, [session, navigate]);
 
   const { data: currentCycle, refetch: refetchCycle } = useQuery({
-    queryKey: ['workout_cycle'],
+    queryKey: workoutKeys.cycle,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('workout_cycles')

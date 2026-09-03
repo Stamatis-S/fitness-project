@@ -8,6 +8,7 @@ import { generateWorkoutPlan } from "./workout-plan-generator";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import type { WorkoutPlan, WorkoutExercise } from "./types";
 import type { ExerciseCategory } from "@/lib/constants";
+import { workoutKeys } from "@/lib/queryKeys";
 
 export function useWorkoutPlan(userId: string | undefined) {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ export function useWorkoutPlan(userId: string | undefined) {
 
   // Query to get workout logs
   const { data: workoutLogs } = useQuery({
-    queryKey: ['workout_logs', userId],
+    queryKey: workoutKeys.logsPlan(userId),
     queryFn: async () => {
       if (!userId) {
         throw new Error('Not authenticated');
