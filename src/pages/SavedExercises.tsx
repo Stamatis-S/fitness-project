@@ -79,7 +79,7 @@ export default function SavedExercises() {
   }, []);
 
   const { data: allDateInfo } = useQuery({
-    queryKey: ['all_workout_dates', session?.user.id],
+    queryKey: workoutKeys.dates(session?.user.id),
     queryFn: async () => {
       if (!session?.user.id) throw new Error('Not authenticated');
 
@@ -139,7 +139,7 @@ export default function SavedExercises() {
   );
 
   const { data: workoutCycles } = useQuery({
-    queryKey: ['workout_cycles', session?.user.id],
+    queryKey: workoutKeys.cycles(session?.user.id),
     queryFn: async () => {
       if (!session?.user.id) return [];
       const { data, error } = await supabase
@@ -153,7 +153,7 @@ export default function SavedExercises() {
   });
 
   const { data: workoutLogs } = useQuery({
-    queryKey: ['workout_logs_paginated', session?.user.id, currentDates, categoryFilter, searchTerm],
+    queryKey: workoutKeys.logsPaginated(session?.user.id, currentDates, categoryFilter, searchTerm),
     queryFn: async () => {
       if (!session?.user.id || currentDates.length === 0) return [];
 
@@ -204,9 +204,7 @@ export default function SavedExercises() {
       if (error) throw error;
 
       toast.success(t("saved.exerciseDeleted"));
-      queryClient.invalidateQueries({ queryKey: ['workout_logs_paginated', session?.user.id] });
-      queryClient.invalidateQueries({ queryKey: ['all_workout_dates', session?.user.id] });
-      queryClient.invalidateQueries({ queryKey: ['workout_logs_all', session?.user.id] });
+      await invalidateWorkoutData(queryClient, session?.user.id);
     } catch (error) {
       toast.error(t("saved.deleteFailed"));
       console.error("Delete error:", error);
@@ -217,8 +215,7 @@ export default function SavedExercises() {
 
   const handleRefresh = useCallback(async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['all_workout_dates', session?.user.id] }),
-      queryClient.invalidateQueries({ queryKey: ['workout_logs_paginated', session?.user.id] }),
+      invalidateWorkoutData(queryClient, session?.user.id),
     ]);
     toast.success(t("common.refreshed"));
   }, [queryClient, session?.user.id, t]);

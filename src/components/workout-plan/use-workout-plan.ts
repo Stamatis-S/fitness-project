@@ -28,7 +28,7 @@ export function useWorkoutPlan(userId: string | undefined) {
 
   // Query to get workout logs
   const { data: workoutLogs } = useQuery({
-    queryKey: ['workout_logs', userId],
+    queryKey: workoutKeys.logsPlan(userId),
     queryFn: async () => {
       if (!userId) {
         throw new Error('Not authenticated');

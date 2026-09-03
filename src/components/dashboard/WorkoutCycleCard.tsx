@@ -50,7 +50,7 @@ export function WorkoutCycleCard({ lastWorkoutDate, workoutDates, compact }: Wor
   }, [session, navigate]);
 
   const { data: currentCycle, refetch: refetchCycle } = useQuery({
-    queryKey: ['workout_cycle'],
+    queryKey: workoutKeys.cycle,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('workout_cycles')

@@ -65,7 +65,7 @@ function App() {
           console.error('App-level error:', error, errorInfo);
           // Could integrate with error reporting service here
         }}
-        showDetails={process.env.NODE_ENV === 'development'}
+        showDetails={import.meta.env.DEV}
       >
       <QueryClientProvider client={queryClient}>
         <Router>

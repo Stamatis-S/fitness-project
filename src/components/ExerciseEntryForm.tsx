@@ -16,6 +16,7 @@ import { FormStepSets } from "@/components/workout/entry-form/FormStepSets";
 import { saveExercise } from "@/components/workout/entry-form/utils";
 import type { WorkoutTemplate } from "@/hooks/useWorkoutTemplates";
 import { toast } from "sonner";
+import { invalidateWorkoutData } from "@/lib/queryKeys";
 
 interface SetData {
   weight: number;
@@ -161,9 +162,7 @@ export function ExerciseEntryForm({
       setIsSubmitting,
       () => {
         // Invalidate all workout-related queries including cycle
-        queryClient.invalidateQueries({ queryKey: ['workout_logs'] });
-        queryClient.invalidateQueries({ queryKey: ['workout_logs_all'] });
-        queryClient.invalidateQueries({ queryKey: ['workout_cycle'] });
+        invalidateWorkoutData(queryClient, session?.user?.id);
       }
     );
     
