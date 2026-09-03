@@ -8,6 +8,7 @@ import { generateWorkoutPlan } from "./workout-plan-generator";
 import type { WorkoutLog } from "@/components/saved-exercises/types";
 import type { WorkoutPlan, WorkoutExercise } from "./types";
 import type { ExerciseCategory } from "@/lib/constants";
+import { workoutKeys } from "@/lib/queryKeys";
 
 export function useWorkoutPlan(userId: string | undefined) {
   const navigate = useNavigate();

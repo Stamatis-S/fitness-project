@@ -30,6 +30,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useTranslation } from "react-i18next";
+import { workoutKeys, invalidateWorkoutData } from "@/lib/queryKeys";
 
 function getDateRange(filter: string): [Date, Date] | null {
   const today = new Date();

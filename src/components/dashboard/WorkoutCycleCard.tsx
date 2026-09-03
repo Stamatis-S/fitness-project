@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { workoutKeys } from "@/lib/queryKeys";
 
 interface WorkoutCycleCardProps {
   lastWorkoutDate: string | null;

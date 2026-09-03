@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { format, parseISO, startOfDay, isSameDay } from "date-fns";
 import { el } from "date-fns/locale";
 import type { ExerciseCategory } from "@/lib/constants";
+import { workoutKeys } from "@/lib/queryKeys";
 
 interface SetData {
   weight: number;
