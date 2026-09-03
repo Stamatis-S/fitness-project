@@ -88,10 +88,23 @@ export function ExerciseEntryForm({
       
       // Set the category
       setSelectedCategory(exercise.category);
-      
+
+      // Determine whether this is a standard (exercise_id) or custom exercise so the
+      // log is never saved without a name (previously showed up as "Unknown Exercise").
+      const hasExerciseId = exercise.exercise_id !== null && exercise.exercise_id !== undefined;
+      const displayName = (exercise.customExercise || exercise.name || "").trim();
+
+      if (!hasExerciseId && !displayName) {
+        toast.error("Η άσκηση του template δεν έχει όνομα και παραλείφθηκε");
+        setTemplateExerciseIndex(prev => prev + 1);
+        return;
+      }
+
       // Set form values
-      methods.setValue("exercise", exercise.customExercise || exercise.name);
-      methods.setValue("customExercise", exercise.customExercise || undefined);
+      methods.setValue("exercise", hasExerciseId ? String(exercise.exercise_id) : displayName);
+      methods.setValue("exerciseName", displayName);
+      methods.setValue("isCustomExercise", !hasExerciseId);
+      methods.setValue("customExercise", hasExerciseId ? undefined : displayName);
       methods.setValue("sets", exercise.sets.length > 0 ? exercise.sets : [{ weight: 0, reps: 0 }]);
       
       // Go to sets step
