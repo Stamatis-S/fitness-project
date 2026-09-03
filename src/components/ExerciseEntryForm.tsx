@@ -110,7 +110,7 @@ export function ExerciseEntryForm({
       // Go to sets step
       setStep('sets');
       
-      toast.info(`Άσκηση ${templateExerciseIndex + 1}/${loadedTemplate.exercises.length}: ${exercise.name}`);
+      toast.info(`Άσκηση ${templateExerciseIndex + 1}/${loadedTemplate.exercises.length}: ${displayName}`);
     } else if (loadedTemplate && templateExerciseIndex >= loadedTemplate.exercises.length) {
       // All exercises from template have been processed
       toast.success("Όλες οι ασκήσεις του template καταχωρήθηκαν!");
