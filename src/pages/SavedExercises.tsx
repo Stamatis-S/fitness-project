@@ -83,16 +83,24 @@ export default function SavedExercises() {
     queryFn: async () => {
       if (!session?.user.id) throw new Error('Not authenticated');
 
+      // Bounded to the last 12 months so mobile devices never download the full history
+      // just to compute the list of workout days.
+      const cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - 12);
+      const cutoffDate = cutoff.toISOString().split('T')[0];
+
       let allDates: string[] = [];
       let from = 0;
       const batchSize = 1000;
+      const maxRows = 5000;
       let hasMore = true;
 
-      while (hasMore) {
+      while (hasMore && from < maxRows) {
         const { data, error } = await supabase
           .from('workout_logs')
           .select('workout_date')
           .eq('user_id', session.user.id)
+          .gte('workout_date', cutoffDate)
           .order('workout_date', { ascending: false })
           .range(from, from + batchSize - 1);
 
@@ -112,7 +120,10 @@ export default function SavedExercises() {
       return { uniqueDates, totalCount: allDates.length };
     },
     enabled: !!session?.user.id,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
+
 
   const allUniqueDates = allDateInfo?.uniqueDates || [];
 
