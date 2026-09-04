@@ -53,22 +53,29 @@ export default function Dashboard() {
     gcTime: 1000 * 60 * 30,
   });
 
-  // Full dataset: loaded in background, paginated through all rows.
+  // Extended dataset: last 12 months only, loaded in the background.
+  // Keeps mobile data usage and JSON parsing bounded instead of downloading all history.
   const { data: fullLogs } = useQuery({
     queryKey: workoutKeys.logsAll(session?.user.id),
     queryFn: async () => {
       if (!session?.user.id) throw new Error('Not authenticated');
 
+      const cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - 12);
+      const cutoffDate = cutoff.toISOString().split('T')[0];
+
       let allData: WorkoutLog[] = [];
       let from = 0;
       const batchSize = 1000;
+      const maxRows = 5000; // hard cap: protects low-end devices from huge payloads
       let hasMore = true;
 
-      while (hasMore) {
+      while (hasMore && from < maxRows) {
         const { data, error } = await supabase
           .from('workout_logs')
           .select(`*, exercises ( id, name )`)
           .eq('user_id', session.user.id)
+          .gte('workout_date', cutoffDate)
           .order('workout_date', { ascending: false })
           .range(from, from + batchSize - 1);
 
@@ -84,11 +91,12 @@ export default function Dashboard() {
       }
       return allData as WorkoutLog[];
     },
-    // Only start the heavy query after the recent logs have rendered.
+    // Only start the heavier query after the recent logs have rendered.
     enabled: !!session?.user.id && !!recentLogs,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   });
+
 
   // Use full data when available, otherwise the fast recent data.
   const workoutLogs = fullLogs ?? recentLogs;
