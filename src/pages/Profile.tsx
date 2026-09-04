@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -24,51 +25,53 @@ interface ProfileData {
   profile_photo_url: string | null;
 }
 
+const profileKey = (userId?: string) => ["profile", userId] as const;
+
 export default function Profile() {
   const { session } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
+  const queryClient = useQueryClient();
 
-  const fetchProfile = async () => {
-    try {
-      setIsLoading(true);
-      setLoadError(false);
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: profileKey(session?.user.id),
+    queryFn: async (): Promise<ProfileData | null> => {
+      if (!session?.user.id) throw new Error("Not authenticated");
 
-      const { error: calcError } = await supabase.rpc(
-        'calculate_fitness_score',
-        { user_id_param: session?.user.id }
-      );
-
+      const { error: calcError } = await supabase.rpc('calculate_fitness_score', {
+        user_id_param: session.user.id,
+      });
       if (calcError) throw calcError;
 
       const { data, error } = await supabase
         .from('profiles')
         .select('username, fitness_score, fitness_level, last_score_update, profile_photo_url')
-        .eq('id', session?.user.id)
+        .eq('id', session.user.id)
         .maybeSingle();
 
       if (error) throw error;
+      return data as ProfileData | null;
+    },
+    enabled: !!session?.user.id,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnMount: false,
+  });
 
-      if (data) {
-        setProfile(data);
-      }
-    } catch (error) {
-      toast.error("Error loading profile");
-      console.error("Error:", error);
-      setLoadError(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (session?.user.id) {
-      fetchProfile();
-    }
-  }, [session?.user.id]);
+  // Optimistic local updates without refetching the whole profile.
+  const patchProfile = useCallback(
+    (patch: Partial<ProfileData>) => {
+      queryClient.setQueryData<ProfileData | null>(profileKey(session?.user.id), (prev) =>
+        prev ? { ...prev, ...patch } : prev
+      );
+    },
+    [queryClient, session?.user.id]
+  );
 
   if (isLoading) {
     return (
@@ -78,14 +81,22 @@ export default function Profile() {
     );
   }
 
-  if (loadError || !profile || !session?.user) {
+  if (isError || !profile || !session?.user) {
     return (
       <div className="flex h-screen flex-col items-center justify-center bg-background gap-4 px-4">
         <p className="text-muted-foreground text-center">{t("profile.failedToLoad")}</p>
-        <Button onClick={fetchProfile} variant="outline">{t("common.retry")}</Button>
+        <Button
+          onClick={() => {
+            refetch().catch(() => toast.error("Error loading profile"));
+          }}
+          variant="outline"
+        >
+          {t("common.retry")}
+        </Button>
       </div>
     );
   }
+
 
   return (
     <PageTransition>
