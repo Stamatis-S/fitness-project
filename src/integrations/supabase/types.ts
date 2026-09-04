@@ -336,6 +336,13 @@ export type Database = {
             foreignKeyName: "workout_logs_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "leaderboard_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -373,7 +380,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard_profiles: {
+        Row: {
+          fitness_level: string | null
+          fitness_score: number | null
+          id: string | null
+          profile_photo_url: string | null
+          username: string | null
+        }
+        Insert: {
+          fitness_level?: string | null
+          fitness_score?: number | null
+          id?: string | null
+          profile_photo_url?: string | null
+          username?: string | null
+        }
+        Update: {
+          fitness_level?: string | null
+          fitness_score?: number | null
+          id?: string | null
+          profile_photo_url?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_fitness_score: {
