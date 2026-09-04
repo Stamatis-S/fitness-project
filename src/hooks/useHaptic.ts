@@ -3,12 +3,21 @@ import { useCallback } from 'react';
 type FeedbackType = 'light' | 'success' | 'error' | 'back';
 
 const SOUND_ENABLED_KEY = 'sound-feedback-enabled';
+const VIBRATION_ENABLED_KEY = 'vibration-feedback-enabled';
 
 // Get sound enabled state from localStorage (defaults to true)
 const getStoredSoundEnabled = (): boolean => {
   if (typeof window === 'undefined') return true;
   const stored = localStorage.getItem(SOUND_ENABLED_KEY);
   // Default to true if not set
+  if (stored === null) return true;
+  return stored === 'true';
+};
+
+// Get vibration enabled state from localStorage (defaults to true)
+const getStoredVibrationEnabled = (): boolean => {
+  if (typeof window === 'undefined') return true;
+  const stored = localStorage.getItem(VIBRATION_ENABLED_KEY);
   if (stored === null) return true;
   return stored === 'true';
 };
@@ -27,6 +36,36 @@ export const setSoundEnabled = (enabled: boolean) => {
   if (typeof window !== 'undefined') {
     localStorage.setItem(SOUND_ENABLED_KEY, String(enabled));
   }
+};
+
+export const getVibrationEnabled = (): boolean => getStoredVibrationEnabled();
+
+export const setVibrationEnabled = (enabled: boolean) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(VIBRATION_ENABLED_KEY, String(enabled));
+  }
+};
+
+/** True when the device/browser exposes the Vibration API (Android/Chrome, not iOS Safari). */
+export const isVibrationSupported = (): boolean =>
+  typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function';
+
+/** Fire a real device vibration, respecting the user's setting. */
+export const triggerVibration = (pattern: number | number[]) => {
+  if (!isVibrationSupported()) return;
+  if (!getStoredVibrationEnabled()) return;
+  try {
+    navigator.vibrate(pattern);
+  } catch (e) {
+    // Silent fail - vibration not permitted
+  }
+};
+
+const VIBRATION_PATTERNS: Record<FeedbackType, number | number[]> = {
+  light: 12,
+  success: [18, 45, 30],
+  error: [60, 60, 60],
+  back: 10,
 };
 
 // Audio context - recreated when needed
@@ -175,13 +214,17 @@ const SOUND_PATTERNS: Record<FeedbackType, () => void> = {
   },
 };
 
+const runFeedback = (type: FeedbackType) => {
+  // Vibration and sound are independent settings.
+  triggerVibration(VIBRATION_PATTERNS[type]);
+  if (getStoredSoundEnabled()) {
+    SOUND_PATTERNS[type]();
+  }
+};
+
 export const useHaptic = () => {
   const vibrate = useCallback((type: FeedbackType = 'light') => {
-    // Always check current state from localStorage
-    const enabled = getStoredSoundEnabled();
-    if (enabled) {
-      SOUND_PATTERNS[type]();
-    }
+    runFeedback(type);
   }, []);
 
   return { vibrate };
@@ -189,8 +232,5 @@ export const useHaptic = () => {
 
 // Helper for non-React contexts
 export const playFeedback = (type: FeedbackType) => {
-  const enabled = getStoredSoundEnabled();
-  if (enabled) {
-    SOUND_PATTERNS[type]();
-  }
+  runFeedback(type);
 };

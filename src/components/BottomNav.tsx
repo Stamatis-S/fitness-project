@@ -34,7 +34,8 @@ export function BottomNav() {
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.1 }}
-      className="fixed bottom-4 left-4 right-4 z-50"
+      style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+      className="fixed left-4 right-4 z-50 pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]"
     >
       <nav className="relative mx-auto max-w-md overflow-hidden rounded-2xl border border-white/10 bg-card/80 backdrop-blur-2xl shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-50" />
