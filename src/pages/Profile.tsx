@@ -115,7 +115,7 @@ export default function Profile() {
                 userId={session.user.id}
                 username={profile.username}
                 email={session.user.email!}
-                onPhotoUpdate={(url) => setProfile(prev => prev ? { ...prev, profile_photo_url: url } : null)}
+                onPhotoUpdate={(url) => patchProfile({ profile_photo_url: url })}
               />
               
               <div className="text-center">
@@ -151,7 +151,7 @@ export default function Profile() {
                 userId={session.user.id}
                 username={profile.username}
                 email={session.user.email!}
-                onUsernameUpdate={(newUsername) => setProfile(prev => prev ? { ...prev, username: newUsername } : null)}
+                onUsernameUpdate={(newUsername) => patchProfile({ username: newUsername })}
               />
             </Card>
           </motion.div>
