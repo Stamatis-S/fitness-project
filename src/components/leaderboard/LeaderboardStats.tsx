@@ -44,7 +44,7 @@ export function LeaderboardStats() {
       if (statsData && statsData.length > 0) {
         const userIds = statsData.map((s: any) => s.user_id);
         const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
+          .from('leaderboard_profiles')
           .select('id, profile_photo_url')
           .in('id', userIds);
           

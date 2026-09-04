@@ -27,7 +27,7 @@ export default function Leaderboard() {
     queryKey: ['leaderboard'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('leaderboard_profiles')
         .select('id, username, fitness_score, fitness_level, profile_photo_url')
         .order('fitness_score', { ascending: false })
         .limit(50);
